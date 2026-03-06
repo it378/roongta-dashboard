@@ -5,7 +5,7 @@
     <title>Roongta Cinemas | Executive Cloud Dashboard</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
-        
+
         :root {
             --navy: #0f172a; --blue-accent: #2563eb; --bg-canvas: #f8fafc; --border-color: #cbd5e1;
             --rev-gross: #ffd966; --rev-net: #f4b084; --exp-total: #f19eb5; --ebitda: #92d050;    
@@ -15,7 +15,7 @@
         body { font-family: 'Inter', sans-serif; background: var(--bg-canvas); margin: 0; padding: 20px; color: var(--navy); font-size: 11px; }
         .dashboard-wrapper { display: grid; grid-template-columns: 1fr 340px; gap: 20px; }
         .main-card { background: white; padding: 30px; border-radius: 16px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); border: 1px solid #e2e8f0; }
-        
+
         .exec-summary {
             background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
             color: white; padding: 20px; border-radius: 12px; margin-bottom: 25px;
@@ -34,7 +34,7 @@
         .controls { display: flex; gap: 15px; align-items: center; flex-wrap: wrap; }
         .control-item { display: flex; flex-direction: column; gap: 6px; }
         label { font-weight: 800; font-size: 10px; text-transform: uppercase; color: #475569; }
-        
+
         select { 
             padding: 10px 14px; border-radius: 8px; border: 2px solid #0f172a;
             min-width: 180px; background-color: #ffffff !important; color: #0f172a !important;            
@@ -142,15 +142,31 @@
     </div>
 
     <div class="sidebar-card">
-        <h3>Quick Compare</h3>
-        <label>Base Period</label>
-        <select id="compYear1" class="comp-select"><option value="2025" selected>FY 25-26</option><option value="2026">FY 26-27</option></select>
-        <select id="compMonth1" class="comp-select"></select>
-        <label>Compare To</label>
-        <select id="compYear2" class="comp-select"><option value="2025" selected>FY 25-26</option><option value="2026">FY 26-27</option></select>
-        <select id="compMonth2" class="comp-select"></select>
-        <button class="comp-btn" onclick="runComparison()">Run Analysis</button>
-        <div id="compResult" class="comp-result"><p style="text-align:center; opacity:0.5; margin:0; font-size:10px;">Select months to compare variance</p></div>
+    <h3>Advanced Comparison</h3>
+    
+    <label>Base Period (Reference)</label>
+    <select id="compScen1" class="comp-select">
+        <option value="actual">Actual</option>
+        <option value="pessimistic" selected>Pessimistic</option>
+    </select>
+    <div style="display:flex; gap:5px;">
+        <select id="compYear1" class="comp-select" style="flex:1;"><option value="2025">2025</option><option value="2026">2026</option></select>
+        <select id="compMonth1" class="comp-select" style="flex:1;"></select>
+    </div>
+
+    <label>Compare To (Target/Result)</label>
+    <select id="compScen2" class="comp-select">
+        <option value="actual" selected>Actual</option>
+        <option value="pessimistic">Pessimistic</option>
+    </select>
+    <div style="display:flex; gap:5px;">
+        <select id="compYear2" class="comp-select" style="flex:1;"><option value="2025">2025</option><option value="2026">2026</option></select>
+        <select id="compMonth2" class="comp-select" style="flex:1;"></select>
+    </div>
+
+    <button class="comp-btn" onclick="runComparison()">Analyze Variance</button>
+    <div id="compResult" class="comp-result">
+        <p style="text-align:center; opacity:0.5; margin:0; font-size:10px;">Compare Scenarios side-by-side</p>
     </div>
 </div>
 
@@ -296,7 +312,7 @@ function calc() {
 async function updateGlobalEbitda() {
     let t25 = 0, t26 = 0;
     const currentScen = document.getElementById('scen').value;
-    
+
     const snapshot = await db.ref('reports').once('value');
     const allData = snapshot.val() || {};
 
@@ -324,11 +340,11 @@ async function updateGlobalEbitda() {
 
 async function refreshData() {
     const p = document.getElementById('prop').value, s = document.getElementById('scen').value, fy = document.getElementById('fySelect').value;
-    
+
     // Fetch current and pessimistic data (for logic multipliers)
     const currentSnap = await db.ref(`reports/${p}/${s}/${fy}`).once('value');
     const pessiSnap = await db.ref(`reports/${p}/pessimistic/${fy}`).once('value');
-    
+
     const currentData = currentSnap.val();
     const pessiData = pessiSnap.val();
 
@@ -351,7 +367,7 @@ async function refreshData() {
 async function saveToCloud() {
     const p = document.getElementById('prop').value, s = document.getElementById('scen').value, fy = document.getElementById('fySelect').value;
     const data = {};
-    
+
     [...revenueRows, ...detailedSections.flatMap(s=>s.rows)].filter(r=>r.type==='in').forEach(r => {
         data[r.id] = []; 
         for(let i=0; i<12; i++) data[r.id].push(document.getElementById(`${r.id}_${i}`).value);
@@ -367,22 +383,25 @@ async function saveToCloud() {
 }
 
 async function runComparison() {
-    const p = document.getElementById('prop').value, s = document.getElementById('scen').value;
+    const p = document.getElementById('prop').value;
     
-    const getRev = async (y, m) => {
-        const snap = await db.ref(`reports/${p}/${s}/${y}`).once('value');
+    const getRev = async (scen, y, m) => {
+        const snap = await db.ref(`reports/${p}/${scen}/${y}`).once('value');
         const d = snap.val() || {};
-        const ff = parseFloat(d.ff?.[m] || 0), atp = parseFloat(d.atp_g?.[m] || 0), sph = parseFloat(d.sph_g?.[m] || 0);
-        return (ff * (atp + sph)) / 100000;
+        const ff = parseFloat(d.ff?.[m] || 0);
+        const atp = parseFloat(d.atp_g?.[m] || 0);
+        const sph = parseFloat(d.sph_g?.[m] || 0);
+        const other = parseFloat(d.other?.[m] || 0);
+        return ((ff * (atp + sph)) / 100000) + other;
     };
 
-    const r1 = await getRev(document.getElementById('compYear1').value, document.getElementById('compMonth1').value);
-    const r2 = await getRev(document.getElementById('compYear2').value, document.getElementById('compMonth2').value);
-    const diff = r1 - r2;
+    const r1 = await getRev(document.getElementById('compScen1').value, document.getElementById('compYear1').value, document.getElementById('compMonth1').value);
+    const r2 = await getRev(document.getElementById('compScen2').value, document.getElementById('compYear2').value, document.getElementById('compMonth2').value);
+    const diff = r2 - r1; // Shows how much better/worse 'Compare To' is vs 'Base'
 
     document.getElementById('compResult').innerHTML = `
-        <div style="display:flex;justify-content:space-between"><span>Base:</span><span>${r1.toFixed(2)} L</span></div>
-        <div style="display:flex;justify-content:space-between"><span>Comp:</span><span>${r2.toFixed(2)} L</span></div>
+        <div style="display:flex;justify-content:space-between"><span>Base (${document.getElementById('compScen1').value}):</span><span>${r1.toFixed(2)} L</span></div>
+        <div style="display:flex;justify-content:space-between"><span>Comp (${document.getElementById('compScen2').value}):</span><span>${r2.toFixed(2)} L</span></div>
         <hr style="opacity:0.1;margin:8px 0">
         <div style="display:flex;justify-content:space-between;font-weight:800;color:${diff>=0?'#92d050':'#f19eb5'}">
             <span>Variance:</span><span>${diff>=0?'+':''}${diff.toFixed(2)} L</span>
@@ -402,4 +421,4 @@ function exportFullFile() {
 window.onload = init;
 </script>
 </body>
-</html>
+</html>S
