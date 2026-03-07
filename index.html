@@ -339,44 +339,61 @@ async function updateGlobalEbitda() {
 }
 
 async function refreshData() {
-    const p = document.getElementById('prop').value, s = document.getElementById('scen').value, fy = document.getElementById('fySelect').value;
-
-    // Fetch current and pessimistic data (for logic multipliers)
+    const p = document.getElementById('prop').value;
+    const s = document.getElementById('scen').value;
+    const fy = document.getElementById('fySelect').value;
+    
     const currentSnap = await db.ref(`reports/${p}/${s}/${fy}`).once('value');
     const pessiSnap = await db.ref(`reports/${p}/pessimistic/${fy}`).once('value');
+    
+    const currentData = currentSnap.val() || {};
+    const pessiData = pessiSnap.val() || {};
 
-    const currentData = currentSnap.val();
-    const pessiData = pessiSnap.val();
+    const allInputRows = [
+        ...revenueRows.filter(r => r.type === 'in'),
+        ...detailedSections.flatMap(sec => sec.rows)
+    ];
 
-    [...revenueRows, ...detailedSections.flatMap(s=>s.rows)].filter(r=>r.type==='in').forEach(row => {
-        for(let i=0; i<12; i++) {
+    allInputRows.forEach(row => {
+        for(let i = 0; i < 12; i++) {
             const el = document.getElementById(`${row.id}_${i}`);
             if (s === 'actual' || s === 'pessimistic') {
-                el.value = (currentData && currentData[row.id]) ? currentData[row.id][i] : 0;
+                el.value = (currentData[row.id]) ? currentData[row.id][i] : 0;
             } else {
-                let base = (pessiData && pessiData[row.id]) ? parseFloat(pessiData[row.id][i]) : 0;
+                // Logic for Realistic/Optimistic based on Pessimistic data
+                let base = (pessiData[row.id]) ? parseFloat(pessiData[row.id][i]) : 0;
                 let mult = (s === 'realistic') ? 1.08 : 1.12;
                 el.value = (base * mult).toFixed(2);
             }
         }
     });
-    calc();
-    updateGlobalEbitda();
+    calc(); // Re-run all table calculations
+    updateGlobalEbitda(); // Update the top summary boxes
 }
 
 async function saveToCloud() {
-    const p = document.getElementById('prop').value, s = document.getElementById('scen').value, fy = document.getElementById('fySelect').value;
+    const p = document.getElementById('prop').value;
+    const s = document.getElementById('scen').value;
+    const fy = document.getElementById('fySelect').value;
     const data = {};
+    
+    // This now collects BOTH Revenue rows AND all Detailed Expense rows
+    const allInputRows = [
+        ...revenueRows.filter(r => r.type === 'in'),
+        ...detailedSections.flatMap(sec => sec.rows)
+    ];
 
-    [...revenueRows, ...detailedSections.flatMap(s=>s.rows)].filter(r=>r.type==='in').forEach(r => {
+    allInputRows.forEach(r => {
         data[r.id] = []; 
-        for(let i=0; i<12; i++) data[r.id].push(document.getElementById(`${r.id}_${i}`).value);
+        for(let i = 0; i < 12; i++) {
+            data[r.id].push(document.getElementById(`${r.id}_${i}`).value || "0");
+        }
     });
 
     try {
         await db.ref(`reports/${p}/${s}/${fy}`).set(data);
-        updateGlobalEbitda();
-        alert(`Cloud Sync Successful for ${p.toUpperCase()} - FY ${fy}`);
+        await updateGlobalEbitda(); // Recalculate summary after saving
+        alert(`Cloud Sync Successful: ${p.toUpperCase()} (${s}) FY ${fy}`);
     } catch (error) {
         alert("Sync Failed: " + error.message);
     }
@@ -422,3 +439,4 @@ window.onload = init;
 </script>
 </body>
 </html>
+
