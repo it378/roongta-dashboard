@@ -511,19 +511,25 @@ async function updateGlobalEbitda() {
             if (data) {
                 let locYearTotal = 0;
                 for (let i = 0; i < 12; i++) {
-                    const ff = parseFloat(data.ff?.[i] || 0), atp = parseFloat(data.atp_g?.[i] || 0), sph = parseFloat(data.sph_g?.[i] || 0);
-                    // simplified cloud calc for summary boxes
-                    const rev = (ff * (atp + sph) / 100000); 
-                    // Add other revenue if exists in data
-                    const revOtherRows = detailedSections.find(s => s.id === 'rev_other').rows;
-                    let oRev = 0; revOtherRows.forEach(r => oRev += parseFloat(data[r.id]?.[i] || 0));
-                    
-                    let exp = 0;
+                    // 1. Calculate Core Revenue (Tickets + Cafe)
+                    const ff = parseFloat(data.ff?.[i] || 0);
+                    const atp = parseFloat(data.atp_g?.[i] || 0);
+                    const sph = parseFloat(data.sph_g?.[i] || 0);
+                    const coreRevNet = (ff * (((atp/1.18)-25) + (sph/1.05) + 25)) / 100000;
+
+                    // 2. Sum "Revenue From Others"
+                    let otherRev = 0;
+                    const otherRevKeys = ['rev_3d', 'rev_park', 'rev_mgmt', 'rev_adv'];
+                    otherRevKeys.forEach(k => otherRev += parseFloat(data[k]?.[i] || 0));
+
+                    // 3. Sum ALL Expenses (including Variable Expenses)
+                    let totalExp = 0;
                     detailedSections.forEach(s => {
-                        if(s.id === 'rev_other') return;
-                        s.rows.forEach(r => exp += parseFloat(data[r.id]?.[i] || 0));
+                        if(s.id === 'rev_other') return; // Skip revenue section
+                        s.rows.forEach(r => totalExp += parseFloat(data[r.id]?.[i] || 0));
                     });
-                    locYearTotal += ((rev + oRev) - exp);
+
+                    locYearTotal += ((coreRevNet + otherRev) - totalExp);
                 }
                 if (year === 2025) t25 += locYearTotal; else t26 += locYearTotal;
             }
@@ -595,12 +601,52 @@ async function saveToCloud() {
 }
 
 async function runComparison() {
-    // Variance analysis logic...
+    const p = document.getElementById('prop').value;
+    
+    const getFullEbitda = async (scen, y, m) => {
+        const snap = await db.ref(`reports/${p}/${scen}/${y}`).once('value');
+        const d = snap.val() || {};
+        
+        // Net Revenue from Core
+        const ff = parseFloat(d.ff?.[m] || 0);
+        const atp = parseFloat(d.atp_g?.[m] || 0);
+        const sph = parseFloat(d.sph_g?.[m] || 0);
+        const coreRevNet = (ff * (((atp/1.18)-25) + (sph/1.05) + 25)) / 100000;
+
+        // Other Revenue
+        let otherRev = 0;
+        ['rev_3d', 'rev_park', 'rev_mgmt', 'rev_adv'].forEach(k => otherRev += parseFloat(d[k]?.[m] || 0));
+
+        // Total Expenses
+        let totalExp = 0;
+        detailedSections.forEach(s => {
+            if(s.id === 'rev_other') return;
+            s.rows.forEach(r => totalExp += parseFloat(d[r.id]?.[m] || 0));
+        });
+
+        return (coreRevNet + otherRev) - totalExp;
+    };
+
+    const eb1 = await getFullEbitda(document.getElementById('compScen1').value, document.getElementById('compYear1').value, document.getElementById('compMonth1').value);
+    const eb2 = await getFullEbitda(document.getElementById('compScen2').value, document.getElementById('compYear2').value, document.getElementById('compMonth2').value);
+    const diff = eb2 - eb1;
+
+    const color = diff >= 0 ? '#92d050' : '#f19eb5';
+
+    document.getElementById('compResult').innerHTML = `
+        <div style="display:flex;justify-content:space-between"><span>Base EBITDA:</span><span>${eb1.toFixed(2)} L</span></div>
+        <div style="display:flex;justify-content:space-between"><span>Comp EBITDA:</span><span>${eb2.toFixed(2)} L</span></div>
+        <hr style="opacity:0.1;margin:8px 0">
+        <div style="display:flex;justify-content:space-between;font-weight:800;color:${color}">
+            <span>Variance:</span><span>${diff.toFixed(2)} L</span>
+        </div>
+    `;
 }
 
 window.onload = init;
 </script>
 </body>
 </html>
+
 
 
