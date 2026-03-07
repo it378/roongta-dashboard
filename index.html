@@ -225,6 +225,7 @@ const detailedSections = [
         id: 'rev_other',
         title: 'REVENUE FROM OTHERS',
         rows: [
+            { id: 'rev_oth', label: 'REVENUE FROM OTHERS' },
             { id: 'rev_3d', label: 'REVENUE FORM 3D GLASS' },
             { id: 'rev_park', label: 'REVENUE FROM PARKING' },
             { id: 'rev_mgmt', label: 'REVENUE FROM MANAGEMENT FEES' },
@@ -235,6 +236,7 @@ const detailedSections = [
         id: 'var_exp',
         title: 'VARIABLE EXPENSES',
         rows: [
+            { id: 'var_var_exp', label: 'VARIABLE EXPENSES' },
             { id: 'var_gst_tkt', label: 'ENTERTAINMENT EXPENSE (GST ON TICKET)' },
             { id: 'var_dist', label: 'DISTRIBUTORS EXPENSES' },
             { id: 'var_banner', label: 'BANNER FITTING CHARGES' },
@@ -253,6 +255,7 @@ const detailedSections = [
         id: 'ops',
         title: 'OPERATION EXPENSES',
         rows: [
+            { id: 'ops_exp', label: 'OPERATION EXPENSES' },
             { id: 'ops_3d_glass', label: '3D GLASS PURSHSE EXPENSES' },
             { id: 'ops_cafe_gen', label: 'CAFE GENERAL EXPENSES' },
             { id: 'ops_diesel', label: 'DIESEL & FUEL' },
@@ -275,6 +278,7 @@ const detailedSections = [
         id: 'admin',
         title: 'ADMINISTRATIVE & OTHER EXPENSES',
         rows: [
+            { id: 'adm_admin', label: 'ADMINISTRATIVE & OTHER EXPENSES' },
             { id: 'adm_audit', label: 'AUDITORS REMMUNERATION' },
             { id: 'adm_books', label: 'BOOKS & PERIODICALS' },
             { id: 'adm_cash', label: 'CASH PICK UP CHARGES' },
@@ -310,6 +314,7 @@ const detailedSections = [
         id: 'emp',
         title: 'EMPLOYEE BENEFIT EXPENSE',
         rows: [
+            { id: 'emp_ben_exp', label: 'EMPLOYEE BENEFIT EXPENSE' },
             { id: 'emp_comp', label: 'COMPANSATION EXPENSE' },
             { id: 'emp_salary', label: 'SALARY & WAGES' },
             { id: 'emp_contract', label: 'CONTRACT WAGES' },
@@ -328,6 +333,7 @@ const detailedSections = [
         id: 'mkt',
         title: 'SALES & MARKETING EXP',
         rows: [
+            { id: 'mkt_sale', label: 'SALES & MARKETING EXP' },
             { id: 'mkt_adv', label: 'ADVERTISING & PUBLICITY' },
             { id: 'mkt_news', label: 'ADVERTISMENT-NEWS PAPERS' },
             { id: 'mkt_fest', label: 'FESTIVAL EXPENSES' },
@@ -355,6 +361,8 @@ const detailedSections = [
         rows: [
             { id: 'rent_main', label: 'RENT/REVENUE SHARING' },
             { id: 'rent_cam', label: 'CAM CHARGES' },
+            { id: 'rent_ope_main', label: 'OPERATION AND MAINTANCE EXPENSES' },
+            { id: 'rent_ser_car', label: 'SERVICE CHARGE SHARING' },
             { id: 'rent_prop_tax', label: 'PROPERTY TAX' }
         ]
     }
@@ -594,4 +602,5 @@ window.onload = init;
 </script>
 </body>
 </html>
+
 
