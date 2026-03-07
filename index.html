@@ -210,23 +210,179 @@ const revenueRows = [
 ];
 
 const mainSummaryRows = [
-    { id: 'sum_rent', label: 'RENT/REVENUE SHARING EXPENSES', type: 'link' },
-    { id: 'sum_fin', label: 'FINANCE EXPENSES', type: 'link' },
-    { id: 'sum_mkt', label: 'SALES & MARKETING EXP', type: 'link' },
-    { id: 'sum_emp', label: 'EMPLOYEE BENEFIT EXPENSE', type: 'link' },
-    { id: 'sum_admin', label: 'ADMINISTRATIVE & OTHER EXPENSES', type: 'link' },
+    { id: 'sum_var', label: 'VARIABLE EXPENSES', type: 'link' },
     { id: 'sum_ops', label: 'OPERATION EXPENSES', type: 'link' },
+    { id: 'sum_admin', label: 'ADMINISTRATIVE & OTHER EXPENSES', type: 'link' },
+    { id: 'sum_emp', label: 'EMPLOYEE BENEFIT EXPENSE', type: 'link' },
+    { id: 'sum_mkt', label: 'SALES & MARKETING EXP', type: 'link' },
+    { id: 'sum_fin', label: 'FINANCE EXPENSES', type: 'link' },
+    { id: 'sum_rent', label: 'RENT/REVENUE SHARING EXPENSES', type: 'link' },
     { id: 'total_exp', label: 'TOTAL Expense', type: 'summary', cls: 'h-exp' },
     { id: 'ebitda', label: 'EBITDA', type: 'summary', cls: 'h-ebitda' }
 ];
 
 const detailedSections = [
-    { title: "RENT/REVENUE SHARING DETAIL", totalId: 'sum_rent', rows: [{ id: 'r_rent', label: 'RENT/REVENUE SHARING' }, { id: 'r_cam', label: 'CAM CHARGES' }, { id: 'r_maint', label: 'OPERATION & MAINTENANCE' }, { id: 'r_share', label: 'SERVICE CHARGE SHARING' }, { id: 'r_tax', label: 'PROPERTY TAX' }]},
-    { title: "FINANCE DETAIL", totalId: 'sum_fin', rows: [{ id: 'f_gate', label: 'GATEWAY CHARGES' }, { id: 'f_cc', label: 'CREDIT CARD CHARGES' }, { id: 'f_int', label: 'INTEREST TO OTHERS' }, { id: 'f_bank', label: 'BANK CHARGES' }, { id: 'f_edc', label: 'EDC MACHINE RENTAL' }]},
-    { title: "SALES & MARKETING DETAIL", totalId: 'sum_mkt', rows: [{ id: 'm_adv', label: 'ADVERTISING & PUBLICITY' }, { id: 'm_news', label: 'NEWS PAPERS' }, { id: 'm_star', label: 'STAR VISIT/EVENTS' }, { id: 'm_gift', label: 'GIFT & ARTICLES' }, { id: 'm_web', label: 'WEB BOOKING' }]},
-    { title: "EMPLOYEE BENEFIT DETAIL", totalId: 'sum_emp', rows: [{ id: 'e_sal', label: 'SALARY & WAGES' }, { id: 'e_cont', label: 'CONTRACT WAGES' }, { id: 'e_pf', label: 'EMPLOYERS PF' }, { id: 'e_bonus', label: 'BONUS' }, { id: 'e_uni', label: 'UNIFORM' }]},
-    { title: "OPERATION DETAIL", totalId: 'sum_ops', rows: [{ id: 'o_glass', label: '3D GLASS PURCHASE' }, { id: 'o_cafe', label: 'CAFE GENERAL' }, { id: 'o_fuel', label: 'DIESEL & FUEL' }, { id: 'o_elec', label: 'ELECTRICITY' }, { id: 'o_ufo', label: 'UFO/PROJECTOR RENT' }, { id: 'o_sec', label: 'SECURITY' }]},
-    { title: "ADMINISTRATIVE DETAIL", totalId: 'sum_admin', rows: [{ id: 'a_aud', label: 'AUDITORS REMUNERATION' }, { id: 'a_cash', label: 'CASH PICK UP' }, { id: 'a_conv', label: 'CONVEYANCE' }, { id: 'a_lic', label: 'LICENCE FEES' }, { id: 'a_water', label: 'WATER CHARGES' }]}
+    {
+        id: 'VARIABLE_EXPENSES',
+        label: 'VARIABLE EXPENSES',
+        rows: [
+            { id: 'EXP_VAR', label: 'VARIABLE EXPENSES' },
+            { id: 'EXP_ENT_GST', label: 'ENTERTAINMENT EXPENSE(GST ON TICKET)' },
+            { id: 'EXP_DISTRIBUTORS', label: 'DISTRIBUTORS EXPENSES' },
+            { id: 'EXP_BANNER_FITTING', label: 'BANNER FITTING CHARGES' },
+            { id: 'EXP_INR', label: 'INR CHARGES' },
+            { id: 'EXP_REPRESENTATIVE', label: 'REPRESENTATIVE CHARGES' },
+            { id: 'EXP_PROGRAMMING', label: 'PROGRAMMING EXP' },
+            { id: 'EXP_PRINT_PUB', label: 'PRINT & PUBLICITY' },
+            { id: 'EXP_SHOW_TAX', label: 'SHOW TAX' },
+            { id: 'EXP_GST_CAFE', label: 'GST ON CAFE SALE' },
+            { id: 'EXP_CAFE_CONSU', label: 'CAFE CONSUMPTION' },
+            { id: 'EXP_TAX_ADV', label: 'TAX ON ADVERTISEMENT INCOME' },
+            { id: 'EXP_FREIGHT', label: 'LOADING, UNLOADING, FREIGHT CHARGES' },
+            { id: 'TOTAL_VARIABLE_EXP', label: 'TOTAL VARIABLE EXPENSES' }
+        ]
+    },
+    {
+        id: 'OPERATION_EXPENSES',
+        label: 'OPERATION EXPENSES',
+        rows: [
+            { id: 'OPS_OPE    ', label: 'OPERATION EXPENSES' },
+            { id: 'OPS_3D_GLASS', label: '3D GLASS PURCHSE EXPENSES' },    
+            { id: 'OPS_CAFE_GEN', label: 'CAFE GENERAL EXPENSES' },
+            { id: 'OPS_DIESEL_FUEL', label: 'DIESEL & FUEL' },
+            { id: 'OPS_ELECTRICITY', label: 'ELECTRICITY EXPENSES' },
+            { id: 'OPS_FIRE_SAFETY', label: 'FIRE & SAFETY EXPENSES' },
+            { id: 'OPS_TKT_ROLLS', label: 'PRINTING STATIONERY-TKT ROLLS' },
+            { id: 'OPS_PROJECTOR_UFO', label: 'PROJECTOR RENT/UFO CHARGES' },
+            { id: 'OPS_RM_CAFE', label: 'R & M - CAFE' },
+            { id: 'OPS_RM_ELEC', label: 'R & M - ELECTRICAL EQUIPMENTS' },
+            { id: 'OPS_RM_HK_WAGES', label: 'R & M - HOUSKEEPING MANPOWER WEDGES' },
+            { id: 'OPS_HK_MATERIAL', label: 'HOUSKEEPING MATERIAL CHARGE' },
+            { id: 'OPS_HK_MACHINE', label: 'HOUSKEEPING MACHINE RENT' },
+            { id: 'OPS_PEST_CONTROL', label: 'PEST CONTROL' },
+            { id: 'OPS_RM_PLANT', label: 'R & M - PLANT & MACHINERY' },
+            { id: 'OPS_RM_XENON', label: 'R & M - XENON LAMP' },
+            { id: 'OPS_SECURITY', label: 'SECURITY EXPENSES' },
+            { id: 'TOTAL_OPERATION_EXP', label: 'TOTAL OPERATION EXPENSES' }
+        ]
+    },
+    {
+        id: 'ADMIN_EXPENSES',
+        label: 'ADMINISTRATIVE & OTHER EXPENSES',
+        rows: [
+            { id: 'ADM_ADMIN', label: 'ADMINISTRATIVE & OTHER EXPENSES' },
+            { id: 'ADM_AUDITOR', label: 'AUDITORS REMMUNERATION' },
+            { id: 'ADM_BOOKS', label: 'BOOKS & PERIODICALS' },
+            { id: 'ADM_CASH_PICKUP', label: 'CASH PICK UP CHARGES' },
+            { id: 'ADM_COMMISSION', label: 'COMMISSION & BROKERAGE' },
+            { id: 'ADM_CONVEYANCE', label: 'CONVEYANCE EXPENSES' },
+            { id: 'ADM_DIGITAL_PRINT', label: 'DIGITIAL PRINTING' },
+            { id: 'ADM_DONATION', label: 'DONATION' },
+            { id: 'ADM_FILLING_FEE', label: 'FILLING FEE EXPENSES' },
+            { id: 'ADM_INSPECTION', label: 'INSPECTION CHARGES' },
+            { id: 'ADM_INSURANCE', label: 'INSURANCE EXPENSES' },
+            { id: 'ADM_INTERNET', label: 'INTERNET CHARGES' },
+            { id: 'ADM_CLOUD', label: 'CLOUD CHARGES' },
+            { id: 'ADM_LICENCE', label: 'LICENCE FEES' },
+            { id: 'ADM_MEMBERSHIP', label: 'MEMBERSHIP & SCUBCRIPTION FEES(BILL ME)' },
+            { id: 'ADM_MISC', label: 'MISCELLANEOUS EXPENSES' },
+            { id: 'ADM_OFFICE', label: 'OFFICE EXPENSES' },
+            { id: 'ADM_STAFF_VEHICLE', label: 'PETROL & DIESEL-STAFF VEHICLES' },
+            { id: 'ADM_POST_THEATRE', label: 'POSTAGE & COURIER-THEATRE' },
+            { id: 'ADM_PRINT_THEATRE', label: 'PRINTING & STATIONERY-THEATRE' },
+            { id: 'ADM_RM_BUILDING', label: 'R & M - BUILDING' },
+            { id: 'ADM_RM_IT', label: 'R & M - IT' },
+            { id: 'ADM_RM_FURNITURE', label: 'R & M - FURNITURE & FIXTURES' },
+            { id: 'ADM_RM_VEHICLES', label: 'R & M - VEHICLES' },
+            { id: 'ADM_RM_OTHERS', label: 'R & M - OTHERS' },
+            { id: 'ADM_RATES_TAXES', label: 'RATES & TAXES' },
+            { id: 'ADM_RECRUITMENT', label: 'RECURTIMENT EXPENSES' },
+            { id: 'ADM_TELEPHONE', label: 'TELEPHONE & MOBILE EXPENSES' },
+            { id: 'ADM_THEATRE_GEN', label: 'THEATRE EXPENSES-GENERAL' },
+            { id: 'ADM_TRANSPORT', label: 'TRANSPORT CHARGES' },
+            { id: 'ADM_TRAVELLING', label: 'TRAVELLING EXPENSES' },
+            { id: 'ADM_WATER', label: 'WATER CHARGES' },
+            { id: 'ADM_REVIEW_MEETING', label: 'REVIEW METTING EXPENSES' },
+            { id: 'ADM_RENOVATION', label: 'R & M REPAIR AND RENOVATION EXPENSES' },
+            { id: 'TOTAL_ADMIN_EXPENSE', label: 'TOTAL ADMINISTRATIVE & OTHER EXPENSE' }
+        ]
+    },
+    {
+        id: 'EMPLOYEE_EXPENSES',
+        label: 'EMPLOYEE BENEFIT EXPENSE',
+        rows: [
+            { id: 'EMP_EMPL_BEN', label: 'EMPLOYEE BENEFIT EXPENSE' },
+            { id: 'EMP_COMPENSATION', label: 'COMPANSATION EXPENSES' },
+            { id: 'EMP_SALARY_WAGES', label: 'SALARY & WAGES' },
+            { id: 'EMP_CONTRACT_WAGES', label: 'CONTRACT WAGES' },
+            { id: 'EMP_REGIONAL_SALARY', label: 'RIGIONAL SALARY' },
+            { id: 'EMP_DA', label: 'ALLOWANCE-DEARANCE' },
+            { id: 'EMP_HRA', label: 'ALLOWANCE-HOUSE RENT' },
+            { id: 'EMP_MEDICAL', label: 'ALLOWANCE-MEDICAL' },
+            { id: 'EMP_OTHER_ALLOW', label: 'ALLOWANCE-OTHER' },
+            { id: 'EMP_TRANSPORT_ALLOW', label: 'ALLOWANCE-TRANSPORT' },
+            { id: 'EMP_PF', label: 'EMPLOYERS CONTR.TO PF' },
+            { id: 'EMP_ESIC', label: 'EMPLOYERS CONTR.TO ESIC' },
+            { id: 'EMP_BONUS', label: 'BONUS EXPENSES' },
+            { id: 'EMP_WELFARE', label: 'STAFF WELFARE EXPENSES' },
+            { id: 'EMP_FLAT_RENT', label: 'STAFF FLAT RENT' },
+            { id: 'EMP_FLAT_EXP', label: 'STAFF FLAT EXPENSES' },
+            { id: 'EMP_FLAT_ELEC', label: 'STAFF ELECTRICITY EXPENSES' },
+            { id: 'EMP_SHIFTING', label: 'TRANSPORTATION/SHIFTING REIMBURSEMENT EXP.' },
+            { id: 'EMP_UNIFORM', label: 'STAFF UNIFORM' },
+            { id: 'EMP_INSURANCE', label: 'STAFF INSURANCE EXPENSE' },
+            { id: 'EMP_MOBILE', label: 'EMPLOYEE MOBILE EXPENSES' },
+            { id: 'EMP_TRAINING', label: 'TRAINING AND DEVELOPMENT' },
+            { id: 'TOTAL_EMPLOYEE_EXP', label: 'TOTAL EMPLOYEE BENEFIT EXPENSE' }
+        ]
+    },
+    {
+        id: 'MARKETING_EXPENSES',
+        label: 'SALES & MARKETING EXP',
+        rows: [
+            { id: 'MKT_SL_MR', label: 'SALES & MARKETING EXP' },
+            { id: 'MKT_ADVERTISING', label: 'ADVERTISING & PUBLICITY' },
+            { id: 'MKT_NEWS_PAPER', label: 'ADVERTISMENT-NEWS PAPERS' },
+            { id: 'MKT_ANNIVERSARY', label: 'ANNIVERSARY EXPENSES' },
+            { id: 'MKT_COMP_TICKET', label: 'COMPLEMENTARY EXPENSES-TICKET' },
+            { id: 'MKT_COMP_CAFE', label: 'COMPLEMENTARY EXPENSES-CAFÉ' },
+            { id: 'MKT_STAR_VISIT', label: 'EVENT CHARGES/ STAR VISIT' },
+            { id: 'MKT_FESTIVAL', label: 'FESTIVAL EXPENSES' },
+            { id: 'MKT_GIFT_ARTICLE', label: 'GIFT & ARTICLE EXP.' },
+            { id: 'MKT_HOARDING', label: 'HOARDING CHARGES' },
+            { id: 'MKT_SMS_MAILER', label: 'MOBILE / SMS MAILER EXP' },
+            { id: 'MKT_OFFERS', label: 'OFFERS' },
+            { id: 'MKT_WEBSITE', label: 'ONLINE / WEBSITE CHARGES' },
+            { id: 'MKT_SLIDE', label: 'SLIDE CHARGES' },
+            { id: 'MKT_WEB_BOOKING', label: 'WEB BOOKING CHARGES' },
+            { id: 'MKT_VOUCHER', label: 'VOUCHER DISCOUNT' },
+            { id: 'TOTAL_MARKETING_EXP', label: 'TOTAL SALES & MARKETING EXP' }
+        ]
+    },
+    {
+        id: 'FINANCE_EXPENSES',
+        label: 'FINANCE EXPENSES',
+        rows: [
+            { id: 'FIN_GATEWAY', label: 'GATEWAY CHARGES' },
+            { id: 'FIN_CREDIT_CARD', label: 'CREDIT CARD CHARGES' },
+            { id: 'FIN_INTEREST', label: 'INTEREST TO OTHERS' },
+            { id: 'FIN_BANK_CHARGES', label: 'BANK CHARGES' },
+            { id: 'FIN_EDC_RENTAL', label: 'EDC MACHINE RENTAL' },
+            { id: 'TOTAL_FINANCE_EXP', label: 'TOTAL FINANCE EXPENSES' }
+        ]
+    },
+    {
+        id: 'RENT_EXPENSES',
+        label: 'RENT/REVENUE SHARING EXPENSES',
+        rows: [
+            { id: 'RENT/REVENUE_SHARING', label: 'RENT/REVENUE SHARING' },
+            { id: 'RENT_CAM', label: 'CAM CHARGES' }
+            { id: 'RENT_OPS_MAINT', label: 'OPERATION AND MAINTANCE EXPENSES' },
+            { id: 'RENT_SERVICE_SHARE', label: 'SERVICE CHARGE SHARING' },
+            { id: 'RENT_PROP_TAX', label: 'PROPERTY TAX' },
+            { id: 'TOTAL_RENT_EXP', label: 'TOTAL RENT/REVENUE SHARING EXPENSES' }
+        ]
+    }
 ];
 
 function toggleRows(cat, el) {
@@ -439,5 +595,6 @@ window.onload = init;
 </script>
 </body>
 </html>
+
 
 
