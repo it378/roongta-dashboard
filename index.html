@@ -76,22 +76,64 @@
 
 <div class="dashboard-wrapper">
     <div class="main-card">
-        <div class="exec-summary">
-            <div class="summary-item">
-                <span class="summary-label">Group EBITDA (Live)</span>
-                <span class="summary-value" id="global-total">₹ 0.00 L</span>
-                <span class="summary-subtext">Cloud Synchronized</span>
-            </div>
-            <div class="summary-item" style="border-left: 1px solid rgba(255,255,255,0.1); padding-left: 30px;">
-                <span class="summary-label">FY 2025-26</span>
-                <span class="summary-value" id="total-2025" style="font-size: 18px; color: #fff;">₹ 0.00 L</span>
-            </div>
-            <div class="summary-item" style="border-left: 1px solid rgba(255,255,255,0.1); padding-left: 30px;">
-                <span class="summary-label">FY 2026-27</span>
-                <span class="summary-value" id="total-2026" style="font-size: 18px; color: #fff;">₹ 0.00 L</span>
+        <div class="exec-header" style="display: flex; justify-content: space-between; align-items: center; padding: 20px; background: #0f172a; border-radius: 12px; color: white;">
+    
+    <div class="summary-group" style="display: flex; gap: 30px; flex-shrink: 0;">
+        <div class="summary-item">
+            <span class="summary-label" style="font-size: 10px; color: #94a3b8; font-weight: 700;">GROUP EBITDA (LIVE)</span>
+            <span class="summary-value" id="global-total" style="font-size: 24px; font-weight: 800; color: #92d050; display: block;">₹ 0.00 L</span>
+            <span style="font-size: 9px; color: #64748b;">Cloud Synchronized</span>
+        </div>
+        <div class="summary-item" style="border-left: 1px solid #334155; padding-left: 20px;">
+            <span class="summary-label" style="font-size: 10px; color: #94a3b8; font-weight: 700;">FY 2025-26</span>
+            <span class="summary-value" id="total-2025" style="font-size: 18px; font-weight: 700; color: white; display: block;">₹ 0.00 L</span>
+        </div>
+        <div class="summary-item" style="border-left: 1px solid #334155; padding-left: 20px;">
+            <span class="summary-label" style="font-size: 10px; color: #94a3b8; font-weight: 700;">FY 2026-27</span>
+            <span class="summary-value" id="total-2026" style="font-size: 18px; font-weight: 700; color: white; display: block;">₹ 0.00 L</span>
+        </div>
+    </div>
+
+    <div style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); width: 60%;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+            <span style="font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">Location-Wise EBITDA Breakdown</span>
+            <div style="display: flex; gap: 8px;">
+                <select id="breakdownMonth" onchange="updateLocationBreakdown()" style="background: transparent; color: white; border: 1px solid #475569; font-size: 10px; border-radius: 4px; padding: 2px 5px;"></select>
+                <select id="breakdownYear" onchange="updateLocationBreakdown()" style="background: transparent; color: white; border: 1px solid #475569; font-size: 10px; border-radius: 4px; padding: 2px 5px;">
+                    <option value="2025">FY 2025-26</option>
+                    <option value="2026">FY 2026-27</option>
+                </select>
             </div>
         </div>
-
+        
+        <div style="display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px;">
+            <div style="background: white; padding: 8px; border-radius: 6px; border-left: 3px solid #2563eb;">
+                <div class="summary-label" style="color: #64748b; font-size: 9px; font-weight: 800;">SURAT</div>
+                <div id="brk-surat" style="color: #0f172a; font-size: 13px; font-weight: 700;">₹ 0.00 L</div>
+            </div>
+            <div style="background: white; padding: 8px; border-radius: 6px; border-left: 3px solid #2563eb;">
+                <div class="summary-label" style="color: #64748b; font-size: 9px; font-weight: 800;">GHAZIABAD</div>
+                <div id="brk-ghaziabad" style="color: #0f172a; font-size: 13px; font-weight: 700;">₹ 0.00 L</div>
+            </div>
+            <div style="background: white; padding: 8px; border-radius: 6px; border-left: 3px solid #2563eb;">
+                <div class="summary-label" style="color: #64748b; font-size: 9px; font-weight: 800;">MUZAFFAR.</div>
+                <div id="brk-muzaffarnagar" style="color: #0f172a; font-size: 13px; font-weight: 700;">₹ 0.00 L</div>
+            </div>
+            <div style="background: white; padding: 8px; border-radius: 6px; border-left: 3px solid #2563eb;">
+                <div class="summary-label" style="color: #64748b; font-size: 9px; font-weight: 800;">ADIPUR</div>
+                <div id="brk-adipur" style="color: #0f172a; font-size: 13px; font-weight: 700;">₹ 0.00 L</div>
+            </div>
+            <div style="background: white; padding: 8px; border-radius: 6px; border-left: 3px solid #2563eb;">
+                <div class="summary-label" style="color: #64748b; font-size: 9px; font-weight: 800;">HYDERABAD</div>
+                <div id="brk-hyderabad" style="color: #0f172a; font-size: 13px; font-weight: 700;">₹ 0.00 L</div>
+            </div>
+            <div style="background: #1e293b; padding: 8px; border-radius: 6px; border-left: 3px solid #92d050;">
+                <div class="summary-label" style="color: #94a3b8; font-size: 9px; font-weight: 800;">MONTHLY TOTAL</div>
+                <div id="brk-total" style="color: #92d050; font-size: 13px; font-weight: 700;">₹ 0.00 L</div>
+            </div>
+        </div>
+    </div>
+</div>
         <div class="brand-header">
             <h1>Roongta Cinemas</h1>
             <p>Master Financial Intelligence (Cloud Enabled)</p>
@@ -141,31 +183,37 @@
     </div>
 
     <div class="sidebar-card">
-        <h3>Advanced Comparison</h3>
-        <label>Base Period (Reference)</label>
-        <select id="compScen1" class="comp-select">
-            <option value="actual">Actual</option>
-            <option value="pessimistic" selected>Pessimistic</option>
+    <h3>Advanced Comparison</h3>
+    
+    <label>Base Period (Reference)</label>
+    <div style="display:flex; gap:5px; margin-bottom: 8px;">
+        <select id="compYear1" class="comp-select" style="flex:1;" onchange="refreshData()">
+            <option value="2025">2025-26</option>
+            <option value="2026">2026-27</option>
         </select>
-        <div style="display:flex; gap:5px;">
-            <select id="compYear1" class="comp-select" style="flex:1;"><option value="2025">2025</option><option value="2026">2026</option></select>
-            <select id="compMonth1" class="comp-select" style="flex:1;"></select>
-        </div>
+        <select id="compMonth1" class="comp-select" style="flex:1;"></select>
+    </div>
+    <select id="compScen1" class="comp-select">
+        <option value="actual">Actual</option>
+        <option value="pessimistic">Pessimistic</option>
+    </select>
 
-        <label>Compare To (Target/Result)</label>
-        <select id="compScen2" class="comp-select">
-            <option value="actual" selected>Actual</option>
-            <option value="pessimistic">Pessimistic</option>
+    <label>Compare To (Target/Result)</label>
+    <div style="display:flex; gap:5px; margin-bottom: 8px;">
+        <select id="compYear2" class="comp-select" style="flex:1;" onchange="refreshData()">
+            <option value="2025">2025-26</option>
+            <option value="2026">2026-27</option>
         </select>
-        <div style="display:flex; gap:5px;">
-            <select id="compYear2" class="comp-select" style="flex:1;"><option value="2025">2025</option><option value="2026">2026</option></select>
-            <select id="compMonth2" class="comp-select" style="flex:1;"></select>
-        </div>
+        <select id="compMonth2" class="comp-select" style="flex:1;"></select>
+    </div>
+    <select id="compScen2" class="comp-select">
+        <option value="actual">Actual</option>
+        <option value="pessimistic">Pessimistic</option>
+    </select>
 
-        <button class="comp-btn" onclick="runComparison()">Analyze Variance</button>
-        <div id="compResult" class="comp-result">
-            <p style="text-align:center; opacity:0.5; margin:0; font-size:10px;">Compare Scenarios side-by-side</p>
-        </div>
+    <button class="comp-btn" onclick="runComparison()">Analyze Variance</button>
+    <div id="compResult" class="comp-result">
+        <p style="text-align:center; opacity:0.5; margin:0; font-size:10px;">Compare Scenarios side-by-side</p>
     </div>
 </div>
 
@@ -379,30 +427,42 @@ function init() {
     const b = document.getElementById('tBody');
     const m1 = document.getElementById('compMonth1');
     const m2 = document.getElementById('compMonth2');
+    const brkM = document.getElementById('breakdownMonth'); // Location Breakdown ka dropdown pick kiya
+
+    // Months array ko loop karke saare dropdowns populate karein
     months.forEach((m, i) => { 
         h.innerHTML += `<th>${m}</th>`;
-        m1.innerHTML += `<option value="${i}">${m}</option>`;
-        m2.innerHTML += `<option value="${i}">${m}</option>`;
+        if(m1) m1.innerHTML += `<option value="${i}">${m}</option>`;
+        if(m2) m2.innerHTML += `<option value="${i}">${m}</option>`;
+        
+        // Location Breakdown dropdown mein months add karne ke liye:
+        if(brkM) {
+            brkM.innerHTML += `<option value="${i}">${m}</option>`;
+        }
     });
+
     h.innerHTML += `<th class="year-col">FY TOTAL</th>`;
     
-    // Render Revenue Detail section (initially collapsed)
+    // Revenue rows render karna
     revenueRows.forEach(r => b.innerHTML += renderRow(r));
     
     b.innerHTML += `<tr class="spacer-row"><td colspan="14"></td></tr>`;
     
-    // Summary Rows
+    // Summary Rows render karna
     mainSummaryRows.forEach(r => b.innerHTML += renderRow(r));
 
-    // Detailed Sections
+    // Detailed Sections (Expenses, etc.) render karna
     detailedSections.forEach(sec => {
         const secId = 'sec-' + sec.id;
         b.innerHTML += `<tr class="spacer-row" data-cat="${secId}"><td colspan="14"></td></tr>`;
         b.innerHTML += `<tr onclick="toggleRows('${secId}', this)" class="group-header"><td class="sticky-col"><span class="toggle-icon">▼</span>${sec.title}</td><td colspan="13"></td></tr>`;
+        
         sec.rows.forEach(r => b.innerHTML += renderRow({ ...r, type: 'in', cat: secId }));
         b.innerHTML += renderRow({ id: sec.id + '_det', label: "TOTAL " + sec.title, type: 'sub', cat: secId });
     });
-    refreshData();
+
+    // Pehli baar data load karna
+    refreshData(); 
 }
 
 function renderRow(r) {
@@ -425,16 +485,14 @@ function calc() {
         let atpG = parseFloat(document.getElementById(`atp_g_${i}`).value) || 0;
         let sphG = parseFloat(document.getElementById(`sph_g_${i}`).value) || 0;
 
-        // Calc Capacity and Occupancy
+        // Capacity and Nets
         let cap = seats * 5 * 30;
         document.getElementById(`cap_${i}`).value = cap;
         document.getElementById(`occ_${i}`).value = (cap > 0 ? (ff/cap)*100 : 0).toFixed(0);
-
-        // Calc Nets
         document.getElementById(`atp_n_${i}`).value = ((atpG / 1.18) - 25).toFixed(2);
         document.getElementById(`sph_n_${i}`).value = (sphG / 1.05).toFixed(2);
 
-        // Calc Incomes
+        // Revenue Calculations
         let gCafe = (ff * sphG) / 100000;
         let gTkt = (ff * atpG) / 100000;
         let nCafe = (ff * (sphG / 1.05)) / 100000;
@@ -447,130 +505,126 @@ function calc() {
         document.getElementById(`rev_t_n_${i}`).value = nTkt.toFixed(2);
         document.getElementById(`service_${i}`).value = nServ.toFixed(2);
 
-        // Sum Other Revenue Detail Section
+        // Revenue From Others
         let otherSum = 0;
         const revOtherRows = detailedSections.find(s => s.id === 'rev_other').rows;
         revOtherRows.forEach(r => otherSum += parseFloat(document.getElementById(`${r.id}_${i}`).value) || 0);
         document.getElementById(`rev_other_det_${i}`).value = otherSum.toFixed(2);
         document.getElementById(`sum_rev_other_${i}`).value = otherSum.toFixed(2);
 
-        // Totals
+        // TOTALS
         let totalG = gCafe + gTkt + otherSum;
         let totalN = nCafe + nTkt + nServ + otherSum;
         document.getElementById(`total_g_${i}`).value = totalG.toFixed(2);
         document.getElementById(`total_n_${i}`).value = totalN.toFixed(2);
 
-        // Calculate All Expense Sections
+        // EXPENSES
         let grandExp = 0;
         detailedSections.forEach(sec => {
-            if(sec.id === 'rev_other') return; // Skip revenue section in expense calc
+            if(sec.id === 'rev_other') return; 
             let sum = sec.rows.reduce((acc, r) => acc + (parseFloat(document.getElementById(`${r.id}_${i}`).value) || 0), 0);
             document.getElementById(`${sec.id}_det_${i}`).value = sum.toFixed(2);
-            
-            // Map detailed section sum to the summary row
-            let summaryRowId = 'sum_' + sec.id;
-            if(sec.id === 'var_exp') summaryRowId = 'sum_var_exp';
-            const sumEl = document.getElementById(`${summaryRowId}_${i}`);
-            if(sumEl) sumEl.value = sum.toFixed(2);
-            
+            let summaryRowId = (sec.id === 'var_exp') ? 'sum_var_exp' : 'sum_' + sec.id;
+            if(document.getElementById(`${summaryRowId}_${i}`)) {
+                document.getElementById(`${summaryRowId}_${i}`).value = sum.toFixed(2);
+            }
             grandExp += sum;
         });
 
         document.getElementById(`total_exp_${i}`).value = grandExp.toFixed(2);
-        document.getElementById(`ebitda_${i}`).value = (totalN - grandExp).toFixed(2); // EBITDA usually based on Net
+        // FORMULA: EBITDA = TOTAL GROSS - TOTAL EXPENSE
+        document.getElementById(`ebitda_${i}`).value = (totalG - grandExp).toFixed(2);
     }
+    updateYearTotals();
+}
 
-    // FY TOTAL Calculations (Horizontal Sum)
-    const allInputIds = [
-        ...revenueRows, 
-        ...mainSummaryRows, 
-        ...detailedSections.flatMap(s=>s.rows), 
-        ...detailedSections.map(s=>({id:s.id+'_det'}))
-    ].map(r=>r.id);
-
+function updateYearTotals() {
+    const allInputIds = [...revenueRows, ...mainSummaryRows, ...detailedSections.flatMap(s=>s.rows), ...detailedSections.map(s=>({id:s.id+'_det'}))].map(r=>r.id);
     allInputIds.forEach(id => {
         let sum = 0; 
         for(let i=0; i<12; i++) sum += parseFloat(document.getElementById(`${id}_${i}`).value) || 0;
         let el = document.getElementById(`${id}_12`);
-        if(el) {
-            const isAvg = ['occ','atp_n','sph_n','atp_g','sph_g'].includes(id);
-            el.value = isAvg ? (sum/12).toFixed(2) : sum.toFixed(2);
-        }
+        if(el) el.value = ['occ','atp_n','sph_n','atp_g','sph_g'].includes(id) ? (sum/12).toFixed(2) : sum.toFixed(2);
     });
 }
 
 async function updateGlobalEbitda() {
-    let t25 = 0, t26 = 0;
+    let totals = { "2025": 0, "2026": 0 };
     const currentScen = document.getElementById('scen').value;
-    const snapshot = await db.ref('reports').once('value');
-    const allData = snapshot.val() || {};
+    const snap = await db.ref('reports').once('value');
+    const allData = snap.val() || {};
 
-    Object.keys(allData).forEach(locKey => {
+    Object.keys(allData).forEach(loc => {
         [2025, 2026].forEach(year => {
-            const data = allData[locKey]?.[currentScen]?.[year];
-            if (data) {
-                let locYearTotal = 0;
+            const d = allData[loc]?.[currentScen]?.[year];
+            if (d) {
                 for (let i = 0; i < 12; i++) {
-                    // 1. Calculate Core Revenue (Tickets + Cafe)
-                    const ff = parseFloat(data.ff?.[i] || 0);
-                    const atp = parseFloat(data.atp_g?.[i] || 0);
-                    const sph = parseFloat(data.sph_g?.[i] || 0);
-                    const coreRevNet = (ff * (((atp/1.18)-25) + (sph/1.05) + 25)) / 100000;
-
-                    // 2. Sum "Revenue From Others"
-                    let otherRev = 0;
-                    const otherRevKeys = ['rev_3d', 'rev_park', 'rev_mgmt', 'rev_adv'];
-                    otherRevKeys.forEach(k => otherRev += parseFloat(data[k]?.[i] || 0));
-
-                    // 3. Sum ALL Expenses (including Variable Expenses)
-                    let totalExp = 0;
-                    detailedSections.forEach(s => {
-                        if(s.id === 'rev_other') return; // Skip revenue section
-                        s.rows.forEach(r => totalExp += parseFloat(data[r.id]?.[i] || 0));
-                    });
-
-                    locYearTotal += ((coreRevNet + otherRev) - totalExp);
+                    const ff = parseFloat(d.ff?.[i] || 0);
+                    const grossRev = (ff * (parseFloat(d.atp_g?.[i] || 0) + parseFloat(d.sph_g?.[i] || 0))) / 100000;
+                    let other = 0;
+                    ['rev_oth','rev_3d','rev_park','rev_mgmt','rev_adv'].forEach(k => other += parseFloat(d[k]?.[i] || 0));
+                    let exp = 0;
+                    detailedSections.forEach(s => { if(s.id !== 'rev_other') s.rows.forEach(r => exp += parseFloat(d[r.id]?.[i] || 0)); });
+                    totals[year] += (grossRev + other - exp);
                 }
-                if (year === 2025) t25 += locYearTotal; else t26 += locYearTotal;
             }
         });
     });
 
-    document.getElementById('total-2025').innerText = `₹ ${t25.toFixed(2)} L`;
-    document.getElementById('total-2026').innerText = `₹ ${t26.toFixed(2)} L`;
-    document.getElementById('global-total').innerText = `₹ ${(t25 + t26).toFixed(2)} L`;
+    document.getElementById('total-2025').innerText = `₹ ${totals["2025"].toFixed(2)} L`;
+    document.getElementById('total-2026').innerText = `₹ ${totals["2026"].toFixed(2)} L`;
+    document.getElementById('global-total').innerText = `₹ ${(totals["2025"] + totals["2026"]).toFixed(2)} L`;
 }
 
 async function refreshData() {
     const p = document.getElementById('prop').value;
-    const s = document.getElementById('scen').value;
+    const scenSelect = document.getElementById('scen');
     const fy = document.getElementById('fySelect').value;
-    
-    const currentSnap = await db.ref(`reports/${p}/${s}/${fy}`).once('value');
-    const pessiSnap = await db.ref(`reports/${p}/pessimistic/${fy}`).once('value');
-    
-    const currentData = currentSnap.val() || {};
-    const pessiData = pessiSnap.val() || {};
 
-    const allInputRows = [
-        ...revenueRows.filter(r => r.type === 'in'),
-        ...detailedSections.flatMap(sec => sec.rows)
-    ];
+    // RULE 1: Main Dashboard - FY 2025-26 mein sirf 'Actual'
+    if (fy === "2025") {
+        scenSelect.value = "actual";
+        Array.from(scenSelect.options).forEach(opt => {
+            opt.style.display = (opt.value === "actual") ? "block" : "none";
+        });
+    } else {
+        Array.from(scenSelect.options).forEach(opt => opt.style.display = "block");
+    }
 
-    allInputRows.forEach(row => {
-        for(let i = 0; i < 12; i++) {
-            const el = document.getElementById(`${row.id}_${i}`);
-            if (s === 'actual' || s === 'pessimistic') {
-                el.value = (currentData[row.id]) ? currentData[row.id][i] : 0;
+    // RULE 2: Advanced Comparison (Sidebar) Visibility Rules
+    const applySidebarRules = (dropdown, yearId) => {
+        const yr = document.getElementById(yearId).value;
+        Array.from(dropdown.options).forEach(opt => {
+            if (yr === "2025") {
+                opt.style.display = (opt.value === "actual") ? "block" : "none";
             } else {
-                let base = (pessiData[row.id]) ? parseFloat(pessiData[row.id][i]) : 0;
-                let mult = (s === 'realistic') ? 1.08 : 1.12;
-                el.value = (base * mult).toFixed(2);
+                opt.style.display = (opt.value === "actual" || opt.value === "pessimistic") ? "block" : "none";
             }
+        });
+        if (dropdown.options[dropdown.selectedIndex].style.display === "none") dropdown.value = "actual";
+    };
+
+    applySidebarRules(document.getElementById('compScen1'), 'compYear1');
+    applySidebarRules(document.getElementById('compScen2'), 'compYear2');
+
+    // --- Data Load & Sync ---
+    const s = scenSelect.value;
+    const snapshot = await db.ref(`reports/${p}/${s}/${fy}`).once('value');
+    const data = snapshot.val() || {};
+
+    document.querySelectorAll('input').forEach(inp => inp.value = 0);
+    Object.keys(data).forEach(key => {
+        if (Array.isArray(data[key])) {
+            data[key].forEach((val, i) => {
+                const el = document.getElementById(`${key}_${i}`);
+                if (el) el.value = val;
+            });
         }
     });
-    calc(); 
+
+    calc();
     updateGlobalEbitda();
+    updateLocationBreakdown();
 }
 
 async function saveToCloud() {
@@ -603,50 +657,101 @@ async function saveToCloud() {
 async function runComparison() {
     const p = document.getElementById('prop').value;
     
-    const getFullEbitda = async (scen, y, m) => {
-        const snap = await db.ref(`reports/${p}/${scen}/${y}`).once('value');
-        const d = snap.val() || {};
+    // Helper function to fetch and calculate EBITDA based on Gross Revenue formula
+    const getComparisonEbitda = async (scen, yr, mIdx) => {
+        const snapshot = await db.ref(`reports/${p}/${scen}/${yr}`).once('value');
+        const d = snapshot.val() || {};
         
-        // Net Revenue from Core
-        const ff = parseFloat(d.ff?.[m] || 0);
-        const atp = parseFloat(d.atp_g?.[m] || 0);
-        const sph = parseFloat(d.sph_g?.[m] || 0);
-        const coreRevNet = (ff * (((atp/1.18)-25) + (sph/1.05) + 25)) / 100000;
+        // 1. Total Gross Revenue (Core + Others)
+        const ff = parseFloat(d.ff?.[mIdx] || 0);
+        const atpG = parseFloat(d.atp_g?.[mIdx] || 0);
+        const sphG = parseFloat(d.sph_g?.[mIdx] || 0);
+        const grossCore = (ff * (atpG + sphG)) / 100000;
 
-        // Other Revenue
         let otherRev = 0;
-        ['rev_3d', 'rev_park', 'rev_mgmt', 'rev_adv'].forEach(k => otherRev += parseFloat(d[k]?.[m] || 0));
+        const otherKeys = ['rev_oth', 'rev_3d', 'rev_park', 'rev_mgmt', 'rev_adv'];
+        otherKeys.forEach(k => otherRev += parseFloat(d[k]?.[mIdx] || 0));
 
-        // Total Expenses
+        const totalGrossRevenue = grossCore + otherRev;
+
+        // 2. Total Expenses
         let totalExp = 0;
         detailedSections.forEach(s => {
-            if(s.id === 'rev_other') return;
-            s.rows.forEach(r => totalExp += parseFloat(d[r.id]?.[m] || 0));
+            if(s.id !== 'rev_other') {
+                s.rows.forEach(r => totalExp += parseFloat(d[r.id]?.[mIdx] || 0));
+            }
         });
 
-        return (coreRevNet + otherRev) - totalExp;
+        return totalGrossRevenue - totalExp;
     };
 
-    const eb1 = await getFullEbitda(document.getElementById('compScen1').value, document.getElementById('compYear1').value, document.getElementById('compMonth1').value);
-    const eb2 = await getFullEbitda(document.getElementById('compScen2').value, document.getElementById('compYear2').value, document.getElementById('compMonth2').value);
-    const diff = eb2 - eb1;
-
+    // Donon periods ka data fetch karein
+    const eb1 = await getComparisonEbitda(
+        document.getElementById('compScen1').value, 
+        document.getElementById('compYear1').value, 
+        document.getElementById('compMonth1').value
+    );
+    const eb2 = await getComparisonEbitda(
+        document.getElementById('compScen2').value, 
+        document.getElementById('compYear2').value, 
+        document.getElementById('compMonth2').value
+    );
+    
+    const diff = eb1 - eb2;
     const color = diff >= 0 ? '#92d050' : '#f19eb5';
 
+    // UI Update
     document.getElementById('compResult').innerHTML = `
-        <div style="display:flex;justify-content:space-between"><span>Base EBITDA:</span><span>${eb1.toFixed(2)} L</span></div>
-        <div style="display:flex;justify-content:space-between"><span>Comp EBITDA:</span><span>${eb2.toFixed(2)} L</span></div>
+        <div style="display:flex;justify-content:space-between"><span>Base EBITDA:</span><span>₹ ${eb1.toFixed(2)} L</span></div>
+        <div style="display:flex;justify-content:space-between"><span>Comp EBITDA:</span><span>₹ ${eb2.toFixed(2)} L</span></div>
         <hr style="opacity:0.1;margin:8px 0">
         <div style="display:flex;justify-content:space-between;font-weight:800;color:${color}">
-            <span>Variance:</span><span>${diff.toFixed(2)} L</span>
+            <span>Variance:</span><span>₹ ${diff.toFixed(2)} L</span>
         </div>
     `;
+}
+
+async function updateLocationBreakdown() {
+    const year = document.getElementById('breakdownYear').value;
+    const monthIdx = parseInt(document.getElementById('breakdownMonth').value);
+    const locations = ['surat', 'ghaziabad', 'muzaffarnagar', 'adipur', 'hyderabad'];
+    let monthlySumTotal = 0;
+
+    const snapshot = await db.ref('reports').once('value');
+    const allData = snapshot.val() || {};
+
+    locations.forEach(loc => {
+        const data = allData[loc]?.['actual']?.[year];
+        let locEbitda = 0;
+
+        if (data) {
+            const ff = parseFloat(data.ff?.[monthIdx] || 0);
+            const atpG = parseFloat(data.atp_g?.[monthIdx] || 0);
+            const sphG = parseFloat(data.sph_g?.[monthIdx] || 0);
+            
+            let otherRev = 0;
+            ['rev_oth', 'rev_3d', 'rev_park', 'rev_mgmt', 'rev_adv'].forEach(k => otherRev += parseFloat(data[k]?.[monthIdx] || 0));
+
+            let totalExp = 0;
+            detailedSections.forEach(s => {
+                if(s.id !== 'rev_other') s.rows.forEach(r => totalExp += parseFloat(data[r.id]?.[monthIdx] || 0));
+            });
+
+            // EBITDA = (FF * (ATP_G + SPH_G) / 1L) + Others - Expenses
+            locEbitda = ((ff * (atpG + sphG)) / 100000 + otherRev) - totalExp;
+        }
+
+        const el = document.getElementById(`brk-${loc}`);
+        if(el) {
+            el.innerText = `₹ ${locEbitda.toFixed(2)} L`;
+            el.style.color = locEbitda >= 0 ? "#92d050" : "#f19eb5";
+        }
+        monthlySumTotal += locEbitda;
+    });
+    document.getElementById('brk-total').innerText = `₹ ${monthlySumTotal.toFixed(2)} L`;
 }
 
 window.onload = init;
 </script>
 </body>
 </html>
-
-
-
