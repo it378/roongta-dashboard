@@ -135,9 +135,12 @@
     </div>
 </div>
         <div class="brand-header">
-            <h1>Roongta Cinemas</h1>
-            <p>Master Financial Intelligence (Cloud Enabled)</p>
-        </div>
+    <h1>Roongta Cinemas</h1>
+    <p>Master Financial Intelligence (Cloud Enabled)</p>
+    <button onclick="goToHO()" style="margin-top: 10px; background: #475569; color: white; border: none; padding: 6px 15px; border-radius: 20px; cursor: pointer; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;">
+        🔐 HO Admin Access
+    </button>
+</div>
 
         <div class="header-flex">
             <div class="controls">
@@ -770,16 +773,17 @@ async function updateLocationBreakdown() {
     });
     document.getElementById('brk-total').innerText = `₹ ${monthlySumTotal.toFixed(2)} L`;
 }
-
-window.onload = init;
+// Function to handle secure HO Dashboard access
 function goToHO() {
     const pass = prompt("Enter HO Admin Password:");
     if (pass === "roongtaHO") {
+        // This looks for the separate file you created in GitHub
         window.location.href = 'ho_dashboard.html';
-    } else {
-        alert("Access Denied!");
+    } else if (pass !== null) {
+        alert("Unauthorized Access!");
     }
 }
+window.onload = init;
 </script>
 </body>
 </html>
