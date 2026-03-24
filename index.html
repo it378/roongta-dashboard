@@ -141,7 +141,7 @@
 
         <div class="header-flex">
             <div class="controls">
-                <div class="control-item">
+                <div class="">
                     <label>Fiscal Year</label>
                     <select id="fySelect" onchange="refreshData()">
                         <option value="2025" selected>FY 2025-26</option>
@@ -158,16 +158,20 @@
                         <option value="hyderabad" data-seats="291">Hyderabad</option>
                     </select>
                 </div>
-                <div class="control-item">
-                    <label>Projection Logic</label>
-                    <select id="scen" onchange="refreshData()">
-                        <option value="actual">Actual (Monthly Data)</option>
-                        <option value="pessimistic" selected>Pessimistic (Base Target)</option>
-                        <option value="realistic">Realistic (+8% of Target)</option>
-                        <option value="optimistic">Optimistic (+12% of Target)</option>
-                    </select>
-                </div>
-            </div>
+                <div class="control-item" style="display: flex; flex-direction: column; position: relative;">
+    <label>PROJECTION LOGIC</label>
+    <div style="display: flex; gap: 10px;">
+        <select id="scen" onchange="refreshData()" style="flex: 1;">
+            <option value="actual">Actual (Monthly Data)</option>
+            <option value="pessimistic" selected>Pessimistic</option>
+            <option value="realistic">Realistic</option>
+            <option value="optimistic">Optimistic</option>
+        </select>
+        <button onclick="goToHO()" style="background:#2563eb; color:white; border:none; padding:0 15px; border-radius:8px; cursor:pointer; font-weight:600; white-space:nowrap;">
+            HO Dashboard
+        </button>
+    </div>
+</div>
             <div class="btn-group">
                 <button class="btn btn-save" onclick="saveToCloud()">Push to Cloud</button>
                 <button class="btn btn-export" onclick="exportFullFile()">Export HTML</button>
@@ -772,6 +776,14 @@ async function updateLocationBreakdown() {
 }
 
 window.onload = init;
+function goToHO() {
+    const pass = prompt("Enter HO Admin Password:");
+    if (pass === "roongtaHO") {
+        window.location.href = 'ho_dashboard.html';
+    } else {
+        alert("Access Denied!");
+    }
+}
 </script>
 </body>
 </html>
