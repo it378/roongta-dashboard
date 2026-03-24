@@ -159,19 +159,19 @@
                     </select>
                 </div>
                 <div class="control-item">
-    <label>PROJECTION LOGIC</label>
-    <div style="display: flex; gap: 8px;">
-        <select id="scen" onchange="refreshData()" style="flex: 1;">
-            <option value="actual">Actual (Monthly Data)</option>
-            <option value="pessimistic" selected>Pessimistic</option>
-            <option value="realistic">Realistic</option>
-            <option value="optimistic">Optimistic</option>
-        </select>
-        <button onclick="goToHO()" style="background: var(--blue-accent); color: white; border: none; padding: 0 10px; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 10px; white-space: nowrap;">
-            HO
-        </button>
-    </div>
-</div>
+                    <label>Projection Logic</label>
+                    <div style="display: flex; gap: 8px;">
+                    <select id="scen" onchange="refreshData()">
+                        <option value="actual">Actual (Monthly Data)</option>
+                        <option value="pessimistic" selected>Pessimistic (Base Target)</option>
+                        <option value="realistic">Realistic (+8% of Target)</option>
+                        <option value="optimistic">Optimistic (+12% of Target)</option>
+                    </select>
+                    <button onclick="goToHO()" style="background: var(--blue-accent); color: white; border: none; padding: 0 10px; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 10px; white-space: nowrap;">
+                        HO
+                    </button>
+                </div>
+            </div>
             <div class="btn-group">
                 <button class="btn btn-save" onclick="saveToCloud()">Push to Cloud</button>
                 <button class="btn btn-export" onclick="exportFullFile()">Export HTML</button>
