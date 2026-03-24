@@ -102,48 +102,46 @@
     }
 
     async function refreshHOData() {
-        const fy = document.getElementById('fySelect').value;
-        const scen = document.getElementById('scen').value;
-        const locations = ['surat', 'ghaziabad', 'muzaffarnagar', 'adipur', 'hyderabad'];
+    const fy = document.getElementById('fySelect').value;
+    const scen = document.getElementById('scen').value;
+    // Ensure all your location keys match your Firebase exactly
+    const locations = ['surat', 'ghaziabad', 'muzaffarnagar', 'adipur', 'hyderabad'];
 
-        // 1. CLEAR & FETCH EXISTING HO DATA
-        document.querySelectorAll('input').forEach(i => i.value = 0);
-        const hoSnap = await db.ref(`reports/HO/${scen}/${fy}`).once('value');
-        const hoSaved = hoSnap.val() || {};
-        Object.keys(hoSaved).forEach(k => {
-            if(Array.isArray(hoSaved[k])) hoSaved[k].forEach((v, i) => {
-                const el = document.getElementById(`${k}_${i}`);
-                if(el) el.value = v;
-            });
+    const snapshot = await db.ref('reports').once('value');
+    const allData = snapshot.val() || {};
+
+    for (let i = 0; i < 12; i++) {
+        let monthlyTotal = 0;
+
+        locations.forEach(loc => {
+            const d = allData[loc]?.[scen]?.[fy];
+            if (d) {
+                // Calculation: (FF * (ATP_G + SPH_G) / 100,000) + Others - Expenses
+                const ff = parseFloat(d.ff?.[i] || 0);
+                const grossCore = (ff * (parseFloat(d.atp_g?.[i] || 0) + parseFloat(d.sph_g?.[i] || 0))) / 100000;
+                
+                let others = 0;
+                ['rev_oth','rev_3d','rev_park','rev_mgmt','rev_adv'].forEach(k => others += parseFloat(d[k]?.[i] || 0));
+
+                let exp = 0;
+                // Summing all expenses from the cinema's month
+                Object.keys(d).forEach(key => {
+                    if(!['ff','atp_g','sph_g','atp_n','sph_n','rev_oth','rev_3d','rev_park','rev_mgmt','rev_adv'].includes(key) && Array.isArray(d[key])) {
+                        exp += parseFloat(d[key][i] || 0);
+                    }
+                });
+                monthlyTotal += (grossCore + others - exp);
+            }
         });
-
-        // 2. AGGREGATE CINEMA EBITDA
-        const allSnap = await db.ref('reports').once('value');
-        const all = allSnap.val() || {};
         
-        for (let i = 0; i < 12; i++) {
-            let totalCin = 0;
-            locations.forEach(loc => {
-                const d = all[loc]?.[scen]?.[fy];
-                if(d) {
-                    const ff = parseFloat(d.ff?.[i] || 0);
-                    const gross = (ff * (parseFloat(d.atp_g?.[i] || 0) + parseFloat(d.sph_g?.[i] || 0))) / 100000;
-                    let o = 0; ['rev_oth','rev_3d','rev_park','rev_mgmt','rev_adv'].forEach(k=>o+=parseFloat(d[k]?.[i]||0));
-                    let e = 0; 
-                    // Sum all expenses from the cinema file
-                    Object.keys(d).forEach(key => {
-                        if(!['ff','atp_g','sph_g','rev_oth','rev_3d','rev_park','rev_mgmt','rev_adv','atp_n','sph_n','cap','occ'].includes(key) && Array.isArray(d[key])) {
-                            e += parseFloat(d[key][i] || 0);
-                        }
-                    });
-                    totalCin += (gross + o - e);
-                }
-            });
-            document.getElementById(`cinema_ebitda_${i}`).value = totalCin.toFixed(2);
-            document.getElementById(`cinema_ebitda_${i}`).readOnly = true;
+        const el = document.getElementById(`cinema_ebitda_${i}`);
+        if(el) {
+            el.value = monthlyTotal.toFixed(2);
+            el.style.color = monthlyTotal >= 0 ? "green" : "red";
         }
-        calcHO();
     }
+    calcHO(); // Recalculate HO Final EBITDA after pulling cinema data
+}
 
     function calcHO() {
         for (let i = 0; i < 13; i++) {
