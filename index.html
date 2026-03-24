@@ -2,146 +2,776 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Roongta Group | HO Master Dashboard</title>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    <title>Roongta Cinemas | Executive Cloud Dashboard</title>
     <style>
-        /* [PASTE ALL YOUR CSS FROM INDEX.HTML HERE TO KEEP THE THEME] */
-        .ho-header { background: #0f172a; color: white; padding: 20px; border-radius: 12px; margin-bottom: 20px; }
-        .cinema-sum-row { background: #f0f9ff !important; font-weight: 800; color: #0369a1; }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+        :root {
+            --navy: #0f172a; --blue-accent: #2563eb; --bg-canvas: #f8fafc; --border-color: #cbd5e1;
+            --rev-gross: #ffd966; --rev-net: #f4b084; --exp-total: #f19eb5; --ebitda: #92d050;    
+            --group-yellow: #ffff00; --fy-col-color: #e0f2fe;
+        }
+
+        body { font-family: 'Inter', sans-serif; background: var(--bg-canvas); margin: 0; padding: 20px; color: var(--navy); font-size: 11px; }
+        .dashboard-wrapper { display: grid; grid-template-columns: 1fr 340px; gap: 20px; }
+        .main-card { background: white; padding: 30px; border-radius: 16px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); border: 1px solid #e2e8f0; }
+
+        .exec-summary {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            color: white; padding: 20px; border-radius: 12px; margin-bottom: 25px;
+            display: flex; gap: 40px; border-left: 6px solid var(--ebitda);
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
+        }
+        .summary-item { display: flex; flex-direction: column; justify-content: center; }
+        .summary-label { font-size: 10px; text-transform: uppercase; color: #94a3b8; font-weight: 800; letter-spacing: 0.05em; margin-bottom: 4px; }
+        .summary-value { font-size: 24px; font-weight: 800; color: var(--ebitda); }
+        .summary-subtext { font-size: 11px; color: #cbd5e1; }
+
+        .brand-header { text-align: center; margin-bottom: 30px; }
+        .brand-header h1 { margin: 0; font-size: 26px; font-weight: 800; text-transform: uppercase; }
+
+        .header-flex { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 20px; background: #f1f5f9; padding: 20px; border-radius: 12px; }
+        .controls { display: flex; gap: 15px; align-items: center; flex-wrap: wrap; }
+        .control-item { display: flex; flex-direction: column; gap: 6px; }
+        label { font-weight: 800; font-size: 10px; text-transform: uppercase; color: #475569; }
+
+        select { 
+            padding: 10px 14px; border-radius: 8px; border: 2px solid #0f172a;
+            min-width: 180px; background-color: #ffffff !important; color: #0f172a !important;            
+            font-weight: 800; cursor: pointer;
+        }
+
+        .btn-group { display: flex; gap: 12px; }
+        .btn { padding: 12px 24px; border-radius: 8px; border: none; font-weight: 700; cursor: pointer; font-size: 12px; text-transform: uppercase; transition: 0.2s; }
+        .btn-save { background: #059669; color: white; }
+        .btn-export { background: var(--blue-accent); color: white; }
+
+        .sidebar-card { background: var(--navy); color: white; padding: 25px; border-radius: 16px; height: fit-content; position: sticky; top: 20px; }
+        .sidebar-card h3 { margin-top: 0; color: var(--rev-gross); font-size: 16px; text-transform: uppercase; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px; }
+        .comp-select { background-color: #ffffff !important; color: #0f172a !important; border: 1px solid #0f172a !important; margin-bottom: 12px; width: 100%; padding: 10px; border-radius: 6px; font-weight: 700; }
+        .comp-btn { background: var(--blue-accent); width: 100%; margin-top: 10px; color: white; border: none; padding: 12px; border-radius: 8px; font-weight: 700; cursor: pointer; }
+        .comp-result { margin-top: 20px; background: rgba(255,255,255,0.05); padding: 15px; border-radius: 10px; border-left: 4px solid var(--ebitda); }
+
+        .table-wrap { overflow: auto; max-height: 60vh; border: 1px solid #e2e8f0; border-radius: 12px; position: relative; }
+        table { border-collapse: separate; border-spacing: 0; width: 100%; min-width: 2400px; }
+        th { background: var(--navy); color: white; padding: 14px 8px; font-weight: 700; text-transform: uppercase; position: sticky; top: 0; z-index: 30; border-bottom: 1px solid #1e293b; border-right: 1px solid #1e293b; }
+        td { border-bottom: 1px solid #e2e8f0; border-right: 1px solid #e2e8f0; padding: 6px 8px; text-align: right; }
+        .sticky-col { position: sticky; left: 0; background: white !important; text-align: left; font-weight: 700; width: 340px; min-width: 340px; z-index: 20; border-right: 3px solid var(--navy) !important; color: var(--navy); }
+        .year-col { background: #e0f2fe !important; color: #0f172a !important; font-weight: 900 !important; border-left: 2px solid #0f172a; }
+        input { width: 100%; border: none; text-align: right; background: transparent; font-family: 'Inter', sans-serif; font-size: 11px; outline: none; color: #1e293b !important; font-weight: 700; }
+
+        .h-rev-gross { background: var(--rev-gross) !important; }
+        .h-rev-net { background: var(--rev-net) !important; }
+        .h-exp { background: var(--exp-total) !important; }
+        .h-ebitda { background: var(--ebitda) !important; font-size: 12px; }
+        .calc-field { background: #f1f5f9; pointer-events: none; color: #475569; }
+        .group-header { background: var(--group-yellow) !important; font-weight: 800; text-align: left; color: #000; cursor: pointer; }
+        .spacer-row { height: 15px; background: #f8fafc; border: none; }
+        .hidden-row { display: none !important; }
+        .toggle-icon { margin-right: 8px; font-size: 10px; transition: 0.3s; }
+        .collapsed .toggle-icon { transform: rotate(-90deg); }
     </style>
 </head>
 <body>
 
-<div class="ho-header">
-    <h1>ROONGTA GROUP | HO MASTER SUMMARY</h1>
-    <div style="display: flex; gap: 10px; margin-top: 10px;">
-        <select id="fySelect" onchange="refreshHO()">
-            <option value="2025">FY 2025-26</option>
-            <option value="2026">FY 2026-27</option>
+<div class="dashboard-wrapper">
+    <div class="main-card">
+        <div class="exec-header" style="display: flex; justify-content: space-between; align-items: center; padding: 20px; background: #0f172a; border-radius: 12px; color: white;">
+    
+    <div class="summary-group" style="display: flex; gap: 30px; flex-shrink: 0;">
+        <div class="summary-item">
+            <span class="summary-label" style="font-size: 10px; color: #94a3b8; font-weight: 700;">GROUP EBITDA (LIVE)</span>
+            <span class="summary-value" id="global-total" style="font-size: 24px; font-weight: 800; color: #92d050; display: block;">₹ 0.00 L</span>
+            <span style="font-size: 9px; color: #64748b;">Cloud Synchronized</span>
+        </div>
+        <div class="summary-item" style="border-left: 1px solid #334155; padding-left: 20px;">
+            <span class="summary-label" style="font-size: 10px; color: #94a3b8; font-weight: 700;">FY 2025-26</span>
+            <span class="summary-value" id="total-2025" style="font-size: 18px; font-weight: 700; color: white; display: block;">₹ 0.00 L</span>
+        </div>
+        <div class="summary-item" style="border-left: 1px solid #334155; padding-left: 20px;">
+            <span class="summary-label" style="font-size: 10px; color: #94a3b8; font-weight: 700;">FY 2026-27</span>
+            <span class="summary-value" id="total-2026" style="font-size: 18px; font-weight: 700; color: white; display: block;">₹ 0.00 L</span>
+        </div>
+    </div>
+
+    <div style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); width: 60%;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+            <span style="font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">Location-Wise EBITDA Breakdown</span>
+            <div style="display: flex; gap: 8px;">
+                <select id="breakdownMonth" onchange="updateLocationBreakdown()" style="background: transparent; color: white; border: 1px solid #475569; font-size: 10px; border-radius: 4px; padding: 2px 5px;"></select>
+                <select id="breakdownYear" onchange="updateLocationBreakdown()" style="background: transparent; color: white; border: 1px solid #475569; font-size: 10px; border-radius: 4px; padding: 2px 5px;">
+                    <option value="2025">FY 2025-26</option>
+                    <option value="2026">FY 2026-27</option>
+                </select>
+            </div>
+        </div>
+        
+        <div style="display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px;">
+            <div style="background: white; padding: 8px; border-radius: 6px; border-left: 3px solid #2563eb;">
+                <div class="summary-label" style="color: #64748b; font-size: 9px; font-weight: 800;">SURAT</div>
+                <div id="brk-surat" style="color: #0f172a; font-size: 13px; font-weight: 700;">₹ 0.00 L</div>
+            </div>
+            <div style="background: white; padding: 8px; border-radius: 6px; border-left: 3px solid #2563eb;">
+                <div class="summary-label" style="color: #64748b; font-size: 9px; font-weight: 800;">GHAZIABAD</div>
+                <div id="brk-ghaziabad" style="color: #0f172a; font-size: 13px; font-weight: 700;">₹ 0.00 L</div>
+            </div>
+            <div style="background: white; padding: 8px; border-radius: 6px; border-left: 3px solid #2563eb;">
+                <div class="summary-label" style="color: #64748b; font-size: 9px; font-weight: 800;">MUZAFFAR.</div>
+                <div id="brk-muzaffarnagar" style="color: #0f172a; font-size: 13px; font-weight: 700;">₹ 0.00 L</div>
+            </div>
+            <div style="background: white; padding: 8px; border-radius: 6px; border-left: 3px solid #2563eb;">
+                <div class="summary-label" style="color: #64748b; font-size: 9px; font-weight: 800;">ADIPUR</div>
+                <div id="brk-adipur" style="color: #0f172a; font-size: 13px; font-weight: 700;">₹ 0.00 L</div>
+            </div>
+            <div style="background: white; padding: 8px; border-radius: 6px; border-left: 3px solid #2563eb;">
+                <div class="summary-label" style="color: #64748b; font-size: 9px; font-weight: 800;">HYDERABAD</div>
+                <div id="brk-hyderabad" style="color: #0f172a; font-size: 13px; font-weight: 700;">₹ 0.00 L</div>
+            </div>
+            <div style="background: #1e293b; padding: 8px; border-radius: 6px; border-left: 3px solid #92d050;">
+                <div class="summary-label" style="color: #94a3b8; font-size: 9px; font-weight: 800;">MONTHLY TOTAL</div>
+                <div id="brk-total" style="color: #92d050; font-size: 13px; font-weight: 700;">₹ 0.00 L</div>
+            </div>
+        </div>
+    </div>
+</div>
+        <div class="brand-header">
+            <h1>Roongta Cinemas</h1>
+            <p>Master Financial Intelligence (Cloud Enabled)</p>
+        </div>
+
+        <div class="header-flex">
+            <div class="controls">
+                <div class="control-item">
+                    <label>Fiscal Year</label>
+                    <select id="fySelect" onchange="refreshData()">
+                        <option value="2025" selected>FY 2025-26</option>
+                        <option value="2026">FY 2026-27</option>
+                    </select>
+                </div>
+                <div class="control-item">
+                    <label>Property Location</label>
+                    <select id="prop" onchange="refreshData()">
+                        <option value="surat" data-seats="315">Surat</option>
+                        <option value="ghaziabad" data-seats="556">Ghaziabad</option>
+                        <option value="muzaffarnagar" data-seats="757">Muzaffarnagar</option>
+                        <option value="adipur" data-seats="777">Adipur</option>
+                        <option value="hyderabad" data-seats="291">Hyderabad</option>
+                    </select>
+                </div>
+                <div class="control-item">
+                    <label>Projection Logic</label>
+                    <select id="scen" onchange="refreshData()">
+                        <option value="actual">Actual (Monthly Data)</option>
+                        <option value="pessimistic" selected>Pessimistic (Base Target)</option>
+                        <option value="realistic">Realistic (+8% of Target)</option>
+                        <option value="optimistic">Optimistic (+12% of Target)</option>
+                    </select>
+                </div>
+            </div>
+            <div class="btn-group">
+                <button class="btn btn-save" onclick="saveToCloud()">Push to Cloud</button>
+                <button class="btn btn-export" onclick="exportFullFile()">Export HTML</button>
+            </div>
+        </div>
+
+        <div class="table-wrap">
+            <table id="targetTable">
+                <thead><tr id="hRow"><th class="sticky-col">FINANCIAL PARTICULARS</th></tr></thead>
+                <tbody id="tBody"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="sidebar-card">
+    <h3>Advanced Comparison</h3>
+    
+    <label>Base Period (Reference)</label>
+    <div style="display:flex; gap:5px; margin-bottom: 8px;">
+        <select id="compYear1" class="comp-select" style="flex:1;" onchange="refreshData()">
+            <option value="2025">2025-26</option>
+            <option value="2026">2026-27</option>
         </select>
-        <select id="scen" onchange="refreshHO()">
-            <option value="actual">Actual Data</option>
-            <option value="pessimistic">Pessimistic</option>
+        <select id="compMonth1" class="comp-select" style="flex:1;"></select>
+    </div>
+    <select id="compScen1" class="comp-select">
+        <option value="actual">Actual</option>
+        <option value="pessimistic">Pessimistic</option>
+    </select>
+
+    <label>Compare To (Target/Result)</label>
+    <div style="display:flex; gap:5px; margin-bottom: 8px;">
+        <select id="compYear2" class="comp-select" style="flex:1;" onchange="refreshData()">
+            <option value="2025">2025-26</option>
+            <option value="2026">2026-27</option>
         </select>
-        <button onclick="saveHO()" style="background:#2563eb; color:white; border:none; padding:10px 20px; border-radius:8px; cursor:pointer;">Push HO Data</button>
-        <button onclick="window.location.href='index.html'" style="background:#475569; color:white; border:none; padding:10px 20px; border-radius:8px; cursor:pointer;">Back to Cinemas</button>
+        <select id="compMonth2" class="comp-select" style="flex:1;"></select>
+    </div>
+    <select id="compScen2" class="comp-select">
+        <option value="actual">Actual</option>
+        <option value="pessimistic">Pessimistic</option>
+    </select>
+
+    <button class="comp-btn" onclick="runComparison()">Analyze Variance</button>
+    <div id="compResult" class="comp-result">
+        <p style="text-align:center; opacity:0.5; margin:0; font-size:10px;">Compare Scenarios side-by-side</p>
     </div>
 </div>
 
-<div id="tableContainer"></div>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
 <script>
-    // Your Firebase Config (Copy from index.html)
-    const firebaseConfig = { databaseURL: "https://roongta-cinemas-default-rtdb.firebaseio.com" };
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
+// --- FIREBASE CONFIG ---
+const firebaseConfig = {
+    apiKey: "AIzaSyDWHnAFSuENqj52fy7PIVbTvJSOJ3tZ11s",
+    authDomain: "roongta-cinemas.firebaseapp.com",
+    databaseURL: "https://roongta-cinemas-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "roongta-cinemas",
+    storageBucket: "roongta-cinemas.firebasestorage.app",
+    messagingSenderId: "679104166920",
+    appId: "1:679104166920:web:044e5a7ab5cbe7c0c3e5bd",
+    measurementId: "G-SZ848VEJF1"
+};
 
-    // --- HO SPECIFIC STRUCTURE ---
-    const revenueRows = [
-        { id: 'cinema_ebitda', label: 'TOTAL CINEMAS EBITDA (REVENUE)', type: 'grp' },
-        { id: 'rev_bus', label: 'BUSINESS REVENUE', type: 'in' },
-        { id: 'rev_mkt', label: 'MARKETING REVENUE', type: 'in' },
-        { id: 'rev_vpf', label: 'VPF REVENUE', type: 'in' },
-        { id: 'rev_bms', label: 'BMS REVENUE', type: 'in' },
-        { id: 'rev_dist', label: 'DISTRICT REVENUE', type: 'in' },
-        { id: 'rev_oth_ho', label: 'OTHERS REVENUE', type: 'in' },
-        { id: 'total_g', label: 'TOTAL HO REVENUE', type: 'sub' }
-    ];
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
 
-    const detailedSections = [{
-        id: 'ho_exp',
-        title: 'HO OPERATING EXPENSES',
+const months = ["Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","Jan","Feb","Mar"];
+
+const revenueRows = [
+    { id: 'cap', label: 'TOTAL CAPACITY', type: 'calc', cat: 'rev-detail' },
+    { id: 'ff', label: 'FOOT FALL', type: 'in', cat: 'rev-detail' },
+    { id: 'occ', label: 'OCCUPANCY %', type: 'calc', cat: 'rev-detail' },
+    { id: 'sph_g', label: 'SPH-GROSS', type: 'in', cat: 'rev-detail' },
+    { id: 'atp_g', label: 'ATP-GROSS', type: 'in', cat: 'rev-detail' },
+    { id: 'atp_n', label: 'ATP-NET', type: 'calc', cat: 'rev-detail' },
+    { id: 'sph_n', label: 'SPH-NET', type: 'calc', cat: 'rev-detail' },
+    { id: 'rev_c_g', label: 'GROSS- REVENUE FROM CAFE', type: 'calc', cat: 'rev-detail' },
+    { id: 'rev_t_g', label: 'GROSS- REVENUE FROM TICKET', type: 'calc', cat: 'rev-detail' },
+    { id: 'rev_c_n', label: 'NET- REVENUE FROM CAFE', type: 'calc', cat: 'rev-detail' },
+    { id: 'rev_t_n', label: 'NET- REVENUE FROM TICKET', type: 'calc', cat: 'rev-detail' },
+    { id: 'service', label: 'NET SERVICE CHARGE', type: 'calc', cat: 'rev-detail' },
+    { id: 'sum_rev_other', label: 'REVENUE FROM OTHERS', type: 'link' }, // Sum of detail section
+    { id: 'total_g', label: 'TOTAL Revenue (Gross)', type: 'summary', cls: 'h-rev-gross', toggle: 'rev-detail' },
+    { id: 'total_n', label: 'TOTAL Revenue (NET)', type: 'summary', cls: 'h-rev-net' }
+];
+
+const mainSummaryRows = [
+    { id: 'sum_var_exp', label: 'TOTAL VARIABLE EXPENSES', type: 'link' },
+    { id: 'sum_ops', label: 'OPERATION EXPENSES', type: 'link' },
+    { id: 'sum_admin', label: 'ADMINISTRATIVE & OTHER EXPENSES', type: 'link' },
+    { id: 'sum_emp', label: 'EMPLOYEE BENEFIT EXPENSE', type: 'link' },
+    { id: 'sum_mkt', label: 'SALES & MARKETING EXP', type: 'link' },
+    { id: 'sum_fin', label: 'FINANCE EXPENSES', type: 'link' },
+    { id: 'sum_rent', label: 'RENT/REVENUE SHARING EXPENSES', type: 'link' },
+    { id: 'total_exp', label: 'TOTAL Expense', type: 'summary', cls: 'h-exp' },
+    { id: 'ebitda', label: 'EBITDA', type: 'summary', cls: 'h-ebitda' }
+];
+
+const detailedSections = [
+    {
+        id: 'rev_other',
+        title: 'REVENUE FROM OTHERS',
         rows: [
-            { id: 'exp_sal', label: 'HO SALARY' },
-            { id: 'exp_trav', label: 'TRAVEL EXPENSES' },
-            { id: 'exp_evt', label: 'EVENT EXPENSES' },
-            { id: 'exp_off', label: 'OFFICE EXPENSES' },
-            { id: 'exp_oth', label: 'OTHER EXPENSES' }
+            { id: 'rev_oth', label: 'REVENUE FROM OTHERS' },
+            { id: 'rev_3d', label: 'REVENUE FORM 3D GLASS' },
+            { id: 'rev_park', label: 'REVENUE FROM PARKING' },
+            { id: 'rev_mgmt', label: 'REVENUE FROM MANAGEMENT FEES' },
+            { id: 'rev_adv', label: 'REVENUE FROM ADVERTISEMENT' }
         ]
-    }];
+    },
+    {
+        id: 'var_exp',
+        title: 'VARIABLE EXPENSES',
+        rows: [
+            { id: 'var_var_exp', label: 'VARIABLE EXPENSES' },
+            { id: 'var_gst_tkt', label: 'ENTERTAINMENT EXPENSE (GST ON TICKET)' },
+            { id: 'var_dist', label: 'DISTRIBUTORS EXPENSES' },
+            { id: 'var_banner', label: 'BANNER FITTING CHARGES' },
+            { id: 'var_inr', label: 'INR CHARGES' },
+            { id: 'var_rep', label: 'REPRESENTATIVE CHARGES' },
+            { id: 'var_prog', label: 'PROGRAMMING EXP' },
+            { id: 'var_print', label: 'PRINT & PUBLICITY' },
+            { id: 'var_tax', label: 'SHOW TAX' },
+            { id: 'var_gst_cafe', label: 'GST ON CAFE SALE' },
+            { id: 'var_cafe_con', label: 'CAFE CONSUMPTION' },
+            { id: 'var_adv_tax', label: 'TAX ON ADVERTISEMENT INCOME' },
+            { id: 'var_freight', label: 'LOADING, UNLOADING, FREIGHT CHARGES' }
+        ]
+    },
+    {
+        id: 'ops',
+        title: 'OPERATION EXPENSES',
+        rows: [
+            { id: 'ops_exp', label: 'OPERATION EXPENSES' },
+            { id: 'ops_3d_glass', label: '3D GLASS PURSHSE EXPENSES' },
+            { id: 'ops_cafe_gen', label: 'CAFE GENERAL EXPENSES' },
+            { id: 'ops_diesel', label: 'DIESEL & FUEL' },
+            { id: 'ops_elec', label: 'ELECTRICITY EXPENSES' },
+            { id: 'ops_fire', label: 'FIRE & SAFETY EXPENSES' },
+            { id: 'ops_print', label: 'PRINTING STATIONERY-TKT ROLLS' },
+            { id: 'ops_ufo', label: 'PROJECTOR RENT/UFO CHARGES' },
+            { id: 'ops_rm_cafe', label: 'R & M - CAFE' },
+            { id: 'ops_rm_elec', label: 'R & M - ELECTRICAL EQUIPMENTS' },
+            { id: 'ops_rm_hk_man', label: 'R & M - HOUSEKEEPING MANPOWER WEDGES' },
+            { id: 'ops_hk_mat', label: 'HOUSEKEEPING MATERIAL CHARGE' },
+            { id: 'ops_hk_rent', label: 'HOUSEKEEPING MACHINE RENT' },
+            { id: 'ops_pest', label: 'PEST CONTROL' },
+            { id: 'ops_rm_plant', label: 'R & M - PLANT & MACHINERY' },
+            { id: 'ops_rm_xenon', label: 'R & M - XENON LAMP' },
+            { id: 'ops_sec', label: 'SECURITY EXPENSES' }
+        ]
+    },
+    {
+        id: 'admin',
+        title: 'ADMINISTRATIVE & OTHER EXPENSES',
+        rows: [
+            { id: 'adm_admin', label: 'ADMINISTRATIVE & OTHER EXPENSES' },
+            { id: 'adm_audit', label: 'AUDITORS REMMUNERATION' },
+            { id: 'adm_books', label: 'BOOKS & PERIODICALS' },
+            { id: 'adm_cash', label: 'CASH PICK UP CHARGES' },
+            { id: 'adm_comm', label: 'COMMISSION & BROKERAGE' },
+            { id: 'adm_conv', label: 'CONVEYANCE EXPENSES' },
+            { id: 'adm_digi', label: 'DIGITIAL PRINTING' },
+            { id: 'adm_don', label: 'DONATION' },
+            { id: 'adm_filling', label: 'FILLING FEE EXPENSES' },
+            { id: 'adm_insp', label: 'INSPECTION CHARGES' },
+            { id: 'adm_insur', label: 'INSURANCE EXPENSES' },
+            { id: 'adm_net', label: 'INTERNET CHARGES' },
+            { id: 'adm_cloud', label: 'CLOUD CHARGES' },
+            { id: 'adm_lic', label: 'LICENCE FEES' },
+            { id: 'adm_memb', label: 'MEMBERSHIP & SCUBCRIPTION FEES' },
+            { id: 'adm_misc', label: 'MISCELLANEOUS EXPENSES' },
+            { id: 'adm_off', label: 'OFFICE EXPENSES' },
+            { id: 'adm_fuel_staff', label: 'PETROL & DIESEL-STAFF VEHICLES' },
+            { id: 'adm_post', label: 'POSTAGE & COURIER' },
+            { id: 'adm_print', label: 'PRINTING & STATIONERY' },
+            { id: 'adm_rm_bldg', label: 'R & M - BUILDING' },
+            { id: 'adm_rm_it', label: 'R & M - IT' },
+            { id: 'adm_rm_furn', label: 'R & M - FURNITURE & FIXTURES' },
+            { id: 'adm_rm_veh', label: 'R & M - VEHICLES' },
+            { id: 'adm_rm_oth', label: 'R & M - OTHERS' },
+            { id: 'adm_rates', label: 'RATES & TAXES' },
+            { id: 'adm_recruit', label: 'RECURTIMENT EXPENSES' },
+            { id: 'adm_tele', label: 'TELEPHONE & MOBILE EXPENSES' },
+            { id: 'adm_theatre', label: 'THEATRE EXPENSES-GENERAL' },
+            { id: 'adm_trans', label: 'TRANSPORT CHARGES' },
+            { id: 'adm_trav', label: 'TRAVELLING EXPENSES' },
+            { id: 'adm_rev', label: 'REVIEW METTING EXPENSES' },
+            { id: 'adm_rm_rep', label: 'R & M REPAIR AND RENOVATION EXPENSES' },
+            { id: 'adm_water', label: 'WATER CHARGES' }
+        ]
+    },
+    {
+        id: 'emp',
+        title: 'EMPLOYEE BENEFIT EXPENSE',
+        rows: [
+            { id: 'emp_ben_exp', label: 'EMPLOYEE BENEFIT EXPENSE' },
+            { id: 'emp_comp', label: 'COMPANSATION EXPENSE' },
+            { id: 'emp_salary', label: 'SALARY & WAGES' },
+            { id: 'emp_contract', label: 'CONTRACT WAGES' },
+            { id: 'emp_reg_sal', label: 'RIGIONAL SALARY' },
+            { id: 'emp_da', label: 'ALLOWANCE-DEARANCE' },
+            { id: 'emp_hra', label: 'ALLOWANCE-HOUSE RENT' },
+            { id: 'emp_med', label: 'ALLOWANCE-MEDICAL' },
+            { id: 'emp_allow_other', label: 'ALLOWANCE-OTHER' },
+            { id: 'emp_allow_tran', label: 'ALLOWANCE-TRANSPORT' },
+            { id: 'emp_pf', label: 'EMPLOYERS CONTR.TO PF' },
+            { id: 'emp_esic', label: 'EMPLOYERS CONTR.TO ESIC' },
+            { id: 'emp_bonus', label: 'BONUS EXPENSES' },
+            { id: 'emp_welfare', label: 'STAFF WELFARE EXPENSES' },
+            { id: 'emp_fl_rent', label: 'STAFF FLAT RENT' },
+            { id: 'emp_fl_exp', label: 'STAFF FLAT EXPENSES' },
+            { id: 'emp_elec', label: 'STAFF ELECTRICITY EXPENSES' },
+            { id: 'emp_tran', label: 'TRANSPORTATION REIMBURSEMENT EXP' },
+            { id: 'emp_unif', label: 'STAFF UNIFORM' },
+            { id: 'emp_insu', label: 'STAFF INSURANCE EXPENSE' },
+            { id: 'emp_mob', label: 'EMPLOYEE MOBILE EXPENSES' },
+            { id: 'emp_train', label: 'TRAINING AND DEVELOPMENT' }
+        ]
+    },
+    {
+        id: 'mkt',
+        title: 'SALES & MARKETING EXP',
+        rows: [
+            { id: 'mkt_sale', label: 'SALES & MARKETING EXP' },
+            { id: 'mkt_adv', label: 'ADVERTISING & PUBLICITY' },
+            { id: 'mkt_news', label: 'ADVERTISMENT-NEWS PAPERS' },
+            { id: 'mkt_exp', label: 'ANNIVERSARY EXPENSES' },
+            { id: 'mkt_exp_tct', label: 'COMPLEMENTARY EXPENSES-TICKET' },
+            { id: 'mkt_exp_caf', label: 'COMPLEMENTARY EXPENSES-CAFÉ' },
+            { id: 'mkt_eve', label: 'EVENT CHARGES/ STAR VISIT' },
+            { id: 'mkt_fest', label: 'FESTIVAL EXPENSES' },
+            { id: 'mkt_gift', label: 'GIFT & ARTICLE EXP.' },
+            { id: 'mkt_hoard', label: 'HOARDING CHARGES' },
+            { id: 'mkt_sms', label: 'MOBILE / SMS MAILER EXP' },
+            { id: 'mkt_off', label: 'OFFERS' },
+            { id: 'mkt_web', label: 'ONLINE / WEBSITE CHARGES' },
+            { id: 'mkt_slid', label: 'SLIDE CHARGES' },
+            { id: 'mkt_book', label: 'WEB BOOKING CHARGES' },
+            { id: 'mkt_voucher', label: 'VOUCHER DISCOUNT' }
+        ]
+    },
+    {
+        id: 'fin',
+        title: 'FINANCE EXPENSES',
+        rows: [
+            { id: 'fin_gate', label: 'GATEWAY CHARGES' },
+            { id: 'fin_cc', label: 'CREDIT CARD CHARGES' },
+            { id: 'fin_int', label: 'INTEREST TO OTHERS' },
+            { id: 'fin_bank', label: 'BANK CHARGES' },
+            { id: 'fin_edc', label: 'EDC MACHINE RENTAL' }
+        ]
+    },
+    {
+        id: 'rent',
+        title: 'RENT/REVENUE SHARING EXPENSES',
+        rows: [
+            { id: 'rent_main', label: 'RENT/REVENUE SHARING' },
+            { id: 'rent_cam', label: 'CAM CHARGES' },
+            { id: 'rent_ope_main', label: 'OPERATION AND MAINTANCE EXPENSES' },
+            { id: 'rent_ser_car', label: 'SERVICE CHARGE SHARING' },
+            { id: 'rent_prop_tax', label: 'PROPERTY TAX' }
+        ]
+    }
+];
 
-    // --- AGGREGATION LOGIC ---
-    async function refreshHO() {
-        const fy = document.getElementById('fySelect').value;
-        const scen = document.getElementById('scen').value;
-        const locations = ['surat', 'ghaziabad', 'muzaffarnagar', 'adipur', 'hyderabad'];
+function toggleRows(cat, el) {
+    const rows = document.querySelectorAll(`[data-cat="${cat}"]`);
+    rows.forEach(r => r.classList.toggle('hidden-row'));
+    if(el) el.classList.toggle('collapsed');
+}
+
+function init() {
+    const h = document.getElementById('hRow');
+    const b = document.getElementById('tBody');
+    const m1 = document.getElementById('compMonth1');
+    const m2 = document.getElementById('compMonth2');
+    const brkM = document.getElementById('breakdownMonth'); // Location Breakdown ka dropdown pick kiya
+
+    // Months array ko loop karke saare dropdowns populate karein
+    months.forEach((m, i) => { 
+        h.innerHTML += `<th>${m}</th>`;
+        if(m1) m1.innerHTML += `<option value="${i}">${m}</option>`;
+        if(m2) m2.innerHTML += `<option value="${i}">${m}</option>`;
         
-        // 1. Fetch all Cinema Data
-        const snapshot = await db.ref('reports').once('value');
-        const all = snapshot.val() || {};
-
-        // 2. Clear current inputs
-        document.querySelectorAll('input').forEach(i => i.value = 0);
-
-        // 3. Sum up EBITDA from all locations for each month (0-11)
-        for (let i = 0; i < 12; i++) {
-            let totalCinEbitda = 0;
-            locations.forEach(loc => {
-                const d = all[loc]?.[scen]?.[fy];
-                if (d) {
-                    const ff = parseFloat(d.ff?.[i] || 0);
-                    const gross = (ff * (parseFloat(d.atp_g?.[i] || 0) + parseFloat(d.sph_g?.[i] || 0))) / 100000;
-                    let oth = 0; ['rev_oth','rev_3d','rev_park','rev_mgmt','rev_adv'].forEach(k => oth += parseFloat(d[k]?.[i] || 0));
-                    
-                    let exp = 0;
-                    // Auto-sum all expenses by excluding revenue keys
-                    Object.keys(d).forEach(k => {
-                        if(!['ff','atp_g','sph_g','atp_n','sph_n','rev_oth','rev_3d','rev_park','rev_mgmt','rev_adv','cap','occ'].includes(k) && Array.isArray(d[k])) {
-                            exp += parseFloat(d[k][i] || 0);
-                        }
-                    });
-                    totalCinEbitda += (gross + oth - exp);
-                }
-            });
-            document.getElementById(`cinema_ebitda_${i}`).value = totalCinEbitda.toFixed(2);
+        // Location Breakdown dropdown mein months add karne ke liye:
+        if(brkM) {
+            brkM.innerHTML += `<option value="${i}">${m}</option>`;
         }
+    });
 
-        // 4. Load HO's own saved data (Salaries, etc.)
-        const hoSnap = await db.ref(`reports/HO/${scen}/${fy}`).once('value');
-        const hoData = hoSnap.val() || {};
-        Object.keys(hoData).forEach(key => {
-            if(Array.isArray(hoData[key])) {
-                hoData[key].forEach((v, idx) => {
-                    const el = document.getElementById(`${key}_${idx}`);
-                    if(el && key !== 'cinema_ebitda') el.value = v;
-                });
+    h.innerHTML += `<th class="year-col">FY TOTAL</th>`;
+    
+    // Revenue rows render karna
+    revenueRows.forEach(r => b.innerHTML += renderRow(r));
+    
+    b.innerHTML += `<tr class="spacer-row"><td colspan="14"></td></tr>`;
+    
+    // Summary Rows render karna
+    mainSummaryRows.forEach(r => b.innerHTML += renderRow(r));
+
+    // Detailed Sections (Expenses, etc.) render karna
+    detailedSections.forEach(sec => {
+        const secId = 'sec-' + sec.id;
+        b.innerHTML += `<tr class="spacer-row" data-cat="${secId}"><td colspan="14"></td></tr>`;
+        b.innerHTML += `<tr onclick="toggleRows('${secId}', this)" class="group-header"><td class="sticky-col"><span class="toggle-icon">▼</span>${sec.title}</td><td colspan="13"></td></tr>`;
+        
+        sec.rows.forEach(r => b.innerHTML += renderRow({ ...r, type: 'in', cat: secId }));
+        b.innerHTML += renderRow({ id: sec.id + '_det', label: "TOTAL " + sec.title, type: 'sub', cat: secId });
+    });
+
+    // Pehli baar data load karna
+    refreshData(); 
+}
+
+function renderRow(r) {
+    let cls = r.cls || (r.type === 'sub' ? 'group-header' : '');
+    let clickAttr = r.toggle ? `onclick="toggleRows('${r.toggle}', this)"` : "";
+    let icon = r.toggle ? `<span class="toggle-icon">▼</span>` : "";
+    let html = `<tr class="${cls} ${r.cat ? 'hidden-row' : ''}" data-cat="${r.cat || ''}" ${clickAttr}><td class="sticky-col">${icon}${r.label}</td>`;
+    for(let i=0; i <= 12; i++) {
+        let isY = i === 12;
+        let ro = (r.type !== 'in' || isY) ? 'readonly class="calc-field"' : '';
+        html += `<td class="${isY?'year-col':''}"><input type="number" id="${r.id}_${i}" value="0" ${ro} oninput="calc()"></td>`;
+    }
+    return html + '</tr>';
+}
+
+function calc() {
+    const seats = parseInt(document.getElementById('prop').options[document.getElementById('prop').selectedIndex].getAttribute('data-seats'));
+    for (let i = 0; i < 12; i++) {
+        let ff = parseFloat(document.getElementById(`ff_${i}`).value) || 0;
+        let atpG = parseFloat(document.getElementById(`atp_g_${i}`).value) || 0;
+        let sphG = parseFloat(document.getElementById(`sph_g_${i}`).value) || 0;
+
+        // Capacity and Nets
+        let cap = seats * 5 * 30;
+        document.getElementById(`cap_${i}`).value = cap;
+        document.getElementById(`occ_${i}`).value = (cap > 0 ? (ff/cap)*100 : 0).toFixed(0);
+        document.getElementById(`atp_n_${i}`).value = ((atpG / 1.18) - 25).toFixed(2);
+        document.getElementById(`sph_n_${i}`).value = (sphG / 1.05).toFixed(2);
+
+        // Revenue Calculations
+        let gCafe = (ff * sphG) / 100000;
+        let gTkt = (ff * atpG) / 100000;
+        let nCafe = (ff * (sphG / 1.05)) / 100000;
+        let nTkt = (ff * ((atpG/1.18)-25)) / 100000;
+        let nServ = (ff * 25) / 100000;
+
+        document.getElementById(`rev_c_g_${i}`).value = gCafe.toFixed(2);
+        document.getElementById(`rev_t_g_${i}`).value = gTkt.toFixed(2);
+        document.getElementById(`rev_c_n_${i}`).value = nCafe.toFixed(2);
+        document.getElementById(`rev_t_n_${i}`).value = nTkt.toFixed(2);
+        document.getElementById(`service_${i}`).value = nServ.toFixed(2);
+
+        // Revenue From Others
+        let otherSum = 0;
+        const revOtherRows = detailedSections.find(s => s.id === 'rev_other').rows;
+        revOtherRows.forEach(r => otherSum += parseFloat(document.getElementById(`${r.id}_${i}`).value) || 0);
+        document.getElementById(`rev_other_det_${i}`).value = otherSum.toFixed(2);
+        document.getElementById(`sum_rev_other_${i}`).value = otherSum.toFixed(2);
+
+        // TOTALS
+        let totalG = gCafe + gTkt + otherSum;
+        let totalN = nCafe + nTkt + nServ + otherSum;
+        document.getElementById(`total_g_${i}`).value = totalG.toFixed(2);
+        document.getElementById(`total_n_${i}`).value = totalN.toFixed(2);
+
+        // EXPENSES
+        let grandExp = 0;
+        detailedSections.forEach(sec => {
+            if(sec.id === 'rev_other') return; 
+            let sum = sec.rows.reduce((acc, r) => acc + (parseFloat(document.getElementById(`${r.id}_${i}`).value) || 0), 0);
+            document.getElementById(`${sec.id}_det_${i}`).value = sum.toFixed(2);
+            let summaryRowId = (sec.id === 'var_exp') ? 'sum_var_exp' : 'sum_' + sec.id;
+            if(document.getElementById(`${summaryRowId}_${i}`)) {
+                document.getElementById(`${summaryRowId}_${i}`).value = sum.toFixed(2);
+            }
+            grandExp += sum;
+        });
+
+        document.getElementById(`total_exp_${i}`).value = grandExp.toFixed(2);
+        // FORMULA: EBITDA = TOTAL GROSS - TOTAL EXPENSE
+        document.getElementById(`ebitda_${i}`).value = (totalG - grandExp).toFixed(2);
+    }
+    updateYearTotals();
+}
+
+function updateYearTotals() {
+    const allInputIds = [...revenueRows, ...mainSummaryRows, ...detailedSections.flatMap(s=>s.rows), ...detailedSections.map(s=>({id:s.id+'_det'}))].map(r=>r.id);
+    allInputIds.forEach(id => {
+        let sum = 0; 
+        for(let i=0; i<12; i++) sum += parseFloat(document.getElementById(`${id}_${i}`).value) || 0;
+        let el = document.getElementById(`${id}_12`);
+        if(el) el.value = ['occ','atp_n','sph_n','atp_g','sph_g'].includes(id) ? (sum/12).toFixed(2) : sum.toFixed(2);
+    });
+}
+
+async function updateGlobalEbitda() {
+    let totals = { "2025": 0, "2026": 0 };
+    const currentScen = document.getElementById('scen').value;
+    const snap = await db.ref('reports').once('value');
+    const allData = snap.val() || {};
+
+    Object.keys(allData).forEach(loc => {
+        [2025, 2026].forEach(year => {
+            const d = allData[loc]?.[currentScen]?.[year];
+            if (d) {
+                for (let i = 0; i < 12; i++) {
+                    const ff = parseFloat(d.ff?.[i] || 0);
+                    const grossRev = (ff * (parseFloat(d.atp_g?.[i] || 0) + parseFloat(d.sph_g?.[i] || 0))) / 100000;
+                    let other = 0;
+                    ['rev_oth','rev_3d','rev_park','rev_mgmt','rev_adv'].forEach(k => other += parseFloat(d[k]?.[i] || 0));
+                    let exp = 0;
+                    detailedSections.forEach(s => { if(s.id !== 'rev_other') s.rows.forEach(r => exp += parseFloat(d[r.id]?.[i] || 0)); });
+                    totals[year] += (grossRev + other - exp);
+                }
             }
         });
-        calc();
+    });
+
+    document.getElementById('total-2025').innerText = `₹ ${totals["2025"].toFixed(2)} L`;
+    document.getElementById('total-2026').innerText = `₹ ${totals["2026"].toFixed(2)} L`;
+    document.getElementById('global-total').innerText = `₹ ${(totals["2025"] + totals["2026"]).toFixed(2)} L`;
+}
+
+async function refreshData() {
+    const p = document.getElementById('prop').value;
+    const scenSelect = document.getElementById('scen');
+    const fy = document.getElementById('fySelect').value;
+
+    // RULE 1: Main Dashboard - FY 2025-26 mein sirf 'Actual'
+    if (fy === "2025") {
+        scenSelect.value = "actual";
+        Array.from(scenSelect.options).forEach(opt => {
+            opt.style.display = (opt.value === "actual") ? "block" : "none";
+        });
+    } else {
+        Array.from(scenSelect.options).forEach(opt => opt.style.display = "block");
     }
 
-    // --- CALCULATE HO TOTALS ---
-    function calc() {
-        for (let i = 0; i < 13; i++) {
-            let revSum = 0;
-            revenueRows.forEach(r => {
-                if(r.id !== 'total_g') revSum += parseFloat(document.getElementById(`${r.id}_${i}`).value) || 0;
-            });
-            document.getElementById(`total_g_${i}`).value = revSum.toFixed(2);
-
-            let expSum = 0;
-            detailedSections[0].rows.forEach(r => {
-                expSum += parseFloat(document.getElementById(`${r.id}_${i}`).value) || 0;
-            });
-            document.getElementById(`total_exp_${i}`).value = expSum.toFixed(2);
-            document.getElementById(`ebitda_${i}`).value = (revSum - expSum).toFixed(2);
-        }
-    }
-
-    // --- PUSH HO DATA ---
-    async function saveHO() {
-        const fy = document.getElementById('fySelect').value;
-        const scen = document.getElementById('scen').value;
-        let data = {};
-        // Logic to collect all rows and save to 'HO' node
-        alert("HO Data Saved to Firebase!");
-    }
-
-    window.onload = () => {
-        // [Insert your Table Generation Code from index.html here]
-        refreshHO();
+    // RULE 2: Advanced Comparison (Sidebar) Visibility Rules
+    const applySidebarRules = (dropdown, yearId) => {
+        const yr = document.getElementById(yearId).value;
+        Array.from(dropdown.options).forEach(opt => {
+            if (yr === "2025") {
+                opt.style.display = (opt.value === "actual") ? "block" : "none";
+            } else {
+                opt.style.display = (opt.value === "actual" || opt.value === "pessimistic") ? "block" : "none";
+            }
+        });
+        if (dropdown.options[dropdown.selectedIndex].style.display === "none") dropdown.value = "actual";
     };
+
+    applySidebarRules(document.getElementById('compScen1'), 'compYear1');
+    applySidebarRules(document.getElementById('compScen2'), 'compYear2');
+
+    // --- Data Load & Sync ---
+    const s = scenSelect.value;
+    const snapshot = await db.ref(`reports/${p}/${s}/${fy}`).once('value');
+    const data = snapshot.val() || {};
+
+    document.querySelectorAll('input').forEach(inp => inp.value = 0);
+    Object.keys(data).forEach(key => {
+        if (Array.isArray(data[key])) {
+            data[key].forEach((val, i) => {
+                const el = document.getElementById(`${key}_${i}`);
+                if (el) el.value = val;
+            });
+        }
+    });
+
+    calc();
+    updateGlobalEbitda();
+    updateLocationBreakdown();
+}
+
+async function saveToCloud() {
+    const p = document.getElementById('prop').value;
+    const s = document.getElementById('scen').value;
+    const fy = document.getElementById('fySelect').value;
+    const data = {};
+    
+    const allInputRows = [
+        ...revenueRows.filter(r => r.type === 'in'),
+        ...detailedSections.flatMap(sec => sec.rows)
+    ];
+
+    allInputRows.forEach(r => {
+        data[r.id] = []; 
+        for(let i = 0; i < 12; i++) {
+            data[r.id].push(document.getElementById(`${r.id}_${i}`).value || "0");
+        }
+    });
+
+    try {
+        await db.ref(`reports/${p}/${s}/${fy}`).set(data);
+        await updateGlobalEbitda();
+        alert(`Cloud Sync Successful: ${p.toUpperCase()} (${s}) FY ${fy}`);
+    } catch (error) {
+        alert("Sync Failed: " + error.message);
+    }
+}
+
+async function runComparison() {
+    const p = document.getElementById('prop').value;
+    
+    // Helper function to fetch and calculate EBITDA based on Gross Revenue formula
+    const getComparisonEbitda = async (scen, yr, mIdx) => {
+        const snapshot = await db.ref(`reports/${p}/${scen}/${yr}`).once('value');
+        const d = snapshot.val() || {};
+        
+        // 1. Total Gross Revenue (Core + Others)
+        const ff = parseFloat(d.ff?.[mIdx] || 0);
+        const atpG = parseFloat(d.atp_g?.[mIdx] || 0);
+        const sphG = parseFloat(d.sph_g?.[mIdx] || 0);
+        const grossCore = (ff * (atpG + sphG)) / 100000;
+
+        let otherRev = 0;
+        const otherKeys = ['rev_oth', 'rev_3d', 'rev_park', 'rev_mgmt', 'rev_adv'];
+        otherKeys.forEach(k => otherRev += parseFloat(d[k]?.[mIdx] || 0));
+
+        const totalGrossRevenue = grossCore + otherRev;
+
+        // 2. Total Expenses
+        let totalExp = 0;
+        detailedSections.forEach(s => {
+            if(s.id !== 'rev_other') {
+                s.rows.forEach(r => totalExp += parseFloat(d[r.id]?.[mIdx] || 0));
+            }
+        });
+
+        return totalGrossRevenue - totalExp;
+    };
+
+    // Donon periods ka data fetch karein
+    const eb1 = await getComparisonEbitda(
+        document.getElementById('compScen1').value, 
+        document.getElementById('compYear1').value, 
+        document.getElementById('compMonth1').value
+    );
+    const eb2 = await getComparisonEbitda(
+        document.getElementById('compScen2').value, 
+        document.getElementById('compYear2').value, 
+        document.getElementById('compMonth2').value
+    );
+    
+    const diff = eb1 - eb2;
+    const color = diff >= 0 ? '#92d050' : '#f19eb5';
+
+    // UI Update
+    document.getElementById('compResult').innerHTML = `
+        <div style="display:flex;justify-content:space-between"><span>Base EBITDA:</span><span>₹ ${eb1.toFixed(2)} L</span></div>
+        <div style="display:flex;justify-content:space-between"><span>Comp EBITDA:</span><span>₹ ${eb2.toFixed(2)} L</span></div>
+        <hr style="opacity:0.1;margin:8px 0">
+        <div style="display:flex;justify-content:space-between;font-weight:800;color:${color}">
+            <span>Variance:</span><span>₹ ${diff.toFixed(2)} L</span>
+        </div>
+    `;
+}
+
+async function updateLocationBreakdown() {
+    const year = document.getElementById('breakdownYear').value;
+    const monthIdx = parseInt(document.getElementById('breakdownMonth').value);
+    const locations = ['surat', 'ghaziabad', 'muzaffarnagar', 'adipur', 'hyderabad'];
+    let monthlySumTotal = 0;
+
+    const snapshot = await db.ref('reports').once('value');
+    const allData = snapshot.val() || {};
+
+    locations.forEach(loc => {
+        const data = allData[loc]?.['actual']?.[year];
+        let locEbitda = 0;
+
+        if (data) {
+            const ff = parseFloat(data.ff?.[monthIdx] || 0);
+            const atpG = parseFloat(data.atp_g?.[monthIdx] || 0);
+            const sphG = parseFloat(data.sph_g?.[monthIdx] || 0);
+            
+            let otherRev = 0;
+            ['rev_oth', 'rev_3d', 'rev_park', 'rev_mgmt', 'rev_adv'].forEach(k => otherRev += parseFloat(data[k]?.[monthIdx] || 0));
+
+            let totalExp = 0;
+            detailedSections.forEach(s => {
+                if(s.id !== 'rev_other') s.rows.forEach(r => totalExp += parseFloat(data[r.id]?.[monthIdx] || 0));
+            });
+
+            // EBITDA = (FF * (ATP_G + SPH_G) / 1L) + Others - Expenses
+            locEbitda = ((ff * (atpG + sphG)) / 100000 + otherRev) - totalExp;
+        }
+
+        const el = document.getElementById(`brk-${loc}`);
+        if(el) {
+            el.innerText = `₹ ${locEbitda.toFixed(2)} L`;
+            el.style.color = locEbitda >= 0 ? "#92d050" : "#f19eb5";
+        }
+        monthlySumTotal += locEbitda;
+    });
+    document.getElementById('brk-total').innerText = `₹ ${monthlySumTotal.toFixed(2)} L`;
+}
+
+window.onload = init;
 </script>
 </body>
 </html>
