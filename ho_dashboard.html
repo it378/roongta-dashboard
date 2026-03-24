@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Roongta Group | HO Master Dashboard</title>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap');
+        :root {
+            --navy: #0f172a; --blue: #2563eb; --bg: #f8fafc;
+            --rev-ho: #ffd966; --exp-ho: #f19eb5; --ebitda-ho: #92d050;
+        }
+        body { font-family: 'Inter', sans-serif; background: var(--bg); margin: 0; padding: 20px; font-size: 11px; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; background: var(--navy); color: white; padding: 15px 25px; border-radius: 12px; }
+        .main-table { width: 100%; border-collapse: collapse; background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
+        th { background: #f1f5f9; padding: 10px; border: 1px solid #cbd5e1; text-transform: uppercase; }
+        td { border: 1px solid #cbd5e1; padding: 0; }
+        input { width: 100%; border: none; padding: 8px 4px; text-align: center; font-family: inherit; font-size: 11px; outline: none; background: transparent; }
+        input:focus { background: #f0f7ff; }
+        .label-cell { padding-left: 15px; font-weight: 600; text-align: left; background: #f8fafc; width: 220px; }
+        .row-total-rev { background: var(--rev-ho) !important; font-weight: 800; }
+        .row-total-exp { background: var(--exp-ho) !important; font-weight: 800; }
+        .row-ebitda { background: var(--ebitda-ho) !important; font-weight: 900; color: #000; }
+        .btn-push { background: var(--blue); color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: 600; }
+        .cinema-ebitda-row { background: #e0f2fe; font-weight: 700; }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <div>
+        <h1 style="margin:0; font-size:18px;">ROONGTA GROUP | HO MASTER SUMMARY</h1>
+        <p style="margin:0; opacity:0.8;">Aggregated Profit & Loss for Head Office</p>
+    </div>
+    <div style="display:flex; gap:15px;">
+        <select id="fySelect" style="padding:8px; border-radius:5px;" onchange="refreshHOData()">
+            <option value="2025">FY 2025-26</option>
+            <option value="2026">FY 2026-27</option>
+        </select>
+        <select id="scen" style="padding:8px; border-radius:5px;" onchange="refreshHOData()">
+            <option value="actual">Actual Data</option>
+            <option value="pessimistic">Pessimistic Projection</option>
+        </select>
+        <button class="btn-push" onclick="pushToCloud()">Push HO Data</button>
+    </div>
+</div>
+
+<table class="main-table" id="hoTable">
+    <thead>
+        <tr>
+            <th>Category</th>
+            <th>Apr</th><th>May</th><th>Jun</th><th>Jul</th><th>Aug</th><th>Sep</th>
+            <th>Oct</th><th>Nov</th><th>Dec</th><th>Jan</th><th>Feb</th><th>Mar</th>
+            <th style="background:#e2e8f0">Total</th>
+        </tr>
+    </thead>
+    <tbody id="tableBody"></tbody>
+</table>
+
+<script>
+    // --- FIREBASE CONFIG (USE YOURS) ---
+    const firebaseConfig = {
+        databaseURL: "https://roongta-cinemas-default-rtdb.firebaseio.com"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    // --- DATA STRUCTURES ---
+    const hoRevenue = [
+        { id: 'cinema_ebitda', label: 'TOTAL CINEMAS EBITDA', class: 'cinema-ebitda-row' },
+        { id: 'rev_bus', label: 'BUSINESS REVENUE' },
+        { id: 'rev_mkt', label: 'MARKETING REVENUE' },
+        { id: 'rev_vpf', label: 'VPF REVENUE' },
+        { id: 'rev_bms', label: 'BMS REVENUE' },
+        { id: 'rev_dist', label: 'DISTRICT REVENUE' },
+        { id: 'rev_oth_ho', label: 'OTHERS REVENUE' },
+        { id: 'total_g', label: 'TOTAL HO REVENUE', class: 'row-total-rev' }
+    ];
+
+    const hoExpenses = [
+        { id: 'exp_sal', label: 'HO SALARY' },
+        { id: 'exp_trav', label: 'TRAVEL EXPENSES' },
+        { id: 'exp_evt', label: 'EVENT EXPENSES' },
+        { id: 'exp_off', label: 'OFFICE EXPENSES' },
+        { id: 'exp_oth', label: 'OTHER EXPENSES' },
+        { id: 'total_exp', label: 'TOTAL HO EXPENSES', class: 'row-total-exp' }
+    ];
+
+    function initTable() {
+        const tbody = document.getElementById('tableBody');
+        let html = '';
+
+        [...hoRevenue, ...hoExpenses, {id:'ebitda', label:'FINAL GROUP EBITDA', class:'row-ebitda'}].forEach(row => {
+            html += `<tr class="${row.class || ''}">
+                <td class="label-cell">${row.label}</td>
+                ${Array.from({length:13}).map((_, i) => `<td><input id="${row.id}_${i}" value="0" oninput="calcHO()"></td>`).join('')}
+            </tr>`;
+        });
+        tbody.innerHTML = html;
+        document.querySelectorAll('input[id$="_12"]').forEach(el => el.readOnly = true);
+    }
+
+    async function refreshHOData() {
+        const fy = document.getElementById('fySelect').value;
+        const scen = document.getElementById('scen').value;
+        const locations = ['surat', 'ghaziabad', 'muzaffarnagar', 'adipur', 'hyderabad'];
+
+        // 1. CLEAR & FETCH EXISTING HO DATA
+        document.querySelectorAll('input').forEach(i => i.value = 0);
+        const hoSnap = await db.ref(`reports/HO/${scen}/${fy}`).once('value');
+        const hoSaved = hoSnap.val() || {};
+        Object.keys(hoSaved).forEach(k => {
+            if(Array.isArray(hoSaved[k])) hoSaved[k].forEach((v, i) => {
+                const el = document.getElementById(`${k}_${i}`);
+                if(el) el.value = v;
+            });
+        });
+
+        // 2. AGGREGATE CINEMA EBITDA
+        const allSnap = await db.ref('reports').once('value');
+        const all = allSnap.val() || {};
+        
+        for (let i = 0; i < 12; i++) {
+            let totalCin = 0;
+            locations.forEach(loc => {
+                const d = all[loc]?.[scen]?.[fy];
+                if(d) {
+                    const ff = parseFloat(d.ff?.[i] || 0);
+                    const gross = (ff * (parseFloat(d.atp_g?.[i] || 0) + parseFloat(d.sph_g?.[i] || 0))) / 100000;
+                    let o = 0; ['rev_oth','rev_3d','rev_park','rev_mgmt','rev_adv'].forEach(k=>o+=parseFloat(d[k]?.[i]||0));
+                    let e = 0; 
+                    // Sum all expenses from the cinema file
+                    Object.keys(d).forEach(key => {
+                        if(!['ff','atp_g','sph_g','rev_oth','rev_3d','rev_park','rev_mgmt','rev_adv','atp_n','sph_n','cap','occ'].includes(key) && Array.isArray(d[key])) {
+                            e += parseFloat(d[key][i] || 0);
+                        }
+                    });
+                    totalCin += (gross + o - e);
+                }
+            });
+            document.getElementById(`cinema_ebitda_${i}`).value = totalCin.toFixed(2);
+            document.getElementById(`cinema_ebitda_${i}`).readOnly = true;
+        }
+        calcHO();
+    }
+
+    function calcHO() {
+        for (let i = 0; i < 13; i++) {
+            if (i === 12) { // Horizontal Totals
+                [...hoRevenue, ...hoExpenses, {id:'ebitda'}].forEach(row => {
+                    if (row.id === 'total_g' || row.id === 'total_exp' || row.id === 'ebitda') return;
+                    let sum = 0; for(let j=0; j<12; j++) sum += parseFloat(document.getElementById(`${row.id}_${j}`).value) || 0;
+                    document.getElementById(`${row.id}_12`).value = sum.toFixed(2);
+                });
+            }
+
+            let rev = hoRevenue.filter(r => !['total_g'].includes(r.id)).reduce((acc, r) => acc + (parseFloat(document.getElementById(`${r.id}_${i}`).value) || 0), 0);
+            document.getElementById(`total_g_${i}`).value = rev.toFixed(2);
+
+            let exp = hoExpenses.filter(r => !['total_exp'].includes(r.id)).reduce((acc, r) => acc + (parseFloat(document.getElementById(`${r.id}_${i}`).value) || 0), 0);
+            document.getElementById(`total_exp_${i}`).value = exp.toFixed(2);
+
+            document.getElementById(`ebitda_${i}`).value = (rev - exp).toFixed(2);
+        }
+    }
+
+    async function pushToCloud() {
+        const fy = document.getElementById('fySelect').value;
+        const scen = document.getElementById('scen').value;
+        let data = {};
+        [...hoRevenue, ...hoExpenses, {id:'ebitda'}].forEach(row => {
+            data[row.id] = Array.from({length:12}).map((_, i) => parseFloat(document.getElementById(`${row.id}_${i}`).value) || 0);
+        });
+        await db.ref(`reports/HO/${scen}/${fy}`).set(data);
+        alert("HO Master Data Pushed Successfully!");
+    }
+
+    window.onload = () => {
+        if(prompt("Enter HO Access Password:") === "roongtaHO") {
+            initTable();
+            refreshHOData();
+        } else {
+            document.body.innerHTML = "Access Denied";
+        }
+    };
+</script>
+</body>
+</html>
