@@ -158,18 +158,21 @@
                         <option value="hyderabad" data-seats="291">Hyderabad</option>
                     </select>
                 </div>
-                <div class="control-item">
-                    <label>Projection Logic</label>
-                    <select id="scen" onchange="refreshData()">
-                        <option value="actual">Actual (Monthly Data)</option>
-                        <option value="pessimistic" selected>Pessimistic (Base Target)</option>
-                        <option value="realistic">Realistic (+8% of Target)</option>
-                        <option value="optimistic">Optimistic (+12% of Target)</option>
-                    </select>
-                    <button onclick="goToHO()" 
-        style="background: #2563eb; color: white; border: none; padding: 10px 15px; border-radius: 8px; cursor: pointer; font-weight: 600; margin-left: 10px;">
-    Go to HO Dashboard
-</button>
+                <div class="control-item" style="display: flex; align-items: flex-end; gap: 10px;">
+    <div style="flex-grow: 1;">
+        <label>Projection Logic</label>
+        <select id="scen" onchange="refreshData()" style="width: 100%;">
+            <option value="actual">Actual (Monthly Data)</option>
+            <option value="pessimistic" selected>Pessimistic (Base Target)</option>
+            <option value="realistic">Realistic (+8% of Target)</option>
+            <option value="optimistic">Optimistic (+12% of Target)</option>
+        </select>
+    </div>
+    <button onclick="goToHO()" 
+            style="background: #2563eb; color: white; border: none; height: 42px; padding: 0 20px; border-radius: 8px; cursor: pointer; font-weight: 600; white-space: nowrap;">
+        Go to HO Dashboard
+    </button>
+</div>
 
 <script>
     function goToHO() {
