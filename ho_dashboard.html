@@ -77,6 +77,9 @@
     function initHO() {
         const h = document.getElementById('hRow');
         const b = document.getElementById('tBody');
+        b.innerHTML = ""; // Clear existing
+        h.innerHTML = '<th class="sticky-col">FINANCIAL PARTICULARS</th>';
+        
         months.forEach(m => h.innerHTML += `<th>${m}</th>`);
         h.innerHTML += `<th class="year-col">FY TOTAL</th>`;
 
@@ -114,8 +117,8 @@
     function toggleSec(id) {
         const rows = document.querySelectorAll(`.row_${id}`);
         const btn = document.getElementById(`btn_${id}`);
-        const isHidden = rows[0].classList.contains('hidden-row');
-        rows.forEach(r => r.classList.toggle('hidden-row'));
+        const isHidden = rows[0].style.display === 'none';
+        rows.forEach(r => r.style.display = isHidden ? 'table-row' : 'none');
         btn.innerText = isHidden ? '−' : '+';
     }
 
@@ -132,8 +135,14 @@
                 if (d) {
                     const ff = parseFloat(d.ff?.[i] || 0);
                     const core = (ff * (parseFloat(d.atp_g?.[i] || 0) + parseFloat(d.sph_g?.[i] || 0))) / 100000;
-                    let o = 0; ['rev_oth','rev_3d','rev_park','rev_mgmt','rev_adv'].forEach(k => o += parseFloat(d[k]?.[i] || 0));
-                    let e = 0; Object.keys(d).forEach(k => { if(!['ff','atp_g','sph_g','atp_n','sph_n','rev_oth','rev_3d','rev_park','rev_mgmt','rev_adv','cap','occ'].includes(k) && Array.isArray(d[k])) e += parseFloat(d[k][i] || 0); });
+                    let o = 0; 
+                    ['rev_oth','rev_3d','rev_park','rev_mgmt','rev_adv'].forEach(k => o += parseFloat(d[k]?.[i] || 0));
+                    
+                    let e = 0; 
+                    Object.keys(d).forEach(k => { 
+                        if(!['ff','atp_g','sph_g','atp_n','sph_n','rev_oth','rev_3d','rev_park','rev_mgmt','rev_adv','cap','occ'].includes(k) && Array.isArray(d[k])) 
+                            e += parseFloat(d[k][i] || 0); 
+                    });
                     totalCin += (core + o - e);
                 }
             });
@@ -143,38 +152,65 @@
         const hoSnap = await db.ref(`reports/HO/actual/${fy}`).once('value');
         const hoData = hoSnap.val() || {};
         Object.keys(hoData).forEach(k => {
-            if(Array.isArray(hoData[k])) hoData[k].forEach((v, idx) => { if(document.getElementById(`${k}_${idx}`)) document.getElementById(`${k}_${idx}`).value = v; });
+            if(Array.isArray(hoData[k])) {
+                hoData[k].forEach((v, idx) => { 
+                    const el = document.getElementById(`${k}_${idx}`);
+                    if(el) el.value = v; 
+                });
+            }
         });
         calcHO();
     }
 
     function calcHO() {
         for (let i = 0; i < 13; i++) {
+            // Calculate Row Totals for Month 13
+            if (i < 12) {
+                [...revenueRows, ...detailedSections[0].rows].forEach(r => {
+                   if (r.type !== 'summary' && r.type !== 'calc') {
+                       let rowSum = 0;
+                       for(let m=0; m<12; m++) rowSum += parseFloat(document.getElementById(`${r.id}_${m}`).value) || 0;
+                       document.getElementById(`${r.id}_12`).value = rowSum.toFixed(2);
+                   }
+                });
+                // Total Cinema EBITDA Year Total
+                let cinSum = 0;
+                for(let m=0; m<12; m++) cinSum += parseFloat(document.getElementById(`cinema_ebitda_${m}`).value) || 0;
+                document.getElementById(`cinema_ebitda_12`).value = cinSum.toFixed(2);
+            }
+
+            // TOTAL HO REVENUE
             let rTot = 0;
-            revenueRows.forEach(r => { if(r.id !== 'total_g') rTot += parseFloat(document.getElementById(`${r.id}_${i}`).value) || 0; });
+            revenueRows.forEach(r => { 
+                if(r.id !== 'total_g') rTot += parseFloat(document.getElementById(`${r.id}_${i}`).value) || 0; 
+            });
             document.getElementById(`total_g_${i}`).value = rTot.toFixed(2);
 
+            // TOTAL HO EXPENSES
             let eTot = 0;
-            detailedSections[0].rows.forEach(r => eTot += parseFloat(document.getElementById(`${r.id}_${i}`).value) || 0;);
+            detailedSections[0].rows.forEach(r => {
+                eTot += parseFloat(document.getElementById(`${r.id}_${i}`).value) || 0;
+            });
             document.getElementById(`total_exp_${i}`).value = eTot.toFixed(2);
 
-            // FINAL VARIANCE: Total Cinemas EBITDA - Total HO Expenses
+            // FINAL NET EBITDA
             const finalEbitda = rTot - eTot;
             const el = document.getElementById(`ebitda_${i}`);
             el.value = finalEbitda.toFixed(2);
-            el.style.color = finalEbitda >= 0 ? "green" : "red";
+            el.style.color = finalEbitda >= 0 ? "#166534" : "#991b1b";
         }
     }
 
     async function saveHO() {
         const fy = document.getElementById('fySelect').value;
         const data = {};
-        [...revenueRows.filter(r => r.id!=='cinema_ebitda' && r.type!=='summary'), ...detailedSections[0].rows].forEach(r => {
+        // Save only input rows
+        [...revenueRows.filter(r => r.type === 'in'), ...detailedSections[0].rows].forEach(r => {
             data[r.id] = [];
             for(let i=0; i<12; i++) data[r.id].push(document.getElementById(`${r.id}_${i}`).value || "0");
         });
         await db.ref(`reports/HO/actual/${fy}`).set(data);
-        alert("HO Master Data Saved!");
+        alert("HO Master Data Saved Successfully!");
     }
 
     window.onload = initHO;
