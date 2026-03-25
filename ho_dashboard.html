@@ -15,17 +15,23 @@
 
 <div class="ho-header">
     <h1>ROONGTA GROUP | HO MASTER SUMMARY</h1>
-    <div style="display: flex; gap: 10px; margin-top: 10px;">
-        <select id="fySelect" onchange="refreshHO()">
+    <<div class="controls">
+    <div class="control-item">
+        <label>Fiscal Year</label>
+        <select id="fySelect" onchange="refreshHOData()">
             <option value="2025">FY 2025-26</option>
             <option value="2026">FY 2026-27</option>
         </select>
-        <select id="scen" onchange="refreshHO()">
-            <option value="actual">Actual Data</option>
-            <option value="pessimistic">Pessimistic</option>
-        </select>
-        <button onclick="saveHO()" style="background:#2563eb; color:white; border:none; padding:10px 20px; border-radius:8px; cursor:pointer;">Push HO Data</button>
-        <button onclick="window.location.href='index.html'" style="background:#475569; color:white; border:none; padding:10px 20px; border-radius:8px; cursor:pointer;">Back to Cinemas</button>
+    </div>
+    <input type="hidden" id="scen" value="actual">
+</div>
+        
+        <button onclick="saveHO()" style="background:#059669; color:white; border:none; padding:10px 20px; border-radius:8px; cursor:pointer; font-weight:700;">
+            Push HO Data
+        </button>
+        <button onclick="window.location.href='index.html'" style="background:#475569; color:white; border:none; padding:10px 20px; border-radius:8px; cursor:pointer;">
+            Back to Cinemas
+        </button>
     </div>
 </div>
 
@@ -38,79 +44,87 @@
     const db = firebase.database();
 
     // --- HO SPECIFIC STRUCTURE ---
-    const revenueRows = [
-        { id: 'cinema_ebitda', label: 'TOTAL CINEMAS EBITDA (REVENUE)', type: 'grp' },
-        { id: 'rev_bus', label: 'BUSINESS REVENUE', type: 'in' },
-        { id: 'rev_mkt', label: 'MARKETING REVENUE', type: 'in' },
-        { id: 'rev_vpf', label: 'VPF REVENUE', type: 'in' },
-        { id: 'rev_bms', label: 'BMS REVENUE', type: 'in' },
-        { id: 'rev_dist', label: 'DISTRICT REVENUE', type: 'in' },
-        { id: 'rev_oth_ho', label: 'OTHERS REVENUE', type: 'in' },
-        { id: 'total_g', label: 'TOTAL HO REVENUE', type: 'sub' }
-    ];
+    // Add these rows specifically for HO structure
+const revenueRows = [
+    { id: 'cinema_ebitda', label: 'TOTAL CINEMAS EBITDA (REVENUE)', type: 'calc' },
+    { id: 'rev_bus', label: 'BUSINESS REVENUE', type: 'in' },
+    { id: 'rev_vpf', label: 'VPF REVENUE', type: 'in' },
+    { id: 'rev_oth_ho', label: 'OTHERS REVENUE', type: 'in' },
+    { id: 'total_g', label: 'TOTAL HO REVENUE', type: 'summary', cls: 'h-rev-gross' }
+];
 
-    const detailedSections = [{
-        id: 'ho_exp',
-        title: 'HO OPERATING EXPENSES',
-        rows: [
-            { id: 'exp_sal', label: 'HO SALARY' },
-            { id: 'exp_trav', label: 'TRAVEL EXPENSES' },
-            { id: 'exp_evt', label: 'EVENT EXPENSES' },
-            { id: 'exp_off', label: 'OFFICE EXPENSES' },
-            { id: 'exp_oth', label: 'OTHER EXPENSES' }
-        ]
-    }];
+const detailedSections = [{
+    id: 'ho_exp',
+    title: 'HO OPERATING EXPENSES',
+    rows: [
+        { id: 'exp_sal', label: 'HO SALARY' },
+        { id: 'exp_off', label: 'OFFICE EXPENSES' },
+        { id: 'exp_oth', label: 'OTHER EXPENSES' }
+    ]
+}];
+
+function initHO() {
+    const b = document.getElementById('tBody'); // Ensure your table has <tbody id="tBody">
+    b.innerHTML = ""; 
+    
+    // Render HO Rows
+    revenueRows.forEach(r => b.innerHTML += renderHORow(r));
+    detailedSections.forEach(sec => {
+        b.innerHTML += `<tr class="group-header"><td class="sticky-col">${sec.title}</td><td colspan="13"></td></tr>`;
+        sec.rows.forEach(r => b.innerHTML += renderHORow(r, 'in'));
+        b.innerHTML += renderHORow({ id: 'total_exp', label: 'TOTAL HO EXPENSES', type: 'summary', cls: 'h-exp' });
+    });
+    b.innerHTML += renderHORow({ id: 'ebitda', label: 'FINAL HO EBITDA', type: 'summary', cls: 'h-ebitda' });
+    
+    refreshHOData(); // Load the data
+}
+
+function renderHORow(r) {
+    let cls = r.cls || "";
+    let html = `<tr class="${cls}"><td class="sticky-col">${r.label}</td>`;
+    for(let i=0; i <= 12; i++) {
+        let isY = i === 12;
+        // Cinema EBITDA and Totals are always Read-Only
+        let isRO = (r.id === 'cinema_ebitda' || isY || r.type !== 'in') ? 'readonly class="calc-field"' : '';
+        html += `<td class="${isY?'year-col':''}"><input type="number" id="${r.id}_${i}" value="0" ${isRO} oninput="calcHO()"></td>`;
+    }
+    return html + '</tr>';
+}
+window.onload = initHO;
 
     // --- AGGREGATION LOGIC ---
-    async function refreshHO() {
-        const fy = document.getElementById('fySelect').value;
-        const scen = document.getElementById('scen').value;
-        const locations = ['surat', 'ghaziabad', 'muzaffarnagar', 'adipur', 'hyderabad'];
-        
-        // 1. Fetch all Cinema Data
-        const snapshot = await db.ref('reports').once('value');
-        const all = snapshot.val() || {};
+    async function refreshHOData() {
+    const fy = document.getElementById('fySelect').value;
+    const scen = "actual"; // Hardcoded to Actual
+    const locations = ['surat', 'ghaziabad', 'muzaffarnagar', 'adipur', 'hyderabad'];
 
-        // 2. Clear current inputs
-        document.querySelectorAll('input').forEach(i => i.value = 0);
+    const snapshot = await db.ref('reports').once('value');
+    const all = snapshot.val() || {};
 
-        // 3. Sum up EBITDA from all locations for each month (0-11)
-        for (let i = 0; i < 12; i++) {
-            let totalCinEbitda = 0;
-            locations.forEach(loc => {
-                const d = all[loc]?.[scen]?.[fy];
-                if (d) {
-                    const ff = parseFloat(d.ff?.[i] || 0);
-                    const gross = (ff * (parseFloat(d.atp_g?.[i] || 0) + parseFloat(d.sph_g?.[i] || 0))) / 100000;
-                    let oth = 0; ['rev_oth','rev_3d','rev_park','rev_mgmt','rev_adv'].forEach(k => oth += parseFloat(d[k]?.[i] || 0));
-                    
-                    let exp = 0;
-                    // Auto-sum all expenses by excluding revenue keys
-                    Object.keys(d).forEach(k => {
-                        if(!['ff','atp_g','sph_g','atp_n','sph_n','rev_oth','rev_3d','rev_park','rev_mgmt','rev_adv','cap','occ'].includes(k) && Array.isArray(d[k])) {
-                            exp += parseFloat(d[k][i] || 0);
-                        }
-                    });
-                    totalCinEbitda += (gross + oth - exp);
-                }
-            });
-            document.getElementById(`cinema_ebitda_${i}`).value = totalCinEbitda.toFixed(2);
-        }
-
-        // 4. Load HO's own saved data (Salaries, etc.)
-        const hoSnap = await db.ref(`reports/HO/${scen}/${fy}`).once('value');
-        const hoData = hoSnap.val() || {};
-        Object.keys(hoData).forEach(key => {
-            if(Array.isArray(hoData[key])) {
-                hoData[key].forEach((v, idx) => {
-                    const el = document.getElementById(`${key}_${idx}`);
-                    if(el && key !== 'cinema_ebitda') el.value = v;
+    for (let i = 0; i < 12; i++) {
+        let totalCinEbitda = 0;
+        locations.forEach(loc => {
+            const d = all[loc]?.[scen]?.[fy]; // Always pulls 'actual'
+            if (d) {
+                const ff = parseFloat(d.ff?.[i] || 0);
+                const rev = (ff * (parseFloat(d.atp_g?.[i] || 0) + parseFloat(d.sph_g?.[i] || 0))) / 100000;
+                let oth = 0; 
+                ['rev_oth','rev_3d','rev_park','rev_mgmt','rev_adv'].forEach(k => oth += parseFloat(d[k]?.[i] || 0));
+                
+                let exp = 0;
+                // Sum all cinema expenses
+                Object.keys(d).forEach(k => {
+                    if(!['ff','atp_g','sph_g','atp_n','sph_n','rev_oth','rev_3d','rev_park','rev_mgmt','rev_adv','cap','occ'].includes(k) && Array.isArray(d[k])) {
+                        exp += parseFloat(d[k][i] || 0);
+                    }
                 });
+                totalCinEbitda += (rev + oth - exp);
             }
         });
-        calc();
+        document.getElementById(`cinema_ebitda_${i}`).value = totalCinEbitda.toFixed(2);
     }
-
+    calcHO(); // Update HO totals
+}
     // --- CALCULATE HO TOTALS ---
     function calc() {
         for (let i = 0; i < 13; i++) {
@@ -131,12 +145,21 @@
 
     // --- PUSH HO DATA ---
     async function saveHO() {
-        const fy = document.getElementById('fySelect').value;
-        const scen = document.getElementById('scen').value;
-        let data = {};
-        // Logic to collect all rows and save to 'HO' node
-        alert("HO Data Saved to Firebase!");
-    }
+    const fy = document.getElementById('fySelect').value;
+    const scen = "actual"; // Locked to actual
+    const data = {};
+    
+    // Collect all input rows (Salaries, Business Rev, etc.)
+    detailedSections[0].rows.forEach(r => {
+        data[r.id] = [];
+        for(let i=0; i<12; i++) {
+            data[r.id].push(document.getElementById(`${r.id}_${i}`).value || "0");
+        }
+    });
+
+    await db.ref(`reports/HO/${scen}/${fy}`).set(data);
+    alert("HO Actuals Saved!");
+}
 
     window.onload = () => {
         // [Insert your Table Generation Code from index.html here]
