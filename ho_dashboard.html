@@ -139,9 +139,10 @@
         let html = `<tr class="${cls}"><td class="sticky-col">${r.label}</td>`;
         for(let i=0; i <= 12; i++) {
             let isRO = (r.id === 'cinema_ebitda' || i === 12 || r.type === 'summary' || r.type === 'calc');
-            html += `<td class="${i===12?'year-col':''}">
-                <input type="number" id="${r.id}_${i}" value="0" ${isRO?'readonly class="calc-field"':''} oninput="">
-            </td>`;
+            // Change this line inside the renderRow function:
+html += `<td class="${i===12?'year-col':''}">
+    <input type="number" id="${r.id}_${i}" value="0" ${isRO?'readonly class="calc-field"':''} oninput="calcHO()">
+</td>`;
         }
         return html + '</tr>';
     }
@@ -155,44 +156,64 @@
     }
 
     async function refreshHOData() {
-        const fy = document.getElementById('fySelect').value;
-        const locations = ['surat', 'ghaziabad', 'muzaffarnagar', 'adipur', 'hyderabad'];
-        const snapshot = await db.ref('reports').once('value');
-        const all = snapshot.val() || {};
+    const fy = document.getElementById('fySelect').value;
+    const locations = ['surat', 'ghaziabad', 'muzaffarnagar', 'adipur', 'hyderabad'];
+    
+    // 1. Fetch all report data from Firebase
+    const snapshot = await db.ref('reports').once('value');
+    const all = snapshot.val() || {};
 
-        for (let i = 0; i < 12; i++) {
-            let totalCin = 0;
-            locations.forEach(loc => {
-                const d = all[loc]?.['actual']?.[fy];
-                if (d) {
-                    const ff = parseFloat(d.ff?.[i] || 0);
-                    const core = (ff * (parseFloat(d.atp_g?.[i] || 0) + parseFloat(d.sph_g?.[i] || 0))) / 100000;
-                    let o = 0; 
-                    ['rev_oth','rev_3d','rev_park','rev_mgmt','rev_adv'].forEach(k => o += parseFloat(d[k]?.[i] || 0));
-                    let e = 0; 
-                    Object.keys(d).forEach(k => { 
-                        if(!['ff','atp_g','sph_g','atp_n','sph_n','rev_oth','rev_3d','rev_park','rev_mgmt','rev_adv','cap','occ'].includes(k) && Array.isArray(d[k])) 
-                            e += parseFloat(d[k][i] || 0); 
-                    });
-                    totalCin += (core + o - e);
-                }
-            });
-            document.getElementById(`cinema_ebitda_${i}`).value = totalCin.toFixed(2);
-        }
-
-        const hoSnap = await db.ref(`reports/HO/actual/${fy}`).once('value');
-        const hoData = hoSnap.val() || {};
-        // Fill input fields from DB
-        [...revenueSections[0].rows, ...expenseSections[0].rows].forEach(r => {
-            if(hoData[r.id]) {
-                hoData[r.id].forEach((v, idx) => {
-                    const el = document.getElementById(`${r.id}_${idx}`);
-                    if(el) el.value = v;
+    // 2. Calculate Monthly Cinema Totals
+    for (let i = 0; i < 12; i++) {
+        let totalCin = 0;
+        locations.forEach(loc => {
+            const d = all[loc]?.['actual']?.[fy];
+            if (d) {
+                const ff = parseFloat(d.ff?.[i] || 0);
+                const core = (ff * (parseFloat(d.atp_g?.[i] || 0) + parseFloat(d.sph_g?.[i] || 0))) / 100000;
+                let o = 0; 
+                ['rev_oth','rev_3d','rev_park','rev_mgmt','rev_adv'].forEach(k => o += parseFloat(d[k]?.[i] || 0));
+                
+                let e = 0; 
+                Object.keys(d).forEach(k => { 
+                    if(!['ff','atp_g','sph_g','atp_n','sph_n','rev_oth','rev_3d','rev_park','rev_mgmt','rev_adv','cap','occ'].includes(k) && Array.isArray(d[k])) 
+                        e += parseFloat(d[k][i] || 0); 
                 });
+                totalCin += (core + o - e);
             }
         });
-        ;
+        document.getElementById(`cinema_ebitda_${i}`).value = totalCin.toFixed(2);
     }
+
+    // 3. Calculate the Yearly Total for Cinemas (Column 12)
+    let cinYearly = 0;
+    for(let m = 0; m < 12; m++) {
+        cinYearly += parseFloat(document.getElementById(`cinema_ebitda_${m}`).value) || 0;
+    }
+    document.getElementById(`cinema_ebitda_12`).value = cinYearly.toFixed(2);
+
+    // 4. Fetch and Fill HO specific data
+    const hoSnap = await db.ref(`reports/HO/actual/${fy}`).once('value');
+    const hoData = hoSnap.val() || {};
+    
+    [...revenueSections[0].rows, ...expenseSections[0].rows].forEach(r => {
+        if(hoData[r.id]) {
+            hoData[r.id].forEach((v, idx) => {
+                const el = document.getElementById(`${r.id}_${idx}`);
+                if(el) el.value = v;
+            });
+        } else {
+            // Reset to 0 if no data exists for this year
+            for(let idx = 0; idx < 12; idx++) {
+                const el = document.getElementById(`${r.id}_${idx}`);
+                if(el) el.value = 0;
+            }
+        }
+    });
+
+    // 5. Trigger the main calculation engine to update Headers and Subtotals
+    calcHO();
+}
 
     function calcHO() {
     let yearlyCinemasTotal = 0;
@@ -267,6 +288,6 @@
 
     window.onload = initHO;
 </script>
-</script>
+</scrip
 </body>
 </html>
