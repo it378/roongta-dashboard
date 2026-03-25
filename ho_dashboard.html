@@ -195,11 +195,11 @@
 
     function calcHO() {
     let yearlyCinemasTotal = 0;
-    let yearlyHoExpTotal = 0;
     let yearlyHoRevTotal = 0;
+    let yearlyHoExpTotal = 0;
 
     for (let i = 0; i <= 12; i++) {
-        // 1. Row Totals for Column 12 (FY TOTAL)
+        // 1. Calculate FY TOTAL Column (Column 12)
         if (i === 12) {
             const allInputIds = ['cinema_ebitda', 'rev_bus', 'rev_vpf', 'rev_oth_ho', 'exp_sal', 'exp_off', 'exp_oth'];
             allInputIds.forEach(id => {
@@ -209,24 +209,27 @@
             });
         }
 
-        // 2. Calculate HO Totals for current month/year
+        // 2. Calculate Sub-Totals for Revenue Section
         let hoRev = 0;
         revenueSections[0].rows.forEach(r => hoRev += parseFloat(document.getElementById(`${r.id}_${i}`).value) || 0);
         document.getElementById(`total_ho_rev_${i}`).value = hoRev.toFixed(2);
 
+        // 3. Calculate Sub-Totals for Expense Section
         let hoExp = 0;
         expenseSections[0].rows.forEach(r => hoExp += parseFloat(document.getElementById(`${r.id}_${i}`).value) || 0);
         document.getElementById(`total_ho_exp_${i}`).value = hoExp.toFixed(2);
 
-        // 3. Final Net Calculation: Cinemas + HO Rev - HO Exp
+        // 4. THE CORRECT FORMULA: (Cinemas EBITDA + HO Revenue) - HO Expenses
         const cinEbitda = parseFloat(document.getElementById(`cinema_ebitda_${i}`).value) || 0;
         const finalNet = (cinEbitda + hoRev) - hoExp;
         
         const finalEl = document.getElementById(`final_ebitda_${i}`);
         finalEl.value = finalNet.toFixed(2);
+        
+        // Color coding the table row
         finalEl.style.color = finalNet >= 0 ? "#166534" : "#991b1b";
 
-        // 4. Capture values for Header (using the FY Total column)
+        // 5. Update the UPPER RIGHT HEADER values using the FY TOTAL (i === 12)
         if (i === 12) {
             yearlyCinemasTotal = cinEbitda;
             yearlyHoRevTotal = hoRev;
@@ -234,15 +237,22 @@
         }
     }
 
-    // UPDATE UPPER RIGHT HEADER
-    const finalGroupNet = (yearlyCinemasTotal + yearlyHoRevTotal) - yearlyHoExpTotal;
+    // --- APPLY TO HEADER DISPLAY ---
+    const netGroupResult = (yearlyCinemasTotal + yearlyHoRevTotal) - yearlyHoExpTotal;
     
+    // Display total Cinemas profit
     document.getElementById('header-cinemas-total').innerText = `₹ ${yearlyCinemasTotal.toFixed(2)} L`;
-    document.getElementById('header-ho-total').innerText = `₹ ${(yearlyHoExpTotal - yearlyHoRevTotal).toFixed(2)} L`;
     
+    // Display net HO Impact (Expenses minus extra Revenues)
+    const netHOImpact = yearlyHoExpTotal - yearlyHoRevTotal;
+    document.getElementById('header-ho-total').innerText = `₹ ${netHOImpact.toFixed(2)} L`;
+    
+    // Display FINAL GLOBAL EBITDA
     const headerFinal = document.getElementById('header-final-net');
-    headerFinal.innerText = `₹ ${finalGroupNet.toFixed(2)} L`;
-    headerFinal.style.color = finalGroupNet >= 0 ? "#92d050" : "#f19eb5";
+    headerFinal.innerText = `₹ ${netGroupResult.toFixed(2)} L`;
+    
+    // Change Header color based on profit/loss
+    headerFinal.style.color = netGroupResult >= 0 ? "#92d050" : "#f19eb5";
 }
 
     async function saveHO() {
