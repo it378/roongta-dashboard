@@ -56,15 +56,19 @@
 
     const months = ["Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","Jan","Feb","Mar"];
 
-    const revenueRows = [
-        { id: 'cinema_ebitda', label: 'TOTAL CINEMAS EBITDA (REVENUE)', type: 'calc' },
-        { id: 'rev_bus', label: 'BUSINESS REVENUE', type: 'in' },
-        { id: 'rev_vpf', label: 'VPF REVENUE', type: 'in' },
-        { id: 'rev_oth_ho', label: 'OTHERS REVENUE', type: 'in' },
-        { id: 'total_g', label: 'TOTAL HO REVENUE', type: 'summary', cls: 'h-rev-gross' }
-    ];
+    // Revenue Sections
+    const revenueSections = [{
+        id: 'ho_rev',
+        title: 'HO ADDITIONAL REVENUES',
+        rows: [
+            { id: 'rev_bus', label: 'BUSINESS REVENUE' },
+            { id: 'rev_vpf', label: 'VPF REVENUE' },
+            { id: 'rev_oth_ho', label: 'OTHERS REVENUE' }
+        ]
+    }];
 
-    const detailedSections = [{
+    // Expense Sections
+    const expenseSections = [{
         id: 'ho_exp',
         title: 'HO OPERATING EXPENSES',
         rows: [
@@ -77,26 +81,34 @@
     function initHO() {
         const h = document.getElementById('hRow');
         const b = document.getElementById('tBody');
-        b.innerHTML = ""; // Clear existing
+        b.innerHTML = ""; 
         h.innerHTML = '<th class="sticky-col">FINANCIAL PARTICULARS</th>';
-        
         months.forEach(m => h.innerHTML += `<th>${m}</th>`);
         h.innerHTML += `<th class="year-col">FY TOTAL</th>`;
 
-        // 1. Revenue
-        revenueRows.forEach(r => b.innerHTML += renderRow(r));
+        // 1. TOP ROW: TOTAL CINEMAS EBITDA
+        b.innerHTML += renderRow({ id: 'cinema_ebitda', label: 'TOTAL CINEMAS EBITDA', type: 'calc', cls: 'h-rev-gross' });
 
-        // 2. Expenses (Collapsible)
-        detailedSections.forEach(sec => {
+        // 2. REVENUE SECTION (Collapsible)
+        revenueSections.forEach(sec => {
             b.innerHTML += `<tr class="group-header" onclick="toggleSec('${sec.id}')">
                 <td class="sticky-col"><span class="toggle-btn" id="btn_${sec.id}">−</span> ${sec.title}</td>
                 <td colspan="13"></td></tr>`;
             sec.rows.forEach(r => b.innerHTML += renderRow(r, sec.id));
-            b.innerHTML += renderRow({ id: 'total_exp', label: 'TOTAL HO EXPENSES', type: 'summary', cls: 'h-exp' });
+            b.innerHTML += renderRow({ id: 'total_ho_rev', label: 'TOTAL HO REVENUE', type: 'summary', cls: 'h-rev-gross' });
         });
 
-        // 3. Final Comparison
-        b.innerHTML += renderRow({ id: 'ebitda', label: 'FINAL GROUP EBITDA (NET)', type: 'summary', cls: 'h-ebitda' });
+        // 3. EXPENSE SECTION (Collapsible)
+        expenseSections.forEach(sec => {
+            b.innerHTML += `<tr class="group-header" onclick="toggleSec('${sec.id}')">
+                <td class="sticky-col"><span class="toggle-btn" id="btn_${sec.id}">−</span> ${sec.title}</td>
+                <td colspan="13"></td></tr>`;
+            sec.rows.forEach(r => b.innerHTML += renderRow(r, sec.id));
+            b.innerHTML += renderRow({ id: 'total_ho_exp', label: 'TOTAL HO EXPENSES', type: 'summary', cls: 'h-exp' });
+        });
+
+        // 4. FINAL CALCULATION: (Cinemas + HO Rev) - HO Exp
+        b.innerHTML += renderRow({ id: 'final_ebitda', label: 'FINAL GROUP EBITDA (NET)', type: 'summary', cls: 'h-ebitda' });
         
         refreshHOData();
     }
@@ -137,7 +149,6 @@
                     const core = (ff * (parseFloat(d.atp_g?.[i] || 0) + parseFloat(d.sph_g?.[i] || 0))) / 100000;
                     let o = 0; 
                     ['rev_oth','rev_3d','rev_park','rev_mgmt','rev_adv'].forEach(k => o += parseFloat(d[k]?.[i] || 0));
-                    
                     let e = 0; 
                     Object.keys(d).forEach(k => { 
                         if(!['ff','atp_g','sph_g','atp_n','sph_n','rev_oth','rev_3d','rev_park','rev_mgmt','rev_adv','cap','occ'].includes(k) && Array.isArray(d[k])) 
@@ -151,11 +162,12 @@
 
         const hoSnap = await db.ref(`reports/HO/actual/${fy}`).once('value');
         const hoData = hoSnap.val() || {};
-        Object.keys(hoData).forEach(k => {
-            if(Array.isArray(hoData[k])) {
-                hoData[k].forEach((v, idx) => { 
-                    const el = document.getElementById(`${k}_${idx}`);
-                    if(el) el.value = v; 
+        // Fill input fields from DB
+        [...revenueSections[0].rows, ...expenseSections[0].rows].forEach(r => {
+            if(hoData[r.id]) {
+                hoData[r.id].forEach((v, idx) => {
+                    const el = document.getElementById(`${r.id}_${idx}`);
+                    if(el) el.value = v;
                 });
             }
         });
@@ -163,57 +175,50 @@
     }
 
     function calcHO() {
-        for (let i = 0; i < 13; i++) {
-            // Calculate Row Totals for Month 13
-            if (i < 12) {
-                [...revenueRows, ...detailedSections[0].rows].forEach(r => {
-                   if (r.type !== 'summary' && r.type !== 'calc') {
-                       let rowSum = 0;
-                       for(let m=0; m<12; m++) rowSum += parseFloat(document.getElementById(`${r.id}_${m}`).value) || 0;
-                       document.getElementById(`${r.id}_12`).value = rowSum.toFixed(2);
-                   }
+        for (let i = 0; i <= 12; i++) {
+            // Update FY Totals (Column 12)
+            if (i === 12) {
+                const allRowIds = ['cinema_ebitda', 'rev_bus', 'rev_vpf', 'rev_oth_ho', 'exp_sal', 'exp_off', 'exp_oth'];
+                allRowIds.forEach(id => {
+                    let rowSum = 0;
+                    for(let m=0; m<12; m++) rowSum += parseFloat(document.getElementById(`${id}_${m}`).value) || 0;
+                    document.getElementById(`${id}_12`).value = rowSum.toFixed(2);
                 });
-                // Total Cinema EBITDA Year Total
-                let cinSum = 0;
-                for(let m=0; m<12; m++) cinSum += parseFloat(document.getElementById(`cinema_ebitda_${m}`).value) || 0;
-                document.getElementById(`cinema_ebitda_12`).value = cinSum.toFixed(2);
             }
 
-            // TOTAL HO REVENUE
-            let rTot = 0;
-            revenueRows.forEach(r => { 
-                if(r.id !== 'total_g') rTot += parseFloat(document.getElementById(`${r.id}_${i}`).value) || 0; 
-            });
-            document.getElementById(`total_g_${i}`).value = rTot.toFixed(2);
+            // Calculate HO Revenue Total
+            let hoRev = 0;
+            revenueSections[0].rows.forEach(r => hoRev += parseFloat(document.getElementById(`${r.id}_${i}`).value) || 0);
+            document.getElementById(`total_ho_rev_${i}`).value = hoRev.toFixed(2);
 
-            // TOTAL HO EXPENSES
-            let eTot = 0;
-            detailedSections[0].rows.forEach(r => {
-                eTot += parseFloat(document.getElementById(`${r.id}_${i}`).value) || 0;
-            });
-            document.getElementById(`total_exp_${i}`).value = eTot.toFixed(2);
+            // Calculate HO Expense Total
+            let hoExp = 0;
+            expenseSections[0].rows.forEach(r => hoExp += parseFloat(document.getElementById(`${r.id}_${i}`).value) || 0);
+            document.getElementById(`total_ho_exp_${i}`).value = hoExp.toFixed(2);
 
-            // FINAL NET EBITDA
-            const finalEbitda = rTot - eTot;
-            const el = document.getElementById(`ebitda_${i}`);
-            el.value = finalEbitda.toFixed(2);
-            el.style.color = finalEbitda >= 0 ? "#166534" : "#991b1b";
+            // THE FINAL MATH: Cinemas + HO Rev - HO Exp
+            const cinEbitda = parseFloat(document.getElementById(`cinema_ebitda_${i}`).value) || 0;
+            const finalNet = (cinEbitda + hoRev) - hoExp;
+            
+            const finalEl = document.getElementById(`final_ebitda_${i}`);
+            finalNet >= 0 ? finalEl.style.color = "#166534" : finalEl.style.color = "#991b1b";
+            finalEl.value = finalNet.toFixed(2);
         }
     }
 
     async function saveHO() {
         const fy = document.getElementById('fySelect').value;
         const data = {};
-        // Save only input rows
-        [...revenueRows.filter(r => r.type === 'in'), ...detailedSections[0].rows].forEach(r => {
+        [...revenueSections[0].rows, ...expenseSections[0].rows].forEach(r => {
             data[r.id] = [];
             for(let i=0; i<12; i++) data[r.id].push(document.getElementById(`${r.id}_${i}`).value || "0");
         });
         await db.ref(`reports/HO/actual/${fy}`).set(data);
-        alert("HO Master Data Saved Successfully!");
+        alert("HO Data Saved!");
     }
 
     window.onload = initHO;
+</script>
 </script>
 </body>
 </html>
