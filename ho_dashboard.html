@@ -6,67 +6,56 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <style>
-        /* Essential CSS to match index.html theme */
-        :root { --navy: #0f172a; --blue: #2563eb; --ebitda: #92d050; --rev-gross: #ffd966; --exp: #f19eb5; }
-        body { font-family: 'Inter', sans-serif; background: #f8fafc; padding: 20px; font-size: 11px; color: var(--navy); }
-        .ho-header { background: #0f172a; color: white; padding: 25px; border-radius: 12px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
-        .controls { display: flex; gap: 15px; align-items: center; }
-        select { padding: 8px; border-radius: 6px; font-weight: 700; border: none; }
-        .table-wrap { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); overflow-x: auto; }
+        /* Exact theme from Cinema Dashboard */
+        :root { --navy: #0f172a; --ebitda: #92d050; --rev-gross: #ffd966; --exp: #f19eb5; --group-yellow: #ffff00; }
+        body { font-family: 'Inter', sans-serif; background: #f8fafc; padding: 20px; font-size: 11px; }
+        .ho-header { background: #0f172a; color: white; padding: 20px; border-radius: 12px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
+        .table-wrap { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); overflow-x: auto; }
         table { border-collapse: collapse; width: 100%; min-width: 1200px; }
-        th { background: #0f172a; color: white; padding: 12px; text-align: left; position: sticky; top: 0; }
-        td { border: 1px solid #e2e8f0; padding: 5px; }
-        .sticky-col { position: sticky; left: 0; background: white; font-weight: 800; min-width: 250px; z-index: 10; border-right: 2px solid #0f172a; }
-        input { width: 100%; border: none; text-align: right; font-weight: 700; outline: none; background: transparent; }
+        th { background: #0f172a; color: white; padding: 10px; text-align: left; position: sticky; top: 0; }
+        td { border: 1px solid #cbd5e1; padding: 4px; }
+        .sticky-col { position: sticky; left: 0; background: white; font-weight: 800; min-width: 240px; border-right: 2px solid #0f172a; z-index: 5; }
+        input { width: 100%; border: none; text-align: right; font-weight: 700; outline: none; background: transparent; padding: 4px 0; }
         .calc-field { background: #f1f5f9; color: #475569; }
-        .h-rev-gross { background: var(--rev-gross) !important; }
-        .h-exp { background: var(--exp) !important; }
-        .h-ebitda { background: var(--ebitda) !important; }
-        .group-header { background: #ffff00; font-weight: 800; }
+        .group-header { background: var(--group-yellow); font-weight: 800; cursor: pointer; }
+        .h-rev-gross { background: var(--rev-gross); }
+        .h-exp { background: var(--exp); }
+        .h-ebitda { background: var(--ebitda); }
         .year-col { background: #e0f2fe !important; font-weight: 900; }
+        .hidden-row { display: none; }
+        .toggle-btn { margin-right: 8px; font-size: 14px; }
     </style>
 </head>
 <body>
 
 <div class="ho-header">
-    <div>
-        <h1 style="margin:0; font-size: 20px;">ROONGTA GROUP | HO MASTER SUMMARY</h1>
-        <p style="margin:5px 0 0; color: #94a3b8; font-size: 10px;">LOCKED TO ACTUAL DATA ONLY</p>
-    </div>
-    <div class="controls">
-        <label style="font-size: 10px; font-weight: 800;">FISCAL YEAR:</label>
-        <select id="fySelect" onchange="refreshHOData()">
+    <h1 style="margin:0;">ROONGTA GROUP | HO MASTER SUMMARY (ACTUALS)</h1>
+    <div style="display: flex; gap: 10px;">
+        <select id="fySelect" onchange="refreshHOData()" style="padding: 8px; border-radius: 6px; font-weight: 700;">
             <option value="2025">FY 2025-26</option>
             <option value="2026">FY 2026-27</option>
         </select>
-        <button onclick="saveHO()" style="background:#059669; color:white; border:none; padding:10px 20px; border-radius:8px; cursor:pointer; font-weight:700;">Push HO Data</button>
-        <button onclick="window.location.href='index.html'" style="background:#475569; color:white; border:none; padding:10px 20px; border-radius:8px; cursor:pointer;">Back to Cinemas</button>
+        <button onclick="saveHO()" style="background:#059669; color:white; border:none; padding:8px 20px; border-radius:8px; cursor:pointer; font-weight:700;">PUSH HO DATA</button>
+        <button onclick="window.location.href='index.html'" style="background:#475569; color:white; border:none; padding:8px 20px; border-radius:8px; cursor:pointer;">BACK TO CINEMAS</button>
     </div>
 </div>
 
 <div class="table-wrap">
     <table>
         <thead>
-            <tr id="hRow">
-                <th class="sticky-col">HO FINANCIAL PARTICULARS</th>
-                </tr>
+            <tr id="hRow"><th class="sticky-col">FINANCIAL PARTICULARS</th></tr>
         </thead>
-        <tbody id="tBody">
-            </tbody>
+        <tbody id="tBody"></tbody>
     </table>
 </div>
 
 <script>
-    // 1. Firebase Configuration (Matches your index.html)
-    const firebaseConfig = {
-        databaseURL: "https://roongta-cinemas-default-rtdb.asia-southeast1.firebasedatabase.app"
-    };
+    const firebaseConfig = { databaseURL: "https://roongta-cinemas-default-rtdb.asia-southeast1.firebasedatabase.app" };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
     const months = ["Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","Jan","Feb","Mar"];
 
-    // 2. Data Structure
     const revenueRows = [
         { id: 'cinema_ebitda', label: 'TOTAL CINEMAS EBITDA (REVENUE)', type: 'calc' },
         { id: 'rev_bus', label: 'BUSINESS REVENUE', type: 'in' },
@@ -79,133 +68,116 @@
         id: 'ho_exp',
         title: 'HO OPERATING EXPENSES',
         rows: [
-            { id: 'exp_sal', label: 'HO SALARY', type: 'in' },
-            { id: 'exp_off', label: 'OFFICE EXPENSES', type: 'in' },
-            { id: 'exp_oth', label: 'OTHER EXPENSES', type: 'in' }
+            { id: 'exp_sal', label: 'HO SALARY' },
+            { id: 'exp_off', label: 'OFFICE EXPENSES' },
+            { id: 'exp_oth', label: 'OTHER EXPENSES' }
         ]
     }];
 
-    // 3. Initialize UI
     function initHO() {
         const h = document.getElementById('hRow');
         const b = document.getElementById('tBody');
-        
         months.forEach(m => h.innerHTML += `<th>${m}</th>`);
         h.innerHTML += `<th class="year-col">FY TOTAL</th>`;
 
-        // Render Revenue Rows
+        // 1. Revenue
         revenueRows.forEach(r => b.innerHTML += renderRow(r));
-        
-        // Render Expense Sections
+
+        // 2. Expenses (Collapsible)
         detailedSections.forEach(sec => {
-            b.innerHTML += `<tr class="group-header"><td class="sticky-col">${sec.title}</td><td colspan="13"></td></tr>`;
-            sec.rows.forEach(r => b.innerHTML += renderRow(r));
+            b.innerHTML += `<tr class="group-header" onclick="toggleSec('${sec.id}')">
+                <td class="sticky-col"><span class="toggle-btn" id="btn_${sec.id}">−</span> ${sec.title}</td>
+                <td colspan="13"></td></tr>`;
+            sec.rows.forEach(r => b.innerHTML += renderRow(r, sec.id));
             b.innerHTML += renderRow({ id: 'total_exp', label: 'TOTAL HO EXPENSES', type: 'summary', cls: 'h-exp' });
         });
 
-        // Final EBITDA
-        b.innerHTML += renderRow({ id: 'ebitda', label: 'FINAL HO EBITDA', type: 'summary', cls: 'h-ebitda' });
+        // 3. Final Comparison
+        b.innerHTML += renderRow({ id: 'ebitda', label: 'FINAL GROUP EBITDA (NET)', type: 'summary', cls: 'h-ebitda' });
         
         refreshHOData();
     }
 
-    function renderRow(r) {
+    function renderRow(r, secId) {
         let cls = r.cls || "";
+        if (secId) cls += ` row_${secId}`; 
         let html = `<tr class="${cls}"><td class="sticky-col">${r.label}</td>`;
         for(let i=0; i <= 12; i++) {
-            let isY = i === 12;
-            let isReadOnly = (r.id === 'cinema_ebitda' || isY || r.type === 'summary' || r.type === 'calc');
-            let ro = isReadOnly ? 'readonly class="calc-field"' : '';
-            html += `<td class="${isY?'year-col':''}"><input type="number" id="${r.id}_${i}" value="0" ${ro} oninput="calcHO()"></td>`;
+            let isRO = (r.id === 'cinema_ebitda' || i === 12 || r.type === 'summary' || r.type === 'calc');
+            html += `<td class="${i===12?'year-col':''}">
+                <input type="number" id="${r.id}_${i}" value="0" ${isRO?'readonly class="calc-field"':''} oninput="calcHO()">
+            </td>`;
         }
         return html + '</tr>';
     }
 
-    // 4. Logic & Aggregation
+    function toggleSec(id) {
+        const rows = document.querySelectorAll(`.row_${id}`);
+        const btn = document.getElementById(`btn_${id}`);
+        const isHidden = rows[0].classList.contains('hidden-row');
+        rows.forEach(r => r.classList.toggle('hidden-row'));
+        btn.innerText = isHidden ? '−' : '+';
+    }
+
     async function refreshHOData() {
         const fy = document.getElementById('fySelect').value;
-        const scen = "actual"; 
         const locations = ['surat', 'ghaziabad', 'muzaffarnagar', 'adipur', 'hyderabad'];
-
         const snapshot = await db.ref('reports').once('value');
         const all = snapshot.val() || {};
 
-        // Reset inputs before calculation
-        document.querySelectorAll('input').forEach(inp => inp.value = 0);
-
         for (let i = 0; i < 12; i++) {
-            let totalCinEbitda = 0;
+            let totalCin = 0;
             locations.forEach(loc => {
-                const d = all[loc]?.[scen]?.[fy];
+                const d = all[loc]?.['actual']?.[fy];
                 if (d) {
                     const ff = parseFloat(d.ff?.[i] || 0);
-                    const coreRev = (ff * (parseFloat(d.atp_g?.[i] || 0) + parseFloat(d.sph_g?.[i] || 0))) / 100000;
-                    let otherRev = 0;
-                    ['rev_oth','rev_3d','rev_park','rev_mgmt','rev_adv'].forEach(k => otherRev += parseFloat(d[k]?.[i] || 0));
-                    
-                    let exp = 0;
-                    // Sum cinema expenses by excluding revenue keys
-                    Object.keys(d).forEach(k => {
-                        if(!['ff','atp_g','sph_g','atp_n','sph_n','rev_oth','rev_3d','rev_park','rev_mgmt','rev_adv','cap','occ'].includes(k) && Array.isArray(d[k])) {
-                            exp += parseFloat(d[k][i] || 0);
-                        }
-                    });
-                    totalCinEbitda += (coreRev + otherRev - exp);
+                    const core = (ff * (parseFloat(d.atp_g?.[i] || 0) + parseFloat(d.sph_g?.[i] || 0))) / 100000;
+                    let o = 0; ['rev_oth','rev_3d','rev_park','rev_mgmt','rev_adv'].forEach(k => o += parseFloat(d[k]?.[i] || 0));
+                    let e = 0; Object.keys(d).forEach(k => { if(!['ff','atp_g','sph_g','atp_n','sph_n','rev_oth','rev_3d','rev_park','rev_mgmt','rev_adv','cap','occ'].includes(k) && Array.isArray(d[k])) e += parseFloat(d[k][i] || 0); });
+                    totalCin += (core + o - e);
                 }
             });
-            document.getElementById(`cinema_ebitda_${i}`).value = totalCinEbitda.toFixed(2);
+            document.getElementById(`cinema_ebitda_${i}`).value = totalCin.toFixed(2);
         }
 
-        // Load HO's specific saved data
-        const hoSnap = await db.ref(`reports/HO/${scen}/${fy}`).once('value');
+        const hoSnap = await db.ref(`reports/HO/actual/${fy}`).once('value');
         const hoData = hoSnap.val() || {};
-        Object.keys(hoData).forEach(key => {
-            if(Array.isArray(hoData[key])) {
-                hoData[key].forEach((val, idx) => {
-                    const el = document.getElementById(`${key}_${idx}`);
-                    if(el && key !== 'cinema_ebitda') el.value = val;
-                });
-            }
+        Object.keys(hoData).forEach(k => {
+            if(Array.isArray(hoData[k])) hoData[k].forEach((v, idx) => { if(document.getElementById(`${k}_${idx}`)) document.getElementById(`${k}_${idx}`).value = v; });
         });
         calcHO();
     }
 
     function calcHO() {
         for (let i = 0; i < 13; i++) {
-            let revSum = 0;
-            revenueRows.forEach(r => {
-                if(r.id !== 'total_g') revSum += parseFloat(document.getElementById(`${r.id}_${i}`).value) || 0;
-            });
-            document.getElementById(`total_g_${i}`).value = revSum.toFixed(2);
+            let rTot = 0;
+            revenueRows.forEach(r => { if(r.id !== 'total_g') rTot += parseFloat(document.getElementById(`${r.id}_${i}`).value) || 0; });
+            document.getElementById(`total_g_${i}`).value = rTot.toFixed(2);
 
-            let expSum = 0;
-            detailedSections[0].rows.forEach(r => {
-                expSum += parseFloat(document.getElementById(`${r.id}_${i}`).value) || 0;
-            });
-            document.getElementById(`total_exp_${i}`).value = expSum.toFixed(2);
-            document.getElementById(`ebitda_${i}`).value = (revSum - expSum).toFixed(2);
+            let eTot = 0;
+            detailedSections[0].rows.forEach(r => eTot += parseFloat(document.getElementById(`${r.id}_${i}`).value) || 0;);
+            document.getElementById(`total_exp_${i}`).value = eTot.toFixed(2);
+
+            // FINAL VARIANCE: Total Cinemas EBITDA - Total HO Expenses
+            const finalEbitda = rTot - eTot;
+            const el = document.getElementById(`ebitda_${i}`);
+            el.value = finalEbitda.toFixed(2);
+            el.style.color = finalEbitda >= 0 ? "green" : "red";
         }
     }
 
     async function saveHO() {
         const fy = document.getElementById('fySelect').value;
-        const scen = "actual";
         const data = {};
-        
-        // Collect HO inputs (Business Rev, VPF, Salaries, etc.)
-        [...revenueRows.filter(r => r.type === 'in'), ...detailedSections[0].rows].forEach(r => {
+        [...revenueRows.filter(r => r.id!=='cinema_ebitda' && r.type!=='summary'), ...detailedSections[0].rows].forEach(r => {
             data[r.id] = [];
-            for(let i=0; i<12; i++) {
-                data[r.id].push(document.getElementById(`${r.id}_${i}`).value || "0");
-            }
+            for(let i=0; i<12; i++) data[r.id].push(document.getElementById(`${r.id}_${i}`).value || "0");
         });
-
-        await db.ref(`reports/HO/${scen}/${fy}`).set(data);
-        alert("HO Actuals Saved!");
+        await db.ref(`reports/HO/actual/${fy}`).set(data);
+        alert("HO Master Data Saved!");
     }
 
     window.onload = initHO;
 </script>
-
 </body>
 </html>
