@@ -6,9 +6,25 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <style>
-        /* Exact theme from Cinema Dashboard */
         :root { --navy: #0f172a; --ebitda: #92d050; --rev-gross: #ffd966; --exp: #f19eb5; --group-yellow: #ffff00; }
         body { font-family: 'Inter', sans-serif; background: #f8fafc; padding: 20px; font-size: 11px; }
+        
+        /* PASSWORD OVERLAY CSS */
+        #passOverlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(15, 23, 42, 0.98); z-index: 9999;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .pass-card {
+            background: white; padding: 40px; border-radius: 16px; text-align: center;
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); width: 320px;
+        }
+        .pass-card input {
+            width: 100%; padding: 12px; margin: 20px 0; border: 2px solid #e2e8f0;
+            border-radius: 8px; text-align: center; font-size: 20px; letter-spacing: 4px; outline: none;
+        }
+        
+        /* DASHBOARD CSS */
         .ho-header { background: #0f172a; color: white; padding: 20px; border-radius: 12px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
         .table-wrap { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); overflow-x: auto; }
         table { border-collapse: collapse; width: 100%; min-width: 1200px; }
@@ -17,54 +33,59 @@
         .sticky-col { position: sticky; left: 0; background: white; font-weight: 800; min-width: 240px; border-right: 2px solid #0f172a; z-index: 5; }
         input { width: 100%; border: none; text-align: right; font-weight: 700; outline: none; background: transparent; padding: 4px 0; }
         .calc-field { background: #f1f5f9; color: #475569; }
-        .group-header { background: var(--group-yellow); font-weight: 800; cursor: pointer; }
+        .group-header { background: var(--group-yellow); font-weight: 800; cursor: pointer; color: black; }
         .h-rev-gross { background: var(--rev-gross); }
         .h-exp { background: var(--exp); }
         .h-ebitda { background: var(--ebitda); }
         .year-col { background: #e0f2fe !important; font-weight: 900; }
-        .hidden-row { display: none; }
-        .toggle-btn { margin-right: 8px; font-size: 14px; }
+        .toggle-btn { margin-right: 8px; font-size: 14px; font-weight: bold; }
     </style>
 </head>
 <body>
 
-<div class="ho-header" style="display: flex; justify-content: space-between; align-items: center; padding: 20px; background: #0f172a; color: white; border-radius: 12px; margin-bottom: 20px;">
-    
-    <div style="display: flex; gap: 25px; align-items: center; justify-content: flex-start; flex: 2;">
-        <div style="text-align: left; border-right: 1px solid #334155; padding-right: 20px;">
-            <span style="font-size: 10px; color: #94a3b8; font-weight: 700; display: block; margin-bottom: 4px;">CINEMAS TOTAL</span>
-            <span id="header-cinemas-total" style="font-size: 16px; font-weight: 800; color: white;">₹ 0.00 L</span>
+<div id="passOverlay">
+    <div class="pass-card">
+        <h2 style="color:#0f172a; margin:0; font-size: 20px;">HO MASTER ACCESS</h2>
+        <p style="color:#64748b; font-size:11px; margin-top:5px;">Enter Private Password to Continue</p>
+        <input type="password" id="masterPassInput" placeholder="••••" onkeydown="if(event.key==='Enter') checkPass()">
+        <button onclick="checkPass()" style="width:100%; background:#0f172a; color:white; padding:12px; border-radius:8px; border:none; cursor:pointer; font-weight:700;">UNLOCK DASHBOARD</button>
+    </div>
+</div>
+
+<div class="ho-header">
+    <div style="display: flex; gap: 20px; align-items: center; flex: 2;">
+        <div style="border-right: 1px solid #334155; padding-right: 15px;">
+            <span style="font-size: 9px; color: #94a3b8; display: block;">CINEMAS TOTAL</span>
+            <span id="header-cinemas-total" style="font-size: 15px; font-weight: 800;">₹ 0.00 L</span>
         </div>
-        <div style="text-align: left; border-right: 1px solid #334155; padding-right: 20px;">
-            <span style="font-size: 10px; color: #94a3b8; font-weight: 700; display: block; margin-bottom: 4px;">HO NET IMPACT</span>
-            <span id="header-ho-total" style="font-size: 16px; font-weight: 800; color: #f19eb5;">₹ 0.00 L</span>
+        <div style="border-right: 1px solid #334155; padding-right: 15px;">
+            <span style="font-size: 9px; color: #94a3b8; display: block;">HO NET IMPACT</span>
+            <span id="header-ho-total" style="font-size: 15px; font-weight: 800; color: #f19eb5;">₹ 0.00 L</span>
         </div>
-        <div style="text-align: left;">
-            <span style="font-size: 10px; color: #94a3b8; font-weight: 700; display: block; margin-bottom: 4px;">GROUP NET EBITDA</span>
-            <span id="header-final-net" style="font-size: 24px; font-weight: 900; color: #92d050;">₹ 0.00 L</span>
+        <div>
+            <span style="font-size: 9px; color: #94a3b8; display: block;">GROUP NET EBITDA</span>
+            <span id="header-final-net" style="font-size: 22px; font-weight: 900; color: #92d050;">₹ 0.00 L</span>
         </div>
     </div>
 
     <div style="text-align: center; flex: 2;">
-        <h1 style="margin:0; font-size: 18px; letter-spacing: 1px;">ROONGTA GROUP | HO MASTER SUMMARY</h1>
-        <p style="margin:5px 0 0; color: #94a3b8; font-size: 10px; font-weight: 600;">LOCKED TO ACTUAL DATA ONLY</p>
+        <h1 style="margin:0; font-size: 16px;">ROONGTA GROUP | HO MASTER SUMMARY</h1>
+        <p style="margin:2px 0 0; color: #94a3b8; font-size: 9px;">LOCKED TO ACTUAL DATA ONLY</p>
     </div>
 
-    <div class="controls" style="display: flex; gap: 10px; align-items: center; justify-content: flex-end; flex: 1.5;">
-        <select id="fySelect" onchange="refreshHOData()" style="padding: 8px; border-radius: 6px; font-weight: 700; background: white; color: #0f172a; border:none;">
+    <div style="display: flex; gap: 8px; justify-content: flex-end; flex: 1.5;">
+        <select id="fySelect" onchange="refreshHOData()" style="padding: 6px; border-radius: 6px; font-weight: 700;">
             <option value="2025">FY 2025-26</option>
             <option value="2026">FY 2026-27</option>
         </select>
-        <button onclick="saveHO()" style="background:#059669; color:white; border:none; padding:8px 15px; border-radius:8px; cursor:pointer; font-weight:700;">SAVE</button>
-        <button onclick="window.location.href='index.html'" style="background:#475569; color:white; border:none; padding:8px 15px; border-radius:8px; cursor:pointer;">BACK</button>
+        <button onclick="saveHO()" style="background:#059669; color:white; border:none; padding:6px 12px; border-radius:6px; cursor:pointer; font-weight:700;">SAVE</button>
+        <button onclick="window.location.href='index.html'" style="background:#475569; color:white; border:none; padding:6px 12px; border-radius:6px; cursor:pointer;">BACK</button>
     </div>
 </div>
 
 <div class="table-wrap">
     <table>
-        <thead>
-            <tr id="hRow"><th class="sticky-col">FINANCIAL PARTICULARS</th></tr>
-        </thead>
+        <thead><tr id="hRow"></tr></thead>
         <tbody id="tBody"></tbody>
     </table>
 </div>
@@ -75,218 +96,129 @@
     const db = firebase.database();
 
     const months = ["Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","Jan","Feb","Mar"];
+    const revenueRows = [
+        { id: 'rev_bus', label: 'BUSINESS REVENUE' },
+        { id: 'rev_vpf', label: 'VPF REVENUE' },
+        { id: 'rev_oth_ho', label: 'OTHERS REVENUE' }
+    ];
+    const expenseRows = [
+        { id: 'exp_sal', label: 'HO SALARY' },
+        { id: 'exp_off', label: 'OFFICE EXPENSES' },
+        { id: 'exp_oth', label: 'OTHER EXPENSES' }
+    ];
 
-    // Revenue Sections
-    const revenueSections = [{
-        id: 'ho_rev',
-        title: 'HO ADDITIONAL REVENUES',
-        rows: [
-            { id: 'rev_bus', label: 'BUSINESS REVENUE' },
-            { id: 'rev_vpf', label: 'VPF REVENUE' },
-            { id: 'rev_oth_ho', label: 'OTHERS REVENUE' }
-        ]
-    }];
-
-    // Expense Sections
-    const expenseSections = [{
-        id: 'ho_exp',
-        title: 'HO OPERATING EXPENSES',
-        rows: [
-            { id: 'exp_sal', label: 'HO SALARY' },
-            { id: 'exp_off', label: 'OFFICE EXPENSES' },
-            { id: 'exp_oth', label: 'OTHER EXPENSES' }
-        ]
-    }];
+    function checkPass() {
+        const pass = document.getElementById('masterPassInput').value;
+        if (pass === "1234") { // <--- CHANGE YOUR PASSWORD HERE
+            document.getElementById('passOverlay').style.display = 'none';
+            initHO();
+        } else {
+            alert("Wrong Password!");
+        }
+    }
 
     function initHO() {
         const h = document.getElementById('hRow');
         const b = document.getElementById('tBody');
-        b.innerHTML = ""; 
-        h.innerHTML = '<th class="sticky-col">FINANCIAL PARTICULARS</th>';
-        months.forEach(m => h.innerHTML += `<th>${m}</th>`);
-        h.innerHTML += `<th class="year-col">FY TOTAL</th>`;
+        h.innerHTML = '<th class="sticky-col">FINANCIAL PARTICULARS</th>' + months.map(m => `<th>${m}</th>`).join('') + '<th class="year-col">FY TOTAL</th>';
+        
+        b.innerHTML += renderRow({ id: 'cinema_ebitda', label: 'TOTAL CINEMAS EBITDA', cls: 'h-rev-gross', isRO: true });
+        
+        b.innerHTML += `<tr class="group-header" onclick="toggleSec('ho_rev')"><td class="sticky-col"><span id="btn_ho_rev">−</span> HO ADDITIONAL REVENUES</td><td colspan="13"></td></tr>`;
+        revenueRows.forEach(r => b.innerHTML += renderRow(r, 'ho_rev'));
+        b.innerHTML += renderRow({ id: 'total_ho_rev', label: 'TOTAL HO REVENUE', cls: 'h-rev-gross', isRO: true });
 
-        // 1. TOP ROW: TOTAL CINEMAS EBITDA
-        b.innerHTML += renderRow({ id: 'cinema_ebitda', label: 'TOTAL CINEMAS EBITDA', type: 'calc', cls: 'h-rev-gross' });
+        b.innerHTML += `<tr class="group-header" onclick="toggleSec('ho_exp')"><td class="sticky-col"><span id="btn_ho_exp">−</span> HO OPERATING EXPENSES</td><td colspan="13"></td></tr>`;
+        expenseRows.forEach(r => b.innerHTML += renderRow(r, 'ho_exp'));
+        b.innerHTML += renderRow({ id: 'total_ho_exp', label: 'TOTAL HO EXPENSES', cls: 'h-exp', isRO: true });
 
-        // 2. REVENUE SECTION (Collapsible)
-        revenueSections.forEach(sec => {
-            b.innerHTML += `<tr class="group-header" onclick="toggleSec('${sec.id}')">
-                <td class="sticky-col"><span class="toggle-btn" id="btn_${sec.id}">−</span> ${sec.title}</td>
-                <td colspan="13"></td></tr>`;
-            sec.rows.forEach(r => b.innerHTML += renderRow(r, sec.id));
-            b.innerHTML += renderRow({ id: 'total_ho_rev', label: 'TOTAL HO REVENUE', type: 'summary', cls: 'h-rev-gross' });
-        });
-
-        // 3. EXPENSE SECTION (Collapsible)
-        expenseSections.forEach(sec => {
-            b.innerHTML += `<tr class="group-header" onclick="toggleSec('${sec.id}')">
-                <td class="sticky-col"><span class="toggle-btn" id="btn_${sec.id}">−</span> ${sec.title}</td>
-                <td colspan="13"></td></tr>`;
-            sec.rows.forEach(r => b.innerHTML += renderRow(r, sec.id));
-            b.innerHTML += renderRow({ id: 'total_ho_exp', label: 'TOTAL HO EXPENSES', type: 'summary', cls: 'h-exp' });
-        });
-
-        // 4. FINAL CALCULATION: (Cinemas + HO Rev) - HO Exp
-        b.innerHTML += renderRow({ id: 'final_ebitda', label: 'FINAL GROUP EBITDA (NET)', type: 'summary', cls: 'h-ebitda' });
+        b.innerHTML += renderRow({ id: 'final_ebitda', label: 'FINAL GROUP EBITDA (NET)', cls: 'h-ebitda', isRO: true });
         
         refreshHOData();
     }
 
-    function renderRow(r, secId) {
-        let cls = r.cls || "";
-        if (secId) cls += ` row_${secId}`; 
-        let html = `<tr class="${cls}"><td class="sticky-col">${r.label}</td>`;
-        for(let i=0; i <= 12; i++) {
-            let isRO = (r.id === 'cinema_ebitda' || i === 12 || r.type === 'summary' || r.type === 'calc');
-            // Change this line inside the renderRow function:
-html += `<td class="${i===12?'year-col':''}">
-    <input type="number" id="${r.id}_${i}" value="0" ${isRO?'readonly class="calc-field"':''} oninput="calcHO()">
-</td>`;
+    function renderRow(r, sec) {
+        let html = `<tr class="${r.cls || ''} ${sec ? 'row_'+sec : ''}"><td class="sticky-col">${r.label}</td>`;
+        for(let i=0; i<=12; i++) {
+            const isRO = r.isRO || i === 12;
+            html += `<td class="${i===12?'year-col':''}"><input type="number" id="${r.id}_${i}" value="0" ${isRO?'readonly class="calc-field"':'oninput="calcHO()" '}></td>`;
         }
         return html + '</tr>';
     }
 
     function toggleSec(id) {
         const rows = document.querySelectorAll(`.row_${id}`);
-        const btn = document.getElementById(`btn_${id}`);
         const isHidden = rows[0].style.display === 'none';
         rows.forEach(r => r.style.display = isHidden ? 'table-row' : 'none');
-        btn.innerText = isHidden ? '−' : '+';
+        document.getElementById('btn_'+id).innerText = isHidden ? '−' : '+';
     }
 
     async function refreshHOData() {
-    const fy = document.getElementById('fySelect').value;
-    const locations = ['surat', 'ghaziabad', 'muzaffarnagar', 'adipur', 'hyderabad'];
-    
-    // 1. Fetch all report data from Firebase
-    const snapshot = await db.ref('reports').once('value');
-    const all = snapshot.val() || {};
+        const fy = document.getElementById('fySelect').value;
+        const snapshot = await db.ref('reports').once('value');
+        const all = snapshot.val() || {};
+        const locations = ['surat', 'ghaziabad', 'muzaffarnagar', 'adipur', 'hyderabad'];
 
-    // 2. Calculate Monthly Cinema Totals
-    for (let i = 0; i < 12; i++) {
-        let totalCin = 0;
-        locations.forEach(loc => {
-            const d = all[loc]?.['actual']?.[fy];
-            if (d) {
-                const ff = parseFloat(d.ff?.[i] || 0);
-                const core = (ff * (parseFloat(d.atp_g?.[i] || 0) + parseFloat(d.sph_g?.[i] || 0))) / 100000;
-                let o = 0; 
-                ['rev_oth','rev_3d','rev_park','rev_mgmt','rev_adv'].forEach(k => o += parseFloat(d[k]?.[i] || 0));
-                
-                let e = 0; 
-                Object.keys(d).forEach(k => { 
-                    if(!['ff','atp_g','sph_g','atp_n','sph_n','rev_oth','rev_3d','rev_park','rev_mgmt','rev_adv','cap','occ'].includes(k) && Array.isArray(d[k])) 
-                        e += parseFloat(d[k][i] || 0); 
-                });
-                totalCin += (core + o - e);
-            }
-        });
-        document.getElementById(`cinema_ebitda_${i}`).value = totalCin.toFixed(2);
-    }
-
-    // 3. Calculate the Yearly Total for Cinemas (Column 12)
-    let cinYearly = 0;
-    for(let m = 0; m < 12; m++) {
-        cinYearly += parseFloat(document.getElementById(`cinema_ebitda_${m}`).value) || 0;
-    }
-    document.getElementById(`cinema_ebitda_12`).value = cinYearly.toFixed(2);
-
-    // 4. Fetch and Fill HO specific data
-    const hoSnap = await db.ref(`reports/HO/actual/${fy}`).once('value');
-    const hoData = hoSnap.val() || {};
-    
-    [...revenueSections[0].rows, ...expenseSections[0].rows].forEach(r => {
-        if(hoData[r.id]) {
-            hoData[r.id].forEach((v, idx) => {
-                const el = document.getElementById(`${r.id}_${idx}`);
-                if(el) el.value = v;
+        for (let i = 0; i < 12; i++) {
+            let totalCin = 0;
+            locations.forEach(loc => {
+                const d = all[loc]?.['actual']?.[fy];
+                if (d) {
+                    const ff = parseFloat(d.ff?.[i] || 0);
+                    const core = (ff * (parseFloat(d.atp_g?.[i] || 0) + parseFloat(d.sph_g?.[i] || 0))) / 100000;
+                    let o = 0; ['rev_oth','rev_3d','rev_park','rev_mgmt','rev_adv'].forEach(k => o += parseFloat(d[k]?.[i] || 0));
+                    let e = 0; Object.keys(d).forEach(k => { if(!['ff','atp_g','sph_g','atp_n','sph_n','rev_oth','rev_3d','rev_park','rev_mgmt','rev_adv','cap','occ'].includes(k) && Array.isArray(d[k])) e += parseFloat(d[k][i] || 0); });
+                    totalCin += (core + o - e);
+                }
             });
-        } else {
-            // Reset to 0 if no data exists for this year
-            for(let idx = 0; idx < 12; idx++) {
-                const el = document.getElementById(`${r.id}_${idx}`);
-                if(el) el.value = 0;
-            }
+            document.getElementById(`cinema_ebitda_${i}`).value = totalCin.toFixed(2);
         }
-    });
 
-    // 5. Trigger the main calculation engine to update Headers and Subtotals
-    calcHO();
-}
+        const hoSnap = await db.ref(`reports/HO/actual/${fy}`).once('value');
+        const hoData = hoSnap.val() || {};
+        [...revenueRows, ...expenseRows].forEach(r => {
+            if(hoData[r.id]) hoData[r.id].forEach((v, idx) => { if(document.getElementById(`${r.id}_${idx}`)) document.getElementById(`${r.id}_${idx}`).value = v; });
+        });
+        calcHO();
+    }
 
     function calcHO() {
-    let yearlyCinemasTotal = 0;
-    let yearlyHoRevTotal = 0;
-    let yearlyHoExpTotal = 0;
+        for (let i = 0; i <= 12; i++) {
+            if (i === 12) {
+                ['cinema_ebitda', ...revenueRows.map(r=>r.id), ...expenseRows.map(r=>r.id)].forEach(id => {
+                    let sum = 0; for(let m=0; m<12; m++) sum += parseFloat(document.getElementById(`${id}_${m}`).value) || 0;
+                    document.getElementById(`${id}_12`).value = sum.toFixed(2);
+                });
+            }
+            let rev = 0; revenueRows.forEach(r => rev += parseFloat(document.getElementById(`${r.id}_${i}`).value) || 0);
+            document.getElementById(`total_ho_rev_${i}`).value = rev.toFixed(2);
+            
+            let exp = 0; expenseRows.forEach(r => exp += parseFloat(document.getElementById(`${r.id}_${i}`).value) || 0);
+            document.getElementById(`total_ho_exp_${i}`).value = exp.toFixed(2);
 
-    // Loop through all 12 months + the 13th column (FY TOTAL)
-    for (let i = 0; i <= 12; i++) {
-        
-        // A. Update the FY TOTAL Column (Column index 12)
-        if (i === 12) {
-            const rowIds = ['cinema_ebitda', 'rev_bus', 'rev_vpf', 'rev_oth_ho', 'exp_sal', 'exp_off', 'exp_oth'];
-            rowIds.forEach(id => {
-                let rowSum = 0;
-                // Sum months 0 to 11
-                for(let m=0; m<12; m++) {
-                    rowSum += parseFloat(document.getElementById(`${id}_${m}`).value) || 0;
-                }
-                document.getElementById(`${id}_12`).value = rowSum.toFixed(2);
-            });
-        }
+            const cin = parseFloat(document.getElementById(`cinema_ebitda_${i}`).value) || 0;
+            const net = (cin + rev) - exp;
+            document.getElementById(`final_ebitda_${i}`).value = net.toFixed(2);
 
-        // B. Calculate Section Sub-Totals (Revenue and Expense)
-        let hoRev = (parseFloat(document.getElementById(`rev_bus_${i}`).value) || 0) +
-                    (parseFloat(document.getElementById(`rev_vpf_${i}`).value) || 0) +
-                    (parseFloat(document.getElementById(`rev_oth_ho_${i}`).value) || 0);
-        document.getElementById(`total_ho_rev_${i}`).value = hoRev.toFixed(2);
-
-        let hoExp = (parseFloat(document.getElementById(`exp_sal_${i}`).value) || 0) +
-                    (parseFloat(document.getElementById(`exp_off_${i}`).value) || 0) +
-                    (parseFloat(document.getElementById(`exp_oth_${i}`).value) || 0);
-        document.getElementById(`total_ho_exp_${i}`).value = hoExp.toFixed(2);
-
-        // C. Calculate Final Row: (Cinemas + HO Rev) - HO Exp
-        const cinEbitda = parseFloat(document.getElementById(`cinema_ebitda_${i}`).value) || 0;
-        const netResult = (cinEbitda + hoRev) - hoExp;
-        
-        const finalEl = document.getElementById(`final_ebitda_${i}`);
-        finalEl.value = netResult.toFixed(2);
-        finalEl.style.color = netResult >= 0 ? "#166534" : "#991b1b";
-
-        // D. Store Yearly Values for Header Summary
-        if (i === 12) {
-            yearlyCinemasTotal = cinEbitda;
-            yearlyHoRevTotal = hoRev;
-            yearlyHoExpTotal = hoExp;
+            if (i === 12) {
+                document.getElementById('header-cinemas-total').innerText = `₹ ${cin.toFixed(2)} L`;
+                document.getElementById('header-ho-total').innerText = `₹ ${(exp - rev).toFixed(2)} L`;
+                const final = document.getElementById('header-final-net');
+                final.innerText = `₹ ${net.toFixed(2)} L`;
+                final.style.color = net >= 0 ? "#92d050" : "#f19eb5";
+            }
         }
     }
-
-    // 2. UPDATE UPPER LEFT HEADER SUMMARY
-    const groupNetEbitda = (yearlyCinemasTotal + yearlyHoRevTotal) - yearlyHoExpTotal;
-    const hoNetImpact = yearlyHoExpTotal - yearlyHoRevTotal;
-
-    document.getElementById('header-cinemas-total').innerText = `₹ ${yearlyCinemasTotal.toFixed(2)} L`;
-    document.getElementById('header-ho-total').innerText = `₹ ${hoNetImpact.toFixed(2)} L`;
-    
-    const hFinal = document.getElementById('header-final-net');
-    hFinal.innerText = `₹ ${groupNetEbitda.toFixed(2)} L`;
-    hFinal.style.color = groupNetEbitda >= 0 ? "#92d050" : "#f19eb5";
-}
 
     async function saveHO() {
         const fy = document.getElementById('fySelect').value;
         const data = {};
-        [...revenueSections[0].rows, ...expenseSections[0].rows].forEach(r => {
-            data[r.id] = [];
-            for(let i=0; i<12; i++) data[r.id].push(document.getElementById(`${r.id}_${i}`).value || "0");
+        [...revenueRows, ...expenseRows].forEach(r => {
+            data[r.id] = []; for(let i=0; i<12; i++) data[r.id].push(document.getElementById(`${r.id}_${i}`).value || "0");
         });
         await db.ref(`reports/HO/actual/${fy}`).set(data);
-        alert("HO Data Saved!");
+        alert("Saved!");
     }
-
-    window.onload = initHO;
 </script>
 </body>
 </html>
