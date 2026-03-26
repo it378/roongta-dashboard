@@ -16,21 +16,6 @@
         .dashboard-wrapper { display: grid; grid-template-columns: 1fr 340px; gap: 20px; }
         .main-card { background: white; padding: 30px; border-radius: 16px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); border: 1px solid #e2e8f0; }
 
-        /* PRIVATE LOGIN OVERLAY */
-#passOverlay {
-    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(15, 23, 42, 0.98); z-index: 9999;
-    display: flex; align-items: center; justify-content: center;
-}
-.pass-card {
-    background: white; padding: 40px; border-radius: 16px; text-align: center;
-    box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); width: 320px;
-}
-.pass-card input {
-    width: 100%; padding: 12px; margin: 20px 0; border: 2px solid #e2e8f0;
-    border-radius: 8px; text-align: center; font-size: 20px; letter-spacing: 4px; outline: none; color: #0f172a;
-}
-        
         .exec-summary {
             background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
             color: white; padding: 20px; border-radius: 12px; margin-bottom: 25px;
@@ -89,15 +74,6 @@
 </head>
 <body>
 
-<div id="passOverlay">
-    <div class="pass-card">
-        <h2 style="color:#0f172a; margin:0; font-size: 20px; font-family: 'Inter', sans-serif;">CINEMA ACCESS</h2>
-        <p style="color:#64748b; font-size:11px; margin-top:5px;">Enter Password to View Dashboard</p>
-        <input type="password" id="masterPassInput" placeholder="••••" onkeydown="if(event.key==='Enter') checkPass()">
-        <button onclick="checkPass()" style="width:100%; background:#0f172a; color:white; padding:12px; border-radius:8px; border:none; cursor:pointer; font-weight:700;">UNLOCK</button>
-    </div>
-</div>
-    
 <div class="dashboard-wrapper">
     <div class="main-card">
         <div class="exec-header" style="display: flex; justify-content: space-between; align-items: center; padding: 20px; background: #0f172a; border-radius: 12px; color: white;">
@@ -807,27 +783,7 @@ function goToHO() {
         alert("Unauthorized Access!");
     }
 }
-// This handles the private password check
-function checkPass() {
-    const pass = document.getElementById('masterPassInput').value;
-    const correctPass = "1234"; // <--- SET YOUR DASHBOARD PASSWORD HERE
-
-    if (pass === correctPass) {
-        document.getElementById('passOverlay').style.display = 'none';
-        
-        // Call your existing initialization functions here
-        if (typeof init === "function") init(); 
-        if (typeof updateGlobalEbitda === "function") updateGlobalEbitda();
-    } else {
-        alert("Incorrect Password!");
-        document.getElementById('masterPassInput').value = "";
-    }
-}
-
-// Ensure the cursor starts in the password box
-window.onload = function() {
-    document.getElementById('masterPassInput').focus();
-}
+window.onload = init;
 </script>
 </body>
 </html>
