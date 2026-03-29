@@ -6,10 +6,10 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <style>
-        :root { --navy: #0f172a; --ebitda: #92d050; --rev-gross: #ffd966; --exp: #f19eb5; --group-yellow: #ffff00; }
-        body { font-family: 'Inter', sans-serif; background: #f8fafc; padding: 20px; font-size: 11px; }
+        :root { --navy: #0f172a; --ebitda: #92d050; --rev-gross: #ffd966; --exp: #f19eb5; --group-yellow: #facc15; }
+        body { font-family: 'Inter', system-ui, sans-serif; background: #f1f5f9; padding: 20px; font-size: 12px; color: #1e293b; }
         
-        /* PASSWORD OVERLAY */
+        /* AUTH OVERLAY */
         #passOverlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(15, 23, 42, 0.98); z-index: 9999;
@@ -24,53 +24,63 @@
             border-radius: 8px; text-align: center; font-size: 20px; letter-spacing: 4px; outline: none;
         }
         
-        /* DASHBOARD LAYOUT */
-        .ho-header { background: #0f172a; color: white; padding: 20px; border-radius: 12px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
-        .table-wrap { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); overflow-x: auto; }
-        table { border-collapse: collapse; width: 100%; min-width: 1200px; }
-        th { background: #0f172a; color: white; padding: 12px; text-align: left; position: sticky; top: 0; z-index: 10; border: 1px solid #334155; }
-        td { border: 1px solid #cbd5e1; padding: 6px; }
-        .sticky-col { position: sticky; left: 0; background: white; font-weight: 800; min-width: 240px; border-right: 2px solid #0f172a; z-index: 5; }
-        input { width: 100%; border: none; text-align: right; font-weight: 700; outline: none; background: transparent; padding: 4px 0; font-family: inherit; }
-        .calc-field { background: rgba(255,255,255,0.05); }
+        /* HEADER SECTION */
+        .ho-header { background: var(--navy); color: white; padding: 25px; border-radius: 16px; margin-bottom: 25px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.2); }
+        .stat-box { background: #1e293b; padding: 12px 20px; border-radius: 10px; border: 1px solid #334155; min-width: 140px; }
+        .stat-label { font-size: 10px; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; font-weight: 700; margin-bottom: 4px; display: block; }
+        .stat-val { font-size: 18px; font-weight: 800; }
+
+        /* FINAL TOTAL BOX */
+        #header-final-box { background: var(--ebitda); border: 2px solid #ffffff; padding: 12px 25px; border-radius: 12px; color: #000; }
+        #header-final-box .stat-label { color: rgba(0,0,0,0.6); }
+        #header-final-box .stat-val { font-size: 28px; }
+
+        /* TABLE STYLING */
+        .table-wrap { background: white; padding: 10px; border-radius: 16px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); overflow-x: auto; }
+        table { border-collapse: collapse; width: 100%; min-width: 1400px; }
+        th { background: #f8fafc; color: #475569; padding: 14px; text-align: right; border-bottom: 2px solid #e2e8f0; font-weight: 700; text-transform: uppercase; font-size: 10px; }
+        th:first-child { text-align: left; }
+        td { border-bottom: 1px solid #f1f5f9; padding: 10px 8px; transition: background 0.2s; }
+        tr:hover td { background-color: #f8fafc; }
         
-        .group-header { background: var(--group-yellow); font-weight: 800; cursor: pointer; color: black; }
-        .h-rev-gross { background: var(--rev-gross); }
-        .h-exp { background: var(--exp); }
-        .year-col { background: rgba(224, 242, 254, 0.5) !important; font-weight: 900; }
+        .sticky-col { position: sticky; left: 0; background: white !important; font-weight: 700; min-width: 260px; border-right: 1px solid #e2e8f0; z-index: 5; text-align: left !important; color: #334155; }
+        input { width: 100%; border: none; text-align: right; font-weight: 700; outline: none; background: transparent; padding: 4px 0; font-family: inherit; font-size: 13px; color: #1e293b; }
 
-        /* UPPER PART: TOTAL CINEMAS EBITDA (Fixing Visibility) */
-        .upper-cinema-total {
-            background-color: #0f172a !important; 
-            color: #ffffff !important;           
-        }
-        .upper-cinema-total td, .upper-cinema-total .sticky-col {
-            background-color: #0f172a !important;
-            color: #ffffff !important;
-            border: 1px solid #475569 !important;
-            padding: 10px 6px !important;
-        }
-        .upper-cinema-total input {
-            color: #ffffff !important; /* Forces text to be white for visibility */
-            font-size: 13px !important;
-            text-shadow: 0px 0px 2px rgba(0,0,0,0.5);
-        }
+        /* ROW VARIATIONS */
+        .upper-cinema-total { background-color: var(--navy) !important; }
+        .upper-cinema-total td { color: white !important; border: none; }
+        .upper-cinema-total .sticky-col { background-color: var(--navy) !important; color: white !important; }
+        .upper-cinema-total input { color: white !important; }
 
-        /* LOWER PART: FINAL GROUP EBITDA (Bigger and Solid) */
-        .lower-final-net {
-            background-color: #92d050 !important; 
-            color: #000000 !important;           
-        }
-        .lower-final-net td, .lower-final-net .sticky-col {
-            background-color: #92d050 !important;
-            color: #000000 !important;
-            border: 2px solid #000000 !important;
-            padding: 15px 6px !important; /* Makes the row significantly bigger */
-        }
-        .lower-final-net input {
-            color: #000000 !important;
-            font-size: 18px !important; /* Much larger font size */
-            font-weight: 900 !important;
+        .group-header { background: #f1f5f9; font-weight: 800; cursor: pointer; color: #475569; }
+        .group-header td { padding: 12px 15px; border-top: 2px solid #e2e8f0; font-size: 11px; letter-spacing: 0.5px; }
+        
+        .h-rev-gross { background-color: #fef9c3; border-top: 1px solid #fde047; }
+        .h-exp { background-color: #fee2e2; border-top: 1px solid #fecaca; }
+        
+        /* FINAL NET STYLING */
+        .lower-final-net { background-color: var(--ebitda) !important; }
+        .lower-final-net td { padding: 25px 10px !important; border: none !important; }
+        .lower-final-net .sticky-col { background-color: var(--ebitda) !important; color: #000 !important; font-size: 18px; }
+        .lower-final-net input { color: #000 !important; font-size: 32px !important; font-weight: 900 !important; height: 50px; }
+
+        .year-col { background: rgba(241, 245, 249, 0.8); font-weight: 800; border-left: 2px solid #e2e8f0; }
+
+        /* BUTTONS */
+        .btn { padding: 8px 16px; border-radius: 8px; border: none; cursor: pointer; font-weight: 700; font-size: 12px; transition: all 0.2s; display: inline-flex; align-items: center; gap: 8px; }
+        .btn-save { background: #059669; color: white; }
+        .btn-save:hover { background: #047857; }
+        .btn-print { background: #3b82f6; color: white; }
+        .btn-back { background: #64748b; color: white; }
+
+        /* PRINT STYLES */
+        @media print {
+            body { padding: 0; background: white; }
+            .btn, #passOverlay, select, .ho-header button { display: none !important; }
+            .table-wrap { box-shadow: none; padding: 0; }
+            .ho-header { background: white !important; color: black !important; border: 1px solid #eee; }
+            .stat-box { border: 1px solid #eee; }
+            .sticky-col { position: relative !important; }
         }
     </style>
 </head>
@@ -81,43 +91,44 @@
         <h2 style="color:#0f172a; margin:0; font-size: 20px;">HO MASTER ACCESS</h2>
         <p style="color:#64748b; font-size:11px; margin-top:5px;">Enter Private Password to Continue</p>
         <input type="password" id="masterPassInput" placeholder="••••" onkeydown="if(event.key==='Enter') checkPass()">
-        <button onclick="checkPass()" style="width:100%; background:#0f172a; color:white; padding:12px; border-radius:8px; border:none; cursor:pointer; font-weight:700;">UNLOCK DASHBOARD</button>
+        <button onclick="checkPass()" class="btn btn-save" style="width:100%; justify-content: center; padding: 14px;">UNLOCK DASHBOARD</button>
     </div>
 </div>
 
 <div class="ho-header">
-    <div style="display: flex; gap: 20px; align-items: center; flex: 2;">
-        <div style="background: #1e293b; padding: 10px 15px; border-radius: 8px; border: 1px solid #334155;">
-            <span style="font-size: 9px; color: #94a3b8; display: block; font-weight: 800;">CINEMAS TOTAL</span>
-            <span id="header-cinemas-total" style="font-size: 18px; font-weight: 900; color: #ffffff;">₹ 0.00 L</span>
+    <div style="display: flex; gap: 15px; align-items: center;">
+        <div class="stat-box">
+            <span class="stat-label">Cinema EBITDA</span>
+            <span id="header-cinemas-total" class="stat-val">₹ 0.00 L</span>
         </div>
-        <div style="border-right: 1px solid #334155; padding-right: 15px;">
-            <span style="font-size: 9px; color: #94a3b8; display: block;">HO NET IMPACT</span>
-            <span id="header-ho-total" style="font-size: 15px; font-weight: 800; color: #f19eb5;">₹ 0.00 L</span>
+        <div class="stat-box">
+            <span class="stat-label">HO Net Impact</span>
+            <span id="header-ho-total" class="stat-val" style="color: var(--exp);">₹ 0.00 L</span>
         </div>
-        <div id="header-final-box" style="background: #92d050; padding: 10px 15px; border-radius: 8px; border: 2px solid #ffffff; box-shadow: 0 4px 6px rgba(0,0,0,0.2);">
-            <span style="font-size: 9px; color: #000000; display: block; font-weight: 800;">GROUP NET EBITDA</span>
-            <span id="header-final-net" style="font-size: 26px; font-weight: 900; color: #000000;">₹ 0.00 L</span>
+        <div id="header-final-box">
+            <span class="stat-label">Group Net EBITDA</span>
+            <span id="header-final-net" class="stat-val">₹ 0.00 L</span>
         </div>
     </div>
 
-    <div style="text-align: center; flex: 2;">
-        <h1 style="margin:0; font-size: 16px;">ROONGTA GROUP | HO MASTER SUMMARY</h1>
-        <p style="margin:2px 0 0; color: #94a3b8; font-size: 9px;">LOCKED TO ACTUAL DATA ONLY</p>
+    <div style="text-align: center;">
+        <h1 style="margin:0; font-size: 20px; letter-spacing: -0.5px;">Master Summary</h1>
+        <span style="font-size: 10px; color: #94a3b8; text-transform: uppercase; font-weight: 700;">Consolidated Financial Statement</span>
     </div>
 
-    <div style="display: flex; gap: 8px; justify-content: flex-end; flex: 1.5;">
-        <select id="fySelect" onchange="refreshHOData()" style="padding: 6px; border-radius: 6px; font-weight: 700;">
+    <div style="display: flex; gap: 10px;">
+        <select id="fySelect" onchange="refreshHOData()" style="padding: 8px 12px; border-radius: 8px; font-weight: 700; border: 1px solid #334155; background: #1e293b; color: white;">
             <option value="2025">FY 2025-26</option>
             <option value="2026">FY 2026-27</option>
         </select>
-        <button onclick="saveHO()" style="background:#059669; color:white; border:none; padding:6px 12px; border-radius:6px; cursor:pointer; font-weight:700;">SAVE</button>
-        <button onclick="window.location.href='index.html'" style="background:#475569; color:white; border:none; padding:6px 12px; border-radius:6px; cursor:pointer;">BACK</button>
+        <button onclick="saveHO()" class="btn btn-save">SAVE DATA</button>
+        <button onclick="window.print()" class="btn btn-print">PRINT SUMMARY</button>
+        <button onclick="window.location.href='index.html'" class="btn btn-back">BACK</button>
     </div>
 </div>
 
 <div class="table-wrap">
-    <table>
+    <table id="masterTable">
         <thead><tr id="hRow"></tr></thead>
         <tbody id="tBody"></tbody>
     </table>
@@ -130,42 +141,39 @@
 
     const months = ["Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","Jan","Feb","Mar"];
     const revenueRows = [
-        { id: 'rev_bus', label: 'BUSINESS REVENUE' },
-        { id: 'rev_vpf', label: 'VPF REVENUE' },
-        { id: 'rev_oth_ho', label: 'OTHERS REVENUE' }
+        { id: 'rev_bus', label: 'Business Revenue' },
+        { id: 'rev_vpf', label: 'VPF Revenue' },
+        { id: 'rev_oth_ho', label: 'Other HO Revenues' }
     ];
     const expenseRows = [
-        { id: 'exp_sal', label: 'HO SALARY' },
-        { id: 'exp_off', label: 'OFFICE EXPENSES' },
-        { id: 'exp_oth', label: 'OTHER EXPENSES' }
+        { id: 'exp_sal', label: 'HO Salaries & Wages' },
+        { id: 'exp_off', label: 'Office Admin Expenses' },
+        { id: 'exp_oth', label: 'Other HO Overheads' }
     ];
 
     function checkPass() {
-        const pass = document.getElementById('masterPassInput').value;
-        if (pass === "RCINEMAHO") { 
+        if (document.getElementById('masterPassInput').value === "RCINEMAHO") { 
             document.getElementById('passOverlay').style.display = 'none';
             initHO();
-        } else {
-            alert("Wrong Password!");
-        }
+        } else { alert("Access Denied."); }
     }
 
     function initHO() {
         const h = document.getElementById('hRow');
         const b = document.getElementById('tBody');
-        h.innerHTML = '<th class="sticky-col">FINANCIAL PARTICULARS</th>' + months.map(m => `<th>${m}</th>`).join('') + '<th class="year-col">FY TOTAL</th>';
+        h.innerHTML = '<th class="sticky-col">Financial Particulars</th>' + months.map(m => `<th>${m}</th>`).join('') + '<th class="year-col">FY TOTAL</th>';
         
-        b.innerHTML += renderRow({ id: 'cinema_ebitda', label: 'TOTAL CINEMAS EBITDA', cls: 'upper-cinema-total', isRO: true });
+        b.innerHTML += renderRow({ id: 'cinema_ebitda', label: 'TOTAL CINEMA OPERATING EBITDA', cls: 'upper-cinema-total', isRO: true });
         
-        b.innerHTML += `<tr class="group-header" onclick="toggleSec('ho_rev')"><td class="sticky-col"><span id="btn_ho_rev">−</span> HO ADDITIONAL REVENUES</td><td colspan="13"></td></tr>`;
+        b.innerHTML += `<tr class="group-header" onclick="toggleSec('ho_rev')"><td class="sticky-col" colspan="14">▾ HO ADDITIONAL REVENUES</td></tr>`;
         revenueRows.forEach(r => b.innerHTML += renderRow(r, 'ho_rev'));
-        b.innerHTML += renderRow({ id: 'total_ho_rev', label: 'TOTAL HO REVENUE', cls: 'h-rev-gross', isRO: true });
+        b.innerHTML += renderRow({ id: 'total_ho_rev', label: 'TOTAL ADDITIONAL REVENUE', cls: 'h-rev-gross', isRO: true });
 
-        b.innerHTML += `<tr class="group-header" onclick="toggleSec('ho_exp')"><td class="sticky-col"><span id="btn_ho_exp">−</span> HO OPERATING EXPENSES</td><td colspan="13"></td></tr>`;
+        b.innerHTML += `<tr class="group-header" onclick="toggleSec('ho_exp')"><td class="sticky-col" colspan="14">▾ HO OPERATING EXPENSES</td></tr>`;
         expenseRows.forEach(r => b.innerHTML += renderRow(r, 'ho_exp'));
-        b.innerHTML += renderRow({ id: 'total_ho_exp', label: 'TOTAL HO EXPENSES', cls: 'h-exp', isRO: true });
+        b.innerHTML += renderRow({ id: 'total_ho_exp', label: 'TOTAL OPERATING EXPENSES', cls: 'h-exp', isRO: true });
 
-        b.innerHTML += renderRow({ id: 'final_ebitda', label: 'FINAL GROUP EBITDA (NET)', cls: 'lower-final-net', isRO: true });
+        b.innerHTML += renderRow({ id: 'final_ebitda', label: 'CONSOLIDATED GROUP EBITDA', cls: 'lower-final-net', isRO: true });
         
         refreshHOData();
     }
@@ -174,7 +182,7 @@
         let html = `<tr class="${r.cls || ''} ${sec ? 'row_'+sec : ''}"><td class="sticky-col">${r.label}</td>`;
         for(let i=0; i<=12; i++) {
             const isRO = r.isRO || i === 12;
-            html += `<td class="${i===12?'year-col':''}"><input type="number" id="${r.id}_${i}" value="0" ${isRO?'readonly class="calc-field"':'oninput="calcHO()" '}></td>`;
+            html += `<td class="${i===12?'year-col':''}"><input type="number" id="${r.id}_${i}" value="0" ${isRO?'readonly':'oninput="calcHO()" '}></td>`;
         }
         return html + '</tr>';
     }
@@ -183,7 +191,6 @@
         const rows = document.querySelectorAll(`.row_${id}`);
         const isHidden = rows[0].style.display === 'none';
         rows.forEach(r => r.style.display = isHidden ? 'table-row' : 'none');
-        document.getElementById('btn_'+id).innerText = isHidden ? '−' : '+';
     }
 
     async function refreshHOData() {
@@ -235,17 +242,15 @@
 
             if (i === 12) {
                 document.getElementById('header-cinemas-total').innerText = `₹ ${cin.toFixed(2)} L`;
-                document.getElementById('header-ho-total').innerText = `₹ ${(exp - rev).toFixed(2)} L`;
+                // REMOVE MINUS SYMBOL FROM IMPACT DISPLAY
+                const impact = exp - rev;
+                document.getElementById('header-ho-total').innerText = `₹ ${Math.abs(impact).toFixed(2)} L`;
+                document.getElementById('header-ho-total').style.color = impact > 0 ? "#f87171" : "#34d399";
                 
                 const finalBox = document.getElementById('header-final-box');
                 const finalText = document.getElementById('header-final-net');
                 finalText.innerText = `₹ ${net.toFixed(2)} L`;
-                
-                if(net >= 0) {
-                    finalBox.style.backgroundColor = "#92d050";
-                } else {
-                    finalBox.style.backgroundColor = "#f19eb5";
-                }
+                finalBox.style.backgroundColor = net >= 0 ? "#92d050" : "#f19eb5";
             }
         }
     }
@@ -257,7 +262,7 @@
             data[r.id] = []; for(let i=0; i<12; i++) data[r.id].push(document.getElementById(`${r.id}_${i}`).value || "0");
         });
         await db.ref(`reports/HO/actual/${fy}`).set(data);
-        alert("Data Saved Successfully!");
+        alert("Consolidated Data Saved Successfully!");
     }
 </script>
 </body>
