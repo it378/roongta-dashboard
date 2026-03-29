@@ -6,98 +6,201 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <style>
-        :root { --navy: #0f172a; --ebitda: #22c55e; --rev-sub: #fefce8; --exp-sub: #fff1f2; }
-        body { font-family: 'Inter', sans-serif; background: #f8fafc; padding: 20px; font-size: 11px; color: #1e293b; }
+        :root { 
+            --navy: #0f172a; 
+            --accent: #3b82f6;
+            --ebitda-green: #22c55e;
+            --loss-red: #ef4444;
+            --glass: rgba(255, 255, 255, 0.95);
+        }
         
+        body { 
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; 
+            background: #f1f5f9; 
+            margin: 0; 
+            padding: 20px; 
+            color: #1e293b;
+        }
+
         /* AUTH OVERLAY */
         #passOverlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: var(--navy); z-index: 9999;
             display: flex; align-items: center; justify-content: center;
         }
-        .pass-card { background: white; padding: 40px; border-radius: 16px; text-align: center; width: 320px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); }
-        .pass-card input { width: 100%; padding: 12px; margin: 20px 0; border: 2px solid #e2e8f0; border-radius: 8px; text-align: center; font-size: 20px; outline: none; }
-        
-        /* HEADER */
-        .ho-header { background: var(--navy); color: white; padding: 25px; border-radius: 16px; margin-bottom: 25px; display: flex; justify-content: space-between; align-items: center; }
-        .summary-pill { background: rgba(255,255,255,0.1); padding: 10px 20px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.1); }
-        .pill-label { font-size: 9px; color: #94a3b8; display: block; font-weight: 800; text-transform: uppercase; }
-        .pill-val { font-size: 18px; font-weight: 800; }
-
-        /* TABLE STRUCTURE */
-        .table-wrap { background: white; padding: 15px; border-radius: 16px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); overflow-x: auto; }
-        table { border-collapse: collapse; width: 100%; min-width: 1300px; table-layout: fixed; }
-        th { background: #f1f5f9; color: #475569; padding: 12px; text-align: right; font-size: 10px; border-bottom: 2px solid #e2e8f0; }
-        td { border-bottom: 1px solid #f1f5f9; padding: 8px; text-align: right; }
-        
-        .sticky-col { position: sticky; left: 0; background: white !important; font-weight: 700; min-width: 250px; border-right: 2px solid #f1f5f9; z-index: 5; text-align: left !important; }
-        input { width: 100%; border: none; text-align: right; font-weight: 700; outline: none; background: transparent; font-size: 13px; color: #334155; }
-
-        /* PROFESSIONAL ROWS */
-        .row-cinema-total { background-color: var(--navy) !important; -webkit-print-color-adjust: exact; }
-        .row-cinema-total td, .row-cinema-total .sticky-col { color: white !important; background-color: var(--navy) !important; padding: 12px 8px; }
-        .row-cinema-total input { color: white !important; font-size: 15px; }
-
-        .group-header { background: #f8fafc; font-weight: 800; color: #64748b; font-size: 10px; }
-        .row-rev-total { background: var(--rev-sub) !important; border-top: 1px solid #fef08a; -webkit-print-color-adjust: exact; }
-        .row-exp-total { background: var(--exp-sub) !important; border-top: 1px solid #fecaca; -webkit-print-color-adjust: exact; }
-
-        /* FINAL EBITDA ROW - NO OVERLAPPING */
-        .row-final-net { background-color: var(--ebitda) !important; -webkit-print-color-adjust: exact; }
-        .row-final-net td, .row-final-net .sticky-col { background-color: var(--ebitda) !important; color: white !important; padding: 18px 8px !important; border: none; }
-        .row-final-net input { color: white !important; font-size: 22px !important; font-weight: 900 !important; line-height: 1.2; }
-
-        /* PRINT SETTINGS */
-        @media print {
-            body { padding: 0; background: white; }
-            .no-print, button, select, #passOverlay { display: none !important; }
-            .table-wrap { box-shadow: none; padding: 0; }
-            .ho-header { border: 1px solid #eee; background: var(--navy) !important; color: white !important; }
-            .sticky-col { position: relative !important; }
-            table { min-width: 100%; width: 100%; }
+        .pass-card {
+            background: white; padding: 40px; border-radius: 20px; text-align: center;
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); width: 350px;
+        }
+        .pass-card input {
+            width: 80%; padding: 15px; margin: 20px 0; border: 2px solid #e2e8f0;
+            border-radius: 10px; text-align: center; font-size: 24px; letter-spacing: 4px; outline: none;
         }
 
-        .btn { padding: 8px 16px; border-radius: 8px; border: none; cursor: pointer; font-weight: 700; transition: 0.2s; }
-        .btn-save { background: #059669; color: white; }
-        .btn-print { background: #3b82f6; color: white; margin-left: 8px; }
+        /* HEADER DESIGN */
+        .ho-header { 
+            background: var(--navy); 
+            color: white; 
+            padding: 30px; 
+            border-radius: 20px; 
+            margin-bottom: 25px; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center;
+            box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.3);
+        }
+
+        .summary-card {
+            background: rgba(255,255,255,0.1);
+            padding: 15px 25px;
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        .label-sm { font-size: 11px; text-transform: uppercase; color: #94a3b8; font-weight: 700; letter-spacing: 1px; }
+        .val-lg { font-size: 22px; font-weight: 800; display: block; margin-top: 4px; }
+
+        /* TABLE ARCHITECTURE */
+        .table-container {
+            background: white;
+            border-radius: 20px;
+            padding: 15px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            overflow-x: auto;
+        }
+
+        table { border-collapse: separate; border-spacing: 0; width: 100%; min-width: 1400px; }
+        
+        th { 
+            background: #f8fafc; 
+            padding: 15px 10px; 
+            font-size: 11px; 
+            font-weight: 700; 
+            color: #64748b; 
+            text-transform: uppercase; 
+            border-bottom: 2px solid #e2e8f0;
+            text-align: right;
+        }
+
+        td { padding: 12px 10px; border-bottom: 1px solid #f1f5f9; text-align: right; }
+
+        .sticky-col { 
+            position: sticky; 
+            left: 0; 
+            background: linear-gradient(to right, #ffffff 95%, #f1f5f9 100%) !important;
+            z-index: 10; 
+            text-align: left; 
+            font-weight: 700; 
+            min-width: 280px;
+            color: var(--navy);
+        }
+
+        input { 
+            width: 100%; 
+            border: none; 
+            text-align: right; 
+            font-family: inherit; 
+            font-weight: 700; 
+            background: transparent; 
+            font-size: 14px;
+            outline: none;
+            color: #334155;
+        }
+
+        /* SECTION: CINEMA EBITDA (Navy Row) */
+        .row-cinema-ebitda { background: var(--navy) !important; color: white !important; }
+        .row-cinema-ebitda .sticky-col { background: var(--navy) !important; color: white !important; }
+        .row-cinema-ebitda input { color: white !important; font-size: 16px; }
+
+        /* SECTION: HEADERS */
+        .section-break { background: #f8fafc; font-weight: 800; color: #475569; font-size: 12px; cursor: pointer; }
+        .section-break td { padding: 15px 20px; text-align: left; border-left: 4px solid var(--accent); }
+
+        /* TOTAL ROWS (Subtotals) */
+        .subtotal-rev { background: #fefce8 !important; }
+        .subtotal-exp { background: #fff1f2 !important; }
+
+        /* SECTION: FINAL NET EBITDA */
+        .row-final-net { 
+            background: #dcfce7 !important; 
+        }
+        .row-final-net .sticky-col { 
+            background: #dcfce7 !important; 
+            font-size: 14px; 
+            color: #166534 !important;
+        }
+        .row-final-net td { 
+            padding: 15px 10px !important; 
+            border-top: 2px solid #166534;
+        }
+        .row-final-net input { 
+            font-size: 20px !important; 
+            color: #166534 !important; 
+            font-weight: 900 !important;
+            line-height: 1.2;
+        }
+
+        /* BUTTONS */
+        .btn {
+            padding: 10px 20px;
+            border-radius: 10px;
+            font-weight: 700;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .btn-save { background: var(--ebitda-green); color: white; }
+        
+        select {
+            background: #1e293b;
+            color: white;
+            border: 1px solid #334155;
+            padding: 10px;
+            border-radius: 10px;
+            font-weight: 700;
+        }
     </style>
 </head>
 <body>
 
 <div id="passOverlay">
     <div class="pass-card">
-        <h2>HO MASTER ACCESS</h2>
+        <h2 style="margin:0; color: var(--navy);">HO SECURE LOGIN</h2>
         <input type="password" id="masterPassInput" placeholder="••••" onkeydown="if(event.key==='Enter') checkPass()">
-        <button onclick="checkPass()" class="btn btn-save" style="width:100%">UNLOCK DASHBOARD</button>
+        <button onclick="checkPass()" class="btn btn-save" style="width:100%; justify-content:center;">UNLOCK SYSTEM</button>
     </div>
 </div>
 
 <div class="ho-header">
-    <div style="display: flex; gap: 15px;">
-        <div class="summary-pill">
-            <span class="pill-label">Cinema EBITDA</span>
-            <span id="header-cinemas-total" class="pill-val">₹ 0.00 L</span>
+    <div style="display: flex; gap: 20px;">
+        <div class="summary-card">
+            <span class="label-sm">Cinema Operating EBITDA</span>
+            <span id="header-cinemas-total" class="val-lg">₹ 0.00 L</span>
         </div>
-        <div class="summary-pill">
-            <span class="pill-label">HO Impact (Net)</span>
-            <span id="header-ho-total" class="pill-val" style="color: #f19eb5;">₹ 0.00 L</span>
+        <div class="summary-card">
+            <span class="label-sm">HO Net Impact</span>
+            <span id="header-ho-total" class="val-lg" style="color: #fb7185;">₹ 0.00 L</span>
         </div>
-        <div class="summary-pill" style="background: var(--ebitda); border: none;">
-            <span class="pill-label" style="color: rgba(255,255,255,0.7)">Group Net EBITDA</span>
-            <span id="header-final-net" class="pill-val">₹ 0.00 L</span>
+        <div class="summary-card" style="background: var(--ebitda-green); border: none;">
+            <span class="label-sm" style="color: rgba(255,255,255,0.8)">Consolidated Net EBITDA</span>
+            <span id="header-final-net" class="val-lg" style="color: white; font-size: 28px;">₹ 0.00 L</span>
         </div>
     </div>
+
     <div style="text-align: right;">
-        <select id="fySelect" onchange="refreshHOData()" style="padding: 8px; border-radius: 6px; font-weight: 700; margin-right: 10px;">
+        <select id="fySelect" onchange="refreshHOData()">
             <option value="2025">FY 2025-26</option>
             <option value="2026">FY 2026-27</option>
         </select>
-        <button onclick="saveHO()" class="btn btn-save">SAVE</button>
-        <button onclick="window.print()" class="btn btn-print">PRINT / EXPORT PDF</button>
+        <button onclick="saveHO()" class="btn btn-save" style="margin-left:10px;">SAVE DATA</button>
     </div>
 </div>
 
-<div class="table-wrap">
+<div class="table-container">
     <table>
         <thead><tr id="hRow"></tr></thead>
         <tbody id="tBody"></tbody>
@@ -110,14 +213,22 @@
     const db = firebase.database();
 
     const months = ["Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","Jan","Feb","Mar"];
-    const revenueRows = [{ id: 'rev_bus', label: 'Business Vertical Rev' }, { id: 'rev_vpf', label: 'VPF/Content Rev' }, { id: 'rev_oth_ho', label: 'Other HO Rev' }];
-    const expenseRows = [{ id: 'exp_sal', label: 'HO Human Capital' }, { id: 'exp_off', label: 'Office Admin Exp' }, { id: 'exp_oth', label: 'Misc Overheads' }];
+    const revenueRows = [
+        { id: 'rev_bus', label: 'Business Vertical Revenue' },
+        { id: 'rev_vpf', label: 'VPF & Content Revenue' },
+        { id: 'rev_oth_ho', label: 'Miscellaneous HO Income' }
+    ];
+    const expenseRows = [
+        { id: 'exp_sal', label: 'HO Human Capital Cost' },
+        { id: 'exp_off', label: 'Administrative & Office Exp.' },
+        { id: 'exp_oth', label: 'Contingency & Other Exp.' }
+    ];
 
     function checkPass() {
         if (document.getElementById('masterPassInput').value === "RCINEMAHO") { 
             document.getElementById('passOverlay').style.display = 'none';
             initHO();
-        } else { alert("Wrong Password!"); }
+        } else { alert("Unauthorized Access"); }
     }
 
     function initHO() {
@@ -125,24 +236,33 @@
         const b = document.getElementById('tBody');
         h.innerHTML = '<th class="sticky-col">FINANCIAL PARTICULARS</th>' + months.map(m => `<th>${m}</th>`).join('') + '<th>FY TOTAL</th>';
         
-        b.innerHTML += renderRow({ id: 'cinema_ebitda', label: 'TOTAL CINEMA OPERATING EBITDA', cls: 'row-cinema-total', isRO: true });
-        b.innerHTML += `<tr class="group-header"><td class="sticky-col" colspan="14">ADDITIONAL HO REVENUE STREAMS</td></tr>`;
-        revenueRows.forEach(r => b.innerHTML += renderRow(r));
-        b.innerHTML += renderRow({ id: 'total_ho_rev', label: 'TOTAL ADDITIONAL REVENUE', cls: 'row-rev-total', isRO: true });
-        b.innerHTML += `<tr class="group-header"><td class="sticky-col" colspan="14">HO OPERATING EXPENDITURE</td></tr>`;
-        expenseRows.forEach(r => b.innerHTML += renderRow(r));
-        b.innerHTML += renderRow({ id: 'total_ho_exp', label: 'TOTAL HO EXPENDITURE', cls: 'row-exp-total', isRO: true });
-        b.innerHTML += renderRow({ id: 'final_ebitda', label: 'CONSOLIDATED GROUP EBITDA (NET)', cls: 'row-final-net', isRO: true });
+        b.innerHTML += renderRow({ id: 'cinema_ebitda', label: 'TOTAL CINEMA OPERATING EBITDA', cls: 'row-cinema-ebitda', isRO: true });
         
+        b.innerHTML += `<tr class="section-break" onclick="toggleSec('ho_rev')"><td class="sticky-col" colspan="14">ADDITIONAL HO REVENUES</td></tr>`;
+        revenueRows.forEach(r => b.innerHTML += renderRow(r, 'ho_rev'));
+        b.innerHTML += renderRow({ id: 'total_ho_rev', label: 'TOTAL ADDITIONAL REVENUE', cls: 'subtotal-rev', isRO: true });
+
+        b.innerHTML += `<tr class="section-break" onclick="toggleSec('ho_exp')"><td class="sticky-col" colspan="14">HO OPERATING EXPENDITURE</td></tr>`;
+        expenseRows.forEach(r => b.innerHTML += renderRow(r, 'ho_exp'));
+        b.innerHTML += renderRow({ id: 'total_ho_exp', label: 'TOTAL HO EXPENDITURE', cls: 'subtotal-exp', isRO: true });
+
+        b.innerHTML += renderRow({ id: 'final_ebitda', label: 'CONSOLIDATED GROUP EBITDA', cls: 'row-final-net', isRO: true });
         refreshHOData();
     }
 
-    function renderRow(r) {
-        let html = `<tr class="${r.cls || ''}"><td class="sticky-col">${r.label}</td>`;
+    function renderRow(r, sec) {
+        let html = `<tr class="${r.cls || ''} ${sec ? 'row_'+sec : ''}"><td class="sticky-col">${r.label}</td>`;
         for(let i=0; i<=12; i++) {
-            html += `<td><input type="number" id="${r.id}_${i}" value="0" ${r.isRO || i===12 ? 'readonly':'oninput="calcHO()"'}></td>`;
+            const isRO = r.isRO || i === 12;
+            html += `<td><input type="number" id="${r.id}_${i}" value="0.00" ${isRO?'readonly':'oninput="calcHO()" '}></td>`;
         }
         return html + '</tr>';
+    }
+
+    function toggleSec(id) {
+        const rows = document.querySelectorAll(`.row_${id}`);
+        const isHidden = rows[0].style.display === 'none';
+        rows.forEach(r => r.style.display = isHidden ? 'table-row' : 'none');
     }
 
     async function refreshHOData() {
@@ -156,8 +276,8 @@
             locations.forEach(loc => {
                 const d = all[loc]?.['actual']?.[fy];
                 if (d) {
-                    const ff = parseFloat(d.ff?.[i] || 0), atp = parseFloat(d.atp_g?.[i] || 0), sph = parseFloat(d.sph_g?.[i] || 0);
-                    const core = (ff * (atp + sph)) / 100000;
+                    const ff = parseFloat(d.ff?.[i] || 0);
+                    const core = (ff * (parseFloat(d.atp_g?.[i] || 0) + parseFloat(d.sph_g?.[i] || 0))) / 100000;
                     let o = 0; ['rev_oth','rev_3d','rev_park','rev_mgmt','rev_adv'].forEach(k => o += parseFloat(d[k]?.[i] || 0));
                     let e = 0; Object.keys(d).forEach(k => { if(!['ff','atp_g','sph_g','atp_n','sph_n','rev_oth','rev_3d','rev_park','rev_mgmt','rev_adv','cap','occ'].includes(k) && Array.isArray(d[k])) e += parseFloat(d[k][i] || 0); });
                     totalCin += (core + o - e);
@@ -193,8 +313,8 @@
 
             if (i === 12) {
                 document.getElementById('header-cinemas-total').innerText = `₹ ${cin.toFixed(2)} L`;
-                // REMOVED MINUS SYMBOL FOR HO IMPACT
-                document.getElementById('header-ho-total').innerText = `₹ ${Math.abs(exp - rev).toFixed(2)} L`;
+                const impact = exp - rev;
+                document.getElementById('header-ho-total').innerText = `₹ ${Math.abs(impact).toFixed(2)} L`;
                 document.getElementById('header-final-net').innerText = `₹ ${net.toFixed(2)} L`;
             }
         }
@@ -207,7 +327,7 @@
             data[r.id] = []; for(let i=0; i<12; i++) data[r.id].push(document.getElementById(`${r.id}_${i}`).value || "0");
         });
         await db.ref(`reports/HO/actual/${fy}`).set(data);
-        alert("Consolidated Data Saved!");
+        alert("Executive Summary Saved Successfully");
     }
 </script>
 </body>
