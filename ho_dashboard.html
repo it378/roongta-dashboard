@@ -27,50 +27,34 @@
         /* DASHBOARD LAYOUT */
         .ho-header { background: #0f172a; color: white; padding: 20px; border-radius: 12px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
         .table-wrap { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); overflow-x: auto; }
-        table { border-collapse: collapse; width: 100%; min-width: 1200px; table-layout: fixed; }
+        table { border-collapse: collapse; width: 100%; min-width: 1300px; table-layout: fixed; }
         th { background: #0f172a; color: white; padding: 12px; text-align: left; position: sticky; top: 0; z-index: 10; border: 1px solid #334155; }
-        td { border: 1px solid #cbd5e1; padding: 6px; }
+        td { border: 1px solid #cbd5e1; padding: 8px; position: relative; }
         
-        /* Sticky Column Base */
-        .sticky-col { 
-            position: sticky; 
-            left: 0; 
-            z-index: 5; 
-            font-weight: 800; 
-            min-width: 240px; 
-            width: 240px;
-            border-right: 2px solid #0f172a !important; 
-        }
-        
-        input { width: 100%; border: none; text-align: right; font-weight: 700; outline: none; background: transparent; padding: 4px 0; font-family: inherit; }
+        .sticky-col { position: sticky; left: 0; z-index: 5; font-weight: 800; min-width: 260px; width: 260px; border-right: 2px solid #0f172a !important; }
+        input { width: 100%; border: none; text-align: right; font-weight: 800; outline: none; background: transparent; padding: 4px 0; font-family: inherit; display: block; }
 
-        /* UPPER PART: TOTAL CINEMAS EBITDA (NAVY) */
-        .upper-cinema-total { background-color: #0f172a !important; }
-        .upper-cinema-total td, 
-        .upper-cinema-total .sticky-col {
+        /* UPPER PART: TOTAL CINEMAS EBITDA */
+        .upper-cinema-total { background-color: #0f172a !important; color: #ffffff !important; }
+        .upper-cinema-total td, .upper-cinema-total .sticky-col {
             background-color: #0f172a !important;
-            color: #ffffff !important; /* FORCED WHITE TEXT */
+            color: #ffffff !important;
             border: 1px solid #475569 !important;
-            padding: 12px 6px !important;
         }
-        .upper-cinema-total input { 
-            color: #ffffff !important; /* FORCED WHITE NUMBERS */
-            font-size: 13px !important; 
-        }
+        .upper-cinema-total input { color: #ffffff !important; font-size: 14px !important; }
 
-        /* LOWER PART: FINAL GROUP EBITDA (GREEN) */
-        .lower-final-net { background-color: #92d050 !important; }
-        .lower-final-net td, 
-        .lower-final-net .sticky-col {
+        /* LOWER PART: FINAL GROUP EBITDA */
+        .lower-final-net { background-color: #92d050 !important; color: #000000 !important; }
+        .lower-final-net td, .lower-final-net .sticky-col {
             background-color: #92d050 !important;
-            color: #000000 !important; /* BLACK TEXT */
+            color: #000000 !important;
             border: 2px solid #000000 !important;
-            padding: 18px 6px !important;
         }
         .lower-final-net input { 
             color: #000000 !important; 
-            font-size: 20px !important; 
-            font-weight: 900 !important; 
+            font-size: 22px !important; /* BIGGER FONT FOR FINAL NET */
+            font-weight: 900 !important;
+            height: 40px;
         }
 
         .year-col { font-weight: 900; }
@@ -84,9 +68,9 @@
 <div id="passOverlay">
     <div class="pass-card">
         <h2 style="color:#0f172a; margin:0; font-size: 20px;">HO MASTER ACCESS</h2>
-        <p style="color:#64748b; font-size:11px; margin-top:5px;">Enter Private Password to Continue</p>
+        <p style="color:#64748b; font-size:11px; margin-top:5px;">Enter Private Password</p>
         <input type="password" id="masterPassInput" placeholder="••••" onkeydown="if(event.key==='Enter') checkPass()">
-        <button onclick="checkPass()" style="width:100%; background:#0f172a; color:white; padding:12px; border-radius:8px; border:none; cursor:pointer; font-weight:700;">UNLOCK DASHBOARD</button>
+        <button onclick="checkPass()" style="width:100%; background:#0f172a; color:white; padding:12px; border-radius:8px; border:none; cursor:pointer; font-weight:700;">UNLOCK</button>
     </div>
 </div>
 
@@ -102,7 +86,7 @@
         </div>
     </div>
     <div style="text-align: center; flex: 2;">
-        <h1 style="margin:0; font-size: 16px;">ROONGTA GROUP | HO MASTER SUMMARY</h1>
+        <h1 style="margin:0; font-size: 16px;">ROONGTA GROUP | MASTER SUMMARY</h1>
     </div>
     <div style="display: flex; gap: 8px; justify-content: flex-end; flex: 1.5;">
         <select id="fySelect" onchange="refreshHOData()" style="padding: 6px; border-radius: 6px; font-weight: 700;">
@@ -127,16 +111,8 @@
     const db = firebase.database();
 
     const months = ["Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","Jan","Feb","Mar"];
-    const revenueRows = [
-        { id: 'rev_bus', label: 'BUSINESS REVENUE' },
-        { id: 'rev_vpf', label: 'VPF REVENUE' },
-        { id: 'rev_oth_ho', label: 'OTHERS REVENUE' }
-    ];
-    const expenseRows = [
-        { id: 'exp_sal', label: 'HO SALARY' },
-        { id: 'exp_off', label: 'OFFICE EXPENSES' },
-        { id: 'exp_oth', label: 'OTHER EXPENSES' }
-    ];
+    const revenueRows = [{ id: 'rev_bus', label: 'BUSINESS REVENUE' }, { id: 'rev_vpf', label: 'VPF REVENUE' }, { id: 'rev_oth_ho', label: 'OTHERS REVENUE' }];
+    const expenseRows = [{ id: 'exp_sal', label: 'HO SALARY' }, { id: 'exp_off', label: 'OFFICE EXPENSES' }, { id: 'exp_oth', label: 'OTHER EXPENSES' }];
 
     function checkPass() {
         if (document.getElementById('masterPassInput').value === "RCINEMAHO") { 
@@ -154,11 +130,9 @@
         b.innerHTML += `<tr class="group-header" onclick="toggleSec('ho_rev')"><td class="sticky-col"> + HO ADDITIONAL REVENUES</td><td colspan="13"></td></tr>`;
         revenueRows.forEach(r => b.innerHTML += renderRow(r, 'ho_rev'));
         b.innerHTML += renderRow({ id: 'total_ho_rev', label: 'TOTAL HO REVENUE', cls: 'h-rev-gross', isRO: true });
-
         b.innerHTML += `<tr class="group-header" onclick="toggleSec('ho_exp')"><td class="sticky-col"> + HO OPERATING EXPENSES</td><td colspan="13"></td></tr>`;
         expenseRows.forEach(r => b.innerHTML += renderRow(r, 'ho_exp'));
         b.innerHTML += renderRow({ id: 'total_ho_exp', label: 'TOTAL HO EXPENSES', cls: 'h-exp', isRO: true });
-
         b.innerHTML += renderRow({ id: 'final_ebitda', label: 'FINAL GROUP EBITDA (NET)', cls: 'lower-final-net', isRO: true });
         refreshHOData();
     }
@@ -167,7 +141,7 @@
         let html = `<tr class="${r.cls || ''} ${sec ? 'row_'+sec : ''}"><td class="sticky-col">${r.label}</td>`;
         for(let i=0; i<=12; i++) {
             const isRO = r.isRO || i === 12;
-            html += `<td class="${i===12?'year-col':''}"><input type="number" id="${r.id}_${i}" value="0" ${isRO?'readonly':''} ${!isRO?'oninput="calcHO()" ':''}></td>`;
+            html += `<td class="${i===12?'year-col':''}"><input type="number" id="${r.id}_${i}" value="0.00" ${isRO?'readonly':''} oninput="calcHO()"></td>`;
         }
         return html + '</tr>';
     }
@@ -241,7 +215,7 @@
             data[r.id] = []; for(let i=0; i<12; i++) data[r.id].push(document.getElementById(`${r.id}_${i}`).value || "0");
         });
         await db.ref(`reports/HO/actual/${fy}`).set(data);
-        alert("Data Saved Successfully!");
+        alert("Saved!");
     }
 </script>
 </body>
