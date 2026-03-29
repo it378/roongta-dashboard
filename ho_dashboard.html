@@ -30,48 +30,40 @@
         table { border-collapse: collapse; width: 100%; min-width: 1200px; }
         th { background: #0f172a; color: white; padding: 12px; text-align: left; position: sticky; top: 0; z-index: 10; border: 1px solid #334155; }
         td { border: 1px solid #cbd5e1; padding: 6px; }
-        .sticky-col { position: sticky; left: 0; background: white; font-weight: 800; min-width: 240px; border-right: 2px solid #0f172a; z-index: 5; }
+        
+        /* Sticky Column inherits row color */
+        .sticky-col { position: sticky; left: 0; background: inherit; font-weight: 800; min-width: 240px; border-right: 2px solid #0f172a; z-index: 5; }
+        
         input { width: 100%; border: none; text-align: right; font-weight: 700; outline: none; background: transparent; padding: 4px 0; font-family: inherit; }
-        .calc-field { background: rgba(255,255,255,0.05); }
+        
+        /* Total Column inherits row color */
+        .year-col { background: inherit !important; font-weight: 900; }
         
         .group-header { background: var(--group-yellow); font-weight: 800; cursor: pointer; color: black; }
         .h-rev-gross { background: var(--rev-gross); }
         .h-exp { background: var(--exp); }
-        .year-col { background: rgba(224, 242, 254, 0.5) !important; font-weight: 900; }
 
-        /* UPPER PART: TOTAL CINEMAS EBITDA (Fixing Visibility) */
-        .upper-cinema-total {
-            background-color: #0f172a !important; 
-            color: #ffffff !important;           
-        }
+        /* UPPER PART: TOTAL CINEMAS EBITDA */
+        .upper-cinema-total { background-color: #0f172a !important; color: #ffffff !important; }
         .upper-cinema-total td, .upper-cinema-total .sticky-col {
             background-color: #0f172a !important;
             color: #ffffff !important;
             border: 1px solid #475569 !important;
             padding: 10px 6px !important;
         }
-        .upper-cinema-total input {
-            color: #ffffff !important; /* Forces text to be white for visibility */
-            font-size: 13px !important;
-            text-shadow: 0px 0px 2px rgba(0,0,0,0.5);
-        }
+        .upper-cinema-total input { color: #ffffff !important; font-size: 13px !important; }
 
-        /* LOWER PART: FINAL GROUP EBITDA (Bigger and Solid) */
-        .lower-final-net {
-            background-color: #92d050 !important; 
-            color: #000000 !important;           
-        }
+        /* LOWER PART: FINAL GROUP EBITDA */
+        .lower-final-net { background-color: #92d050 !important; color: #000000 !important; }
         .lower-final-net td, .lower-final-net .sticky-col {
             background-color: #92d050 !important;
             color: #000000 !important;
             border: 2px solid #000000 !important;
-            padding: 15px 6px !important; /* Makes the row significantly bigger */
+            padding: 15px 6px !important;
         }
-        .lower-final-net input {
-            color: #000000 !important;
-            font-size: 18px !important; /* Much larger font size */
-            font-weight: 900 !important;
-        }
+        .lower-final-net input { color: #000000 !important; font-size: 18px !important; font-weight: 900 !important; }
+
+        .calc-field { background: rgba(255,255,255,0.05); }
     </style>
 </head>
 <body>
@@ -161,7 +153,7 @@
         revenueRows.forEach(r => b.innerHTML += renderRow(r, 'ho_rev'));
         b.innerHTML += renderRow({ id: 'total_ho_rev', label: 'TOTAL HO REVENUE', cls: 'h-rev-gross', isRO: true });
 
-        b.innerHTML += `<tr class="group-header" onclick="toggleSec('ho_exp')"><td class="sticky-col"><span id="btn_ho_exp">−</span> HO OPERATING EXPENSES</td><td colspan="13"></td></tr>`;
+        b.innerHTML += `<tr class="group-header" onclick="toggleSec('ho_exp')"><td class="sticky-col"><span id=\"btn_ho_exp\">−</span> HO OPERATING EXPENSES</td><td colspan="13"></td></tr>`;
         expenseRows.forEach(r => b.innerHTML += renderRow(r, 'ho_exp'));
         b.innerHTML += renderRow({ id: 'total_ho_exp', label: 'TOTAL HO EXPENSES', cls: 'h-exp', isRO: true });
 
@@ -174,7 +166,8 @@
         let html = `<tr class="${r.cls || ''} ${sec ? 'row_'+sec : ''}"><td class="sticky-col">${r.label}</td>`;
         for(let i=0; i<=12; i++) {
             const isRO = r.isRO || i === 12;
-            html += `<td class="${i===12?'year-col':''}"><input type="number" id="${r.id}_${i}" value="0" ${isRO?'readonly class="calc-field"':'oninput="calcHO()" '}></td>`;
+            const inputClass = (isRO && i !== 12) ? 'calc-field' : ''; 
+            html += `<td class="${i===12?'year-col':''}"><input type="number" id="${r.id}_${i}" value="0" ${isRO?'readonly':''} class="${inputClass}" ${!isRO?'oninput=\"calcHO()\" ':''}></td>`;
         }
         return html + '</tr>';
     }
@@ -236,16 +229,10 @@
             if (i === 12) {
                 document.getElementById('header-cinemas-total').innerText = `₹ ${cin.toFixed(2)} L`;
                 document.getElementById('header-ho-total').innerText = `₹ ${(exp - rev).toFixed(2)} L`;
-                
                 const finalBox = document.getElementById('header-final-box');
                 const finalText = document.getElementById('header-final-net');
                 finalText.innerText = `₹ ${net.toFixed(2)} L`;
-                
-                if(net >= 0) {
-                    finalBox.style.backgroundColor = "#92d050";
-                } else {
-                    finalBox.style.backgroundColor = "#f19eb5";
-                }
+                finalBox.style.backgroundColor = net >= 0 ? "#92d050" : "#f19eb5";
             }
         }
     }
