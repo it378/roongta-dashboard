@@ -6,7 +6,7 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <style>
-        :root { --navy: #0f172a; --ebitda: #92d050; --rev-gross: #ffd966; --exp: #f19eb5; --group-yellow: #ffff00; }
+        :root { --navy: #0f172a; --ebitda: #92d050; --rev-gross: #ffd966; --exp: #f19eb5; --group-yellow: #ffff00; }function renderRow
         body { font-family: 'Inter', sans-serif; background: #f8fafc; padding: 20px; font-size: 11px; }
         
         /* PASSWORD OVERLAY */
@@ -145,7 +145,7 @@
         { id: 'exp_oth', label: 'OTHER EXPENSES' }
     ];
 
-    function checkPass() {
+     checkPass() {
         const pass = document.getElementById('masterPassInput').value;
         if (pass === "RCINEMAHO") { 
             document.getElementById('passOverlay').style.display = 'none';
@@ -155,7 +155,7 @@
         }
     }
 
-    function initHO() {
+     initHO() {
         const h = document.getElementById('hRow');
         const b = document.getElementById('tBody');
         h.innerHTML = '<th class="sticky-col">FINANCIAL PARTICULARS</th>' + months.map(m => `<th>${m}</th>`).join('') + '<th class="year-col">FY TOTAL</th>';
@@ -176,13 +176,15 @@
     }
 
     function renderRow(r, sec) {
-        let html = `<tr class="${r.cls || ''} ${sec ? 'row_'+sec : ''}"><td class="sticky-col">${r.label}</td>`;
-        for(let i=0; i<=12; i++) {
-            const isRO = r.isRO || i === 12;
-            html += `<td class="${i===12?'year-col':''}"><input type="number" id="${r.id}_${i}" value="0" ${isRO?'readonly class="calc-field"':'oninput="calcHO()" '}></td>`;
-        }
-        return html + '</tr>';
+    let html = `<tr class="${r.cls || ''} ${sec ? 'row_'+sec : ''}"><td class="sticky-col">${r.label}</td>`;
+    for(let i=0; i<=12; i++) {
+        const isRO = r.isRO || i === 12;
+        // Removed 'calc-field' class from the FY TOTAL (index 12) to prevent grey background
+        const inputClass = (isRO && i !== 12) ? 'calc-field' : ''; 
+        html += `<td class="${i===12?'year-col':''}"><input type="number" id="${r.id}_${i}" value="0" ${isRO?'readonly':''} class="${inputClass}" ${!isRO?'oninput="calcHO()" ':''}></td>`;
     }
+    return html + '</tr>';
+}
 
     function toggleSec(id) {
         const rows = document.querySelectorAll(`.row_${id}`);
