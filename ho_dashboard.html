@@ -27,43 +27,56 @@
         /* DASHBOARD LAYOUT */
         .ho-header { background: #0f172a; color: white; padding: 20px; border-radius: 12px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
         .table-wrap { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); overflow-x: auto; }
-        table { border-collapse: collapse; width: 100%; min-width: 1200px; }
+        table { border-collapse: collapse; width: 100%; min-width: 1200px; table-layout: fixed; }
         th { background: #0f172a; color: white; padding: 12px; text-align: left; position: sticky; top: 0; z-index: 10; border: 1px solid #334155; }
         td { border: 1px solid #cbd5e1; padding: 6px; }
         
-        /* Sticky Column inherits row color */
-        .sticky-col { position: sticky; left: 0; background: inherit; font-weight: 800; min-width: 240px; border-right: 2px solid #0f172a; z-index: 5; }
+        /* Sticky Column Base */
+        .sticky-col { 
+            position: sticky; 
+            left: 0; 
+            z-index: 5; 
+            font-weight: 800; 
+            min-width: 240px; 
+            width: 240px;
+            border-right: 2px solid #0f172a !important; 
+        }
         
         input { width: 100%; border: none; text-align: right; font-weight: 700; outline: none; background: transparent; padding: 4px 0; font-family: inherit; }
-        
-        /* Total Column inherits row color */
-        .year-col { background: inherit !important; font-weight: 900; }
-        
+
+        /* UPPER PART: TOTAL CINEMAS EBITDA (NAVY) */
+        .upper-cinema-total { background-color: #0f172a !important; }
+        .upper-cinema-total td, 
+        .upper-cinema-total .sticky-col {
+            background-color: #0f172a !important;
+            color: #ffffff !important; /* FORCED WHITE TEXT */
+            border: 1px solid #475569 !important;
+            padding: 12px 6px !important;
+        }
+        .upper-cinema-total input { 
+            color: #ffffff !important; /* FORCED WHITE NUMBERS */
+            font-size: 13px !important; 
+        }
+
+        /* LOWER PART: FINAL GROUP EBITDA (GREEN) */
+        .lower-final-net { background-color: #92d050 !important; }
+        .lower-final-net td, 
+        .lower-final-net .sticky-col {
+            background-color: #92d050 !important;
+            color: #000000 !important; /* BLACK TEXT */
+            border: 2px solid #000000 !important;
+            padding: 18px 6px !important;
+        }
+        .lower-final-net input { 
+            color: #000000 !important; 
+            font-size: 20px !important; 
+            font-weight: 900 !important; 
+        }
+
+        .year-col { font-weight: 900; }
         .group-header { background: var(--group-yellow); font-weight: 800; cursor: pointer; color: black; }
         .h-rev-gross { background: var(--rev-gross); }
         .h-exp { background: var(--exp); }
-
-        /* UPPER PART: TOTAL CINEMAS EBITDA */
-        .upper-cinema-total { background-color: #0f172a !important; color: #ffffff !important; }
-        .upper-cinema-total td, .upper-cinema-total .sticky-col {
-            background-color: #0f172a !important;
-            color: #ffffff !important;
-            border: 1px solid #475569 !important;
-            padding: 10px 6px !important;
-        }
-        .upper-cinema-total input { color: #ffffff !important; font-size: 13px !important; }
-
-        /* LOWER PART: FINAL GROUP EBITDA */
-        .lower-final-net { background-color: #92d050 !important; color: #000000 !important; }
-        .lower-final-net td, .lower-final-net .sticky-col {
-            background-color: #92d050 !important;
-            color: #000000 !important;
-            border: 2px solid #000000 !important;
-            padding: 15px 6px !important;
-        }
-        .lower-final-net input { color: #000000 !important; font-size: 18px !important; font-weight: 900 !important; }
-
-        .calc-field { background: rgba(255,255,255,0.05); }
     </style>
 </head>
 <body>
@@ -83,21 +96,14 @@
             <span style="font-size: 9px; color: #94a3b8; display: block; font-weight: 800;">CINEMAS TOTAL</span>
             <span id="header-cinemas-total" style="font-size: 18px; font-weight: 900; color: #ffffff;">₹ 0.00 L</span>
         </div>
-        <div style="border-right: 1px solid #334155; padding-right: 15px;">
-            <span style="font-size: 9px; color: #94a3b8; display: block;">HO NET IMPACT</span>
-            <span id="header-ho-total" style="font-size: 15px; font-weight: 800; color: #f19eb5;">₹ 0.00 L</span>
-        </div>
-        <div id="header-final-box" style="background: #92d050; padding: 10px 15px; border-radius: 8px; border: 2px solid #ffffff; box-shadow: 0 4px 6px rgba(0,0,0,0.2);">
+        <div id="header-final-box" style="background: #92d050; padding: 10px 15px; border-radius: 8px; border: 2px solid #ffffff;">
             <span style="font-size: 9px; color: #000000; display: block; font-weight: 800;">GROUP NET EBITDA</span>
-            <span id="header-final-net" style="font-size: 26px; font-weight: 900; color: #000000;">₹ 0.00 L</span>
+            <span id="header-final-net" style="font-size: 24px; font-weight: 900; color: #000000;">₹ 0.00 L</span>
         </div>
     </div>
-
     <div style="text-align: center; flex: 2;">
         <h1 style="margin:0; font-size: 16px;">ROONGTA GROUP | HO MASTER SUMMARY</h1>
-        <p style="margin:2px 0 0; color: #94a3b8; font-size: 9px;">LOCKED TO ACTUAL DATA ONLY</p>
     </div>
-
     <div style="display: flex; gap: 8px; justify-content: flex-end; flex: 1.5;">
         <select id="fySelect" onchange="refreshHOData()" style="padding: 6px; border-radius: 6px; font-weight: 700;">
             <option value="2025">FY 2025-26</option>
@@ -133,13 +139,10 @@
     ];
 
     function checkPass() {
-        const pass = document.getElementById('masterPassInput').value;
-        if (pass === "RCINEMAHO") { 
+        if (document.getElementById('masterPassInput').value === "RCINEMAHO") { 
             document.getElementById('passOverlay').style.display = 'none';
             initHO();
-        } else {
-            alert("Wrong Password!");
-        }
+        } else { alert("Wrong Password!"); }
     }
 
     function initHO() {
@@ -148,17 +151,15 @@
         h.innerHTML = '<th class="sticky-col">FINANCIAL PARTICULARS</th>' + months.map(m => `<th>${m}</th>`).join('') + '<th class="year-col">FY TOTAL</th>';
         
         b.innerHTML += renderRow({ id: 'cinema_ebitda', label: 'TOTAL CINEMAS EBITDA', cls: 'upper-cinema-total', isRO: true });
-        
-        b.innerHTML += `<tr class="group-header" onclick="toggleSec('ho_rev')"><td class="sticky-col"><span id="btn_ho_rev">−</span> HO ADDITIONAL REVENUES</td><td colspan="13"></td></tr>`;
+        b.innerHTML += `<tr class="group-header" onclick="toggleSec('ho_rev')"><td class="sticky-col"> + HO ADDITIONAL REVENUES</td><td colspan="13"></td></tr>`;
         revenueRows.forEach(r => b.innerHTML += renderRow(r, 'ho_rev'));
         b.innerHTML += renderRow({ id: 'total_ho_rev', label: 'TOTAL HO REVENUE', cls: 'h-rev-gross', isRO: true });
 
-        b.innerHTML += `<tr class="group-header" onclick="toggleSec('ho_exp')"><td class="sticky-col"><span id=\"btn_ho_exp\">−</span> HO OPERATING EXPENSES</td><td colspan="13"></td></tr>`;
+        b.innerHTML += `<tr class="group-header" onclick="toggleSec('ho_exp')"><td class="sticky-col"> + HO OPERATING EXPENSES</td><td colspan="13"></td></tr>`;
         expenseRows.forEach(r => b.innerHTML += renderRow(r, 'ho_exp'));
         b.innerHTML += renderRow({ id: 'total_ho_exp', label: 'TOTAL HO EXPENSES', cls: 'h-exp', isRO: true });
 
         b.innerHTML += renderRow({ id: 'final_ebitda', label: 'FINAL GROUP EBITDA (NET)', cls: 'lower-final-net', isRO: true });
-        
         refreshHOData();
     }
 
@@ -166,8 +167,7 @@
         let html = `<tr class="${r.cls || ''} ${sec ? 'row_'+sec : ''}"><td class="sticky-col">${r.label}</td>`;
         for(let i=0; i<=12; i++) {
             const isRO = r.isRO || i === 12;
-            const inputClass = (isRO && i !== 12) ? 'calc-field' : ''; 
-            html += `<td class="${i===12?'year-col':''}"><input type="number" id="${r.id}_${i}" value="0" ${isRO?'readonly':''} class="${inputClass}" ${!isRO?'oninput=\"calcHO()\" ':''}></td>`;
+            html += `<td class="${i===12?'year-col':''}"><input type="number" id="${r.id}_${i}" value="0" ${isRO?'readonly':''} ${!isRO?'oninput="calcHO()" ':''}></td>`;
         }
         return html + '</tr>';
     }
@@ -176,7 +176,6 @@
         const rows = document.querySelectorAll(`.row_${id}`);
         const isHidden = rows[0].style.display === 'none';
         rows.forEach(r => r.style.display = isHidden ? 'table-row' : 'none');
-        document.getElementById('btn_'+id).innerText = isHidden ? '−' : '+';
     }
 
     async function refreshHOData() {
@@ -218,7 +217,6 @@
             }
             let rev = 0; revenueRows.forEach(r => rev += parseFloat(document.getElementById(`${r.id}_${i}`).value) || 0);
             document.getElementById(`total_ho_rev_${i}`).value = rev.toFixed(2);
-            
             let exp = 0; expenseRows.forEach(r => exp += parseFloat(document.getElementById(`${r.id}_${i}`).value) || 0);
             document.getElementById(`total_ho_exp_${i}`).value = exp.toFixed(2);
 
@@ -228,7 +226,6 @@
 
             if (i === 12) {
                 document.getElementById('header-cinemas-total').innerText = `₹ ${cin.toFixed(2)} L`;
-                document.getElementById('header-ho-total').innerText = `₹ ${(exp - rev).toFixed(2)} L`;
                 const finalBox = document.getElementById('header-final-box');
                 const finalText = document.getElementById('header-final-net');
                 finalText.innerText = `₹ ${net.toFixed(2)} L`;
