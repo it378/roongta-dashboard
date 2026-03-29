@@ -9,6 +9,7 @@
         :root { --navy: #0f172a; --ebitda: #92d050; --rev-gross: #ffd966; --exp: #f19eb5; --group-yellow: #ffff00; }
         body { font-family: 'Inter', sans-serif; background: #f8fafc; padding: 20px; font-size: 11px; }
         
+        /* PASSWORD OVERLAY CSS */
         #passOverlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(15, 23, 42, 0.98); z-index: 9999;
@@ -23,47 +24,50 @@
             border-radius: 8px; text-align: center; font-size: 20px; letter-spacing: 4px; outline: none;
         }
         
+        /* DASHBOARD CSS */
         .ho-header { background: #0f172a; color: white; padding: 20px; border-radius: 12px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
         .table-wrap { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); overflow-x: auto; }
-        table { border-collapse: collapse; width: 100%; min-width: 1300px; table-layout: fixed; }
-        th { background: #0f172a; color: white; padding: 12px; text-align: left; position: sticky; top: 0; z-index: 10; border: 1px solid #334155; }
+        table { border-collapse: collapse; width: 100%; min-width: 1200px; }
+        th { background: #0f172a; color: white; padding: 10px; text-align: left; position: sticky; top: 0; }
         td { border: 1px solid #cbd5e1; padding: 4px; }
-        
-        .sticky-col { position: sticky; left: 0; z-index: 5; font-weight: 800; min-width: 260px; width: 260px; border-right: 2px solid #0f172a !important; background: inherit; }
-        input { width: 100%; border: none; text-align: right; font-weight: 800; outline: none; background: transparent; padding: 4px 0; font-family: inherit; }
+        .sticky-col { position: sticky; left: 0; background: white; font-weight: 800; min-width: 240px; border-right: 2px solid #0f172a; z-index: 5; }
+        input { width: 100%; border: none; text-align: right; font-weight: 700; outline: none; background: transparent; padding: 4px 0; }
+        .calc-field { background: #f1f5f9; color: #475569; }
+        .group-header { background: var(--group-yellow); font-weight: 800; cursor: pointer; color: black; }
+        .year-col { background: #e0f2fe !important; font-weight: 900; }
+        .toggle-btn { margin-right: 8px; font-size: 14px; font-weight: bold; }
 
-        /* UPPER PART: TOTAL CINEMAS EBITDA (NAVY) */
-        .upper-cinema-total { background-color: #0f172a !important; color: #ffffff !important; }
+        /* UPPER PART: TOTAL CINEMAS EBITDA (Navy Background) */
+        .upper-cinema-total {
+            background-color: #0f172a !important; 
+            color: #ffffff !important;           
+            font-weight: 900 !important;
+        }
         .upper-cinema-total td, .upper-cinema-total .sticky-col {
             background-color: #0f172a !important;
             color: #ffffff !important;
-            border: 1px solid #475569 !important;
-            padding: 12px 8px !important;
+            border: 1px solid #334155 !important;
         }
-        .upper-cinema-total input { 
-            color: #ffffff !important; /* Force text to be white */
-            font-size: 15px !important; 
+        .upper-cinema-total input {
+            color: #ffffff !important;
+            font-size: 13px !important;
         }
 
-        /* LOWER PART: FINAL GROUP EBITDA (GREEN) */
-        .lower-final-net { background-color: #92d050 !important; color: #000000 !important; }
+        /* LOWER PART: FINAL GROUP EBITDA (Green Background) */
+        .lower-final-net {
+            background-color: #92d050 !important; 
+            color: #000000 !important;           
+            font-weight: 900 !important;
+        }
         .lower-final-net td, .lower-final-net .sticky-col {
             background-color: #92d050 !important;
             color: #000000 !important;
-            border: 2px solid #000000 !important;
-            padding: 20px 8px !important;
+            border: 1px solid #000000 !important;
         }
-        .lower-final-net input { 
-            color: #000000 !important; 
-            font-size: 28px !important; /* Massive font for final net */
-            font-weight: 900 !important;
-            height: auto;
+        .lower-final-net input {
+            color: #000000 !important;
+            font-size: 14px !important;
         }
-
-        .year-col { font-weight: 900; background: inherit; }
-        .group-header { background: var(--group-yellow); font-weight: 800; cursor: pointer; color: black; }
-        .h-rev-gross { background: var(--rev-gross); }
-        .h-exp { background: var(--exp); }
     </style>
 </head>
 <body>
@@ -71,29 +75,40 @@
 <div id="passOverlay">
     <div class="pass-card">
         <h2 style="color:#0f172a; margin:0; font-size: 20px;">HO MASTER ACCESS</h2>
+        <p style="color:#64748b; font-size:11px; margin-top:5px;">Enter Private Password to Continue</p>
         <input type="password" id="masterPassInput" placeholder="••••" onkeydown="if(event.key==='Enter') checkPass()">
-        <button onclick="checkPass()" style="width:100%; background:#0f172a; color:white; padding:12px; border-radius:8px; border:none; cursor:pointer; font-weight:700;">UNLOCK</button>
+        <button onclick="checkPass()" style="width:100%; background:#0f172a; color:white; padding:12px; border-radius:8px; border:none; cursor:pointer; font-weight:700;">UNLOCK DASHBOARD</button>
     </div>
 </div>
 
 <div class="ho-header">
-    <div style="display: flex; gap: 20px; align-items: center;">
+    <div style="display: flex; gap: 20px; align-items: center; flex: 2;">
         <div style="background: #1e293b; padding: 10px 15px; border-radius: 8px; border: 1px solid #334155;">
             <span style="font-size: 9px; color: #94a3b8; display: block; font-weight: 800;">CINEMAS TOTAL</span>
             <span id="header-cinemas-total" style="font-size: 18px; font-weight: 900; color: #ffffff;">₹ 0.00 L</span>
         </div>
-        <div id="header-final-box" style="background: #92d050; padding: 10px 15px; border-radius: 8px; border: 2px solid #ffffff;">
+        <div style="border-right: 1px solid #334155; padding-right: 15px;">
+            <span style="font-size: 9px; color: #94a3b8; display: block;">HO NET IMPACT</span>
+            <span id="header-ho-total" style="font-size: 15px; font-weight: 800; color: #f19eb5;">₹ 0.00 L</span>
+        </div>
+        <div id="header-final-box" style="background: #92d050; padding: 10px 15px; border-radius: 8px; border: 1px solid #ffffff;">
             <span style="font-size: 9px; color: #000000; display: block; font-weight: 800;">GROUP NET EBITDA</span>
             <span id="header-final-net" style="font-size: 24px; font-weight: 900; color: #000000;">₹ 0.00 L</span>
         </div>
     </div>
-    <h1 style="margin:0; font-size: 16px; flex-grow:1; text-align:center;">ROONGTA MASTER HO SUMMARY</h1>
-    <div style="display: flex; gap: 8px;">
+
+    <div style="text-align: center; flex: 2;">
+        <h1 style="margin:0; font-size: 16px;">ROONGTA GROUP | HO MASTER SUMMARY</h1>
+        <p style="margin:2px 0 0; color: #94a3b8; font-size: 9px;">LOCKED TO ACTUAL DATA ONLY</p>
+    </div>
+
+    <div style="display: flex; gap: 8px; justify-content: flex-end; flex: 1.5;">
         <select id="fySelect" onchange="refreshHOData()" style="padding: 6px; border-radius: 6px; font-weight: 700;">
             <option value="2025">FY 2025-26</option>
             <option value="2026">FY 2026-27</option>
         </select>
         <button onclick="saveHO()" style="background:#059669; color:white; border:none; padding:6px 12px; border-radius:6px; cursor:pointer; font-weight:700;">SAVE</button>
+        <button onclick="window.location.href='index.html'" style="background:#475569; color:white; border:none; padding:6px 12px; border-radius:6px; cursor:pointer;">BACK</button>
     </div>
 </div>
 
@@ -110,14 +125,25 @@
     const db = firebase.database();
 
     const months = ["Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","Jan","Feb","Mar"];
-    const revenueRows = [{ id: 'rev_bus', label: 'BUSINESS REVENUE' }, { id: 'rev_vpf', label: 'VPF REVENUE' }, { id: 'rev_oth_ho', label: 'OTHERS REVENUE' }];
-    const expenseRows = [{ id: 'exp_sal', label: 'HO SALARY' }, { id: 'exp_off', label: 'OFFICE EXPENSES' }, { id: 'exp_oth', label: 'OTHER EXPENSES' }];
+    const revenueRows = [
+        { id: 'rev_bus', label: 'BUSINESS REVENUE' },
+        { id: 'rev_vpf', label: 'VPF REVENUE' },
+        { id: 'rev_oth_ho', label: 'OTHERS REVENUE' }
+    ];
+    const expenseRows = [
+        { id: 'exp_sal', label: 'HO SALARY' },
+        { id: 'exp_off', label: 'OFFICE EXPENSES' },
+        { id: 'exp_oth', label: 'OTHER EXPENSES' }
+    ];
 
     function checkPass() {
-        if (document.getElementById('masterPassInput').value === "RCINEMAHO") { 
+        const pass = document.getElementById('masterPassInput').value;
+        if (pass === "RCINEMAHO") { 
             document.getElementById('passOverlay').style.display = 'none';
             initHO();
-        } else { alert("Wrong Password!"); }
+        } else {
+            alert("Wrong Password!");
+        }
     }
 
     function initHO() {
@@ -125,14 +151,20 @@
         const b = document.getElementById('tBody');
         h.innerHTML = '<th class="sticky-col">FINANCIAL PARTICULARS</th>' + months.map(m => `<th>${m}</th>`).join('') + '<th class="year-col">FY TOTAL</th>';
         
+        // APPLY UPPER STANDOUT CLASS
         b.innerHTML += renderRow({ id: 'cinema_ebitda', label: 'TOTAL CINEMAS EBITDA', cls: 'upper-cinema-total', isRO: true });
-        b.innerHTML += `<tr class="group-header" onclick="toggleSec('ho_rev')"><td class="sticky-col"> + HO ADDITIONAL REVENUES</td><td colspan="13"></td></tr>`;
+        
+        b.innerHTML += `<tr class="group-header" onclick="toggleSec('ho_rev')"><td class="sticky-col"><span id="btn_ho_rev">−</span> HO ADDITIONAL REVENUES</td><td colspan="13"></td></tr>`;
         revenueRows.forEach(r => b.innerHTML += renderRow(r, 'ho_rev'));
         b.innerHTML += renderRow({ id: 'total_ho_rev', label: 'TOTAL HO REVENUE', cls: 'h-rev-gross', isRO: true });
-        b.innerHTML += `<tr class="group-header" onclick="toggleSec('ho_exp')"><td class="sticky-col"> + HO OPERATING EXPENSES</td><td colspan="13"></td></tr>`;
+
+        b.innerHTML += `<tr class="group-header" onclick="toggleSec('ho_exp')"><td class="sticky-col"><span id="btn_ho_exp">−</span> HO OPERATING EXPENSES</td><td colspan="13"></td></tr>`;
         expenseRows.forEach(r => b.innerHTML += renderRow(r, 'ho_exp'));
         b.innerHTML += renderRow({ id: 'total_ho_exp', label: 'TOTAL HO EXPENSES', cls: 'h-exp', isRO: true });
+
+        // APPLY LOWER STANDOUT CLASS
         b.innerHTML += renderRow({ id: 'final_ebitda', label: 'FINAL GROUP EBITDA (NET)', cls: 'lower-final-net', isRO: true });
+        
         refreshHOData();
     }
 
@@ -140,7 +172,7 @@
         let html = `<tr class="${r.cls || ''} ${sec ? 'row_'+sec : ''}"><td class="sticky-col">${r.label}</td>`;
         for(let i=0; i<=12; i++) {
             const isRO = r.isRO || i === 12;
-            html += `<td class="${i===12?'year-col':''}"><input type="number" id="${r.id}_${i}" value="0.00" ${isRO?'readonly':''} oninput="calcHO()"></td>`;
+            html += `<td class="${i===12?'year-col':''}"><input type="number" id="${r.id}_${i}" value="0" ${isRO?'readonly class="calc-field"':'oninput="calcHO()" '}></td>`;
         }
         return html + '</tr>';
     }
@@ -149,6 +181,7 @@
         const rows = document.querySelectorAll(`.row_${id}`);
         const isHidden = rows[0].style.display === 'none';
         rows.forEach(r => r.style.display = isHidden ? 'table-row' : 'none');
+        document.getElementById('btn_'+id).innerText = isHidden ? '−' : '+';
     }
 
     async function refreshHOData() {
@@ -190,6 +223,7 @@
             }
             let rev = 0; revenueRows.forEach(r => rev += parseFloat(document.getElementById(`${r.id}_${i}`).value) || 0);
             document.getElementById(`total_ho_rev_${i}`).value = rev.toFixed(2);
+            
             let exp = 0; expenseRows.forEach(r => exp += parseFloat(document.getElementById(`${r.id}_${i}`).value) || 0);
             document.getElementById(`total_ho_exp_${i}`).value = exp.toFixed(2);
 
@@ -199,10 +233,19 @@
 
             if (i === 12) {
                 document.getElementById('header-cinemas-total').innerText = `₹ ${cin.toFixed(2)} L`;
+                document.getElementById('header-ho-total').innerText = `₹ ${(exp - rev).toFixed(2)} L`;
+                
                 const finalBox = document.getElementById('header-final-box');
                 const finalText = document.getElementById('header-final-net');
                 finalText.innerText = `₹ ${net.toFixed(2)} L`;
-                finalBox.style.backgroundColor = net >= 0 ? "#92d050" : "#f19eb5";
+                
+                if(net >= 0) {
+                    finalBox.style.backgroundColor = "#92d050";
+                    finalText.style.color = "#000000";
+                } else {
+                    finalBox.style.backgroundColor = "#f19eb5";
+                    finalText.style.color = "#000000";
+                }
             }
         }
     }
