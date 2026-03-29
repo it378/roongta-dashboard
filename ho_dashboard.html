@@ -6,7 +6,7 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <style>
-        :root { --navy: #0f172a; --ebitda: #92d050; --rev-gross: #ffd966; --exp: #f19eb5; --group-yellow: #ffff00; }function renderRow
+        :root { --navy: #0f172a; --ebitda: #92d050; --rev-gross: #ffd966; --exp: #f19eb5; --group-yellow: #ffff00; }
         body { font-family: 'Inter', sans-serif; background: #f8fafc; padding: 20px; font-size: 11px; }
         
         /* PASSWORD OVERLAY */
@@ -30,53 +30,48 @@
         table { border-collapse: collapse; width: 100%; min-width: 1200px; }
         th { background: #0f172a; color: white; padding: 12px; text-align: left; position: sticky; top: 0; z-index: 10; border: 1px solid #334155; }
         td { border: 1px solid #cbd5e1; padding: 6px; }
-        /* Update the Sticky Column to inherit row color */
-.sticky-col { 
-    position: sticky; 
-    left: 0; 
-    background: inherit; /* Matches the row color */
-    font-weight: 800; 
-    min-width: 240px; 
-    border-right: 2px solid #0f172a; 
-    z-index: 5; 
-}
+        .sticky-col { position: sticky; left: 0; background: white; font-weight: 800; min-width: 240px; border-right: 2px solid #0f172a; z-index: 5; }
         input { width: 100%; border: none; text-align: right; font-weight: 700; outline: none; background: transparent; padding: 4px 0; font-family: inherit; }
         .calc-field { background: rgba(255,255,255,0.05); }
         
         .group-header { background: var(--group-yellow); font-weight: 800; cursor: pointer; color: black; }
         .h-rev-gross { background: var(--rev-gross); }
         .h-exp { background: var(--exp); }
-        /* Update FY TOTAL to inherit row color */
-.year-col { 
-    background: inherit !important; /* Removes the light blue */
-    font-weight: 900; 
-}
+        .year-col { background: rgba(224, 242, 254, 0.5) !important; font-weight: 900; }
 
-        /* UPPER PART: TOTAL CINEMAS EBITDA */
-.upper-cinema-total {
-    background-color: #0f172a !important; 
-    color: #ffffff !important;           
-}
-/* Ensure all cells in this row are Navy */
-.upper-cinema-total td, .upper-cinema-total .sticky-col {
-    background-color: #0f172a !important;
-    color: #ffffff !important;
-    border: 1px solid #475569 !important;
-    padding: 10px 6px !important;
-}
+        /* UPPER PART: TOTAL CINEMAS EBITDA (Fixing Visibility) */
+        .upper-cinema-total {
+            background-color: #0f172a !important; 
+            color: #ffffff !important;           
+        }
+        .upper-cinema-total td, .upper-cinema-total .sticky-col {
+            background-color: #0f172a !important;
+            color: #ffffff !important;
+            border: 1px solid #475569 !important;
+            padding: 10px 6px !important;
+        }
+        .upper-cinema-total input {
+            color: #ffffff !important; /* Forces text to be white for visibility */
+            font-size: 13px !important;
+            text-shadow: 0px 0px 2px rgba(0,0,0,0.5);
+        }
 
-/* LOWER PART: FINAL GROUP EBITDA */
-.lower-final-net {
-    background-color: #92d050 !important; 
-    color: #000000 !important;           
-}
-/* Ensure all cells in this row are Green */
-.lower-final-net td, .lower-final-net .sticky-col {
-    background-color: #92d050 !important;
-    color: #000000 !important;
-    border: 2px solid #000000 !important;
-    padding: 15px 6px !important;
-}
+        /* LOWER PART: FINAL GROUP EBITDA (Bigger and Solid) */
+        .lower-final-net {
+            background-color: #92d050 !important; 
+            color: #000000 !important;           
+        }
+        .lower-final-net td, .lower-final-net .sticky-col {
+            background-color: #92d050 !important;
+            color: #000000 !important;
+            border: 2px solid #000000 !important;
+            padding: 15px 6px !important; /* Makes the row significantly bigger */
+        }
+        .lower-final-net input {
+            color: #000000 !important;
+            font-size: 18px !important; /* Much larger font size */
+            font-weight: 900 !important;
+        }
     </style>
 </head>
 <body>
@@ -145,7 +140,7 @@
         { id: 'exp_oth', label: 'OTHER EXPENSES' }
     ];
 
-     checkPass() {
+    function checkPass() {
         const pass = document.getElementById('masterPassInput').value;
         if (pass === "RCINEMAHO") { 
             document.getElementById('passOverlay').style.display = 'none';
@@ -155,7 +150,7 @@
         }
     }
 
-     initHO() {
+    function initHO() {
         const h = document.getElementById('hRow');
         const b = document.getElementById('tBody');
         h.innerHTML = '<th class="sticky-col">FINANCIAL PARTICULARS</th>' + months.map(m => `<th>${m}</th>`).join('') + '<th class="year-col">FY TOTAL</th>';
@@ -176,15 +171,13 @@
     }
 
     function renderRow(r, sec) {
-    let html = `<tr class="${r.cls || ''} ${sec ? 'row_'+sec : ''}"><td class="sticky-col">${r.label}</td>`;
-    for(let i=0; i<=12; i++) {
-        const isRO = r.isRO || i === 12;
-        // Removed 'calc-field' class from the FY TOTAL (index 12) to prevent grey background
-        const inputClass = (isRO && i !== 12) ? 'calc-field' : ''; 
-        html += `<td class="${i===12?'year-col':''}"><input type="number" id="${r.id}_${i}" value="0" ${isRO?'readonly':''} class="${inputClass}" ${!isRO?'oninput="calcHO()" ':''}></td>`;
+        let html = `<tr class="${r.cls || ''} ${sec ? 'row_'+sec : ''}"><td class="sticky-col">${r.label}</td>`;
+        for(let i=0; i<=12; i++) {
+            const isRO = r.isRO || i === 12;
+            html += `<td class="${i===12?'year-col':''}"><input type="number" id="${r.id}_${i}" value="0" ${isRO?'readonly class="calc-field"':'oninput="calcHO()" '}></td>`;
+        }
+        return html + '</tr>';
     }
-    return html + '</tr>';
-}
 
     function toggleSec(id) {
         const rows = document.querySelectorAll(`.row_${id}`);
