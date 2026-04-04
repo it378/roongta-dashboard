@@ -603,49 +603,49 @@ async function refreshData() {
     const p = document.getElementById('prop').value;
     const scenSelect = document.getElementById('scen');
     const fy = document.getElementById('fySelect').value;
-
-    // RULE 1: Main Dashboard - FY 2025-26 mein sirf 'Actual'
+    
+    // RULE: For 2025-26, force "Actual" and hide projection options
     if (fy === "2025") {
         scenSelect.value = "actual";
         Array.from(scenSelect.options).forEach(opt => {
-            opt.style.display = (opt.value === "actual") ? "block" : "none";
+            if (opt.value !== 'actual') opt.style.display = 'none';
         });
     } else {
-        Array.from(scenSelect.options).forEach(opt => opt.style.display = "block");
+        // Show all options for 2026-27
+        Array.from(scenSelect.options).forEach(opt => opt.style.display = 'block');
     }
 
-    // RULE 2: Advanced Comparison (Sidebar) Visibility Rules
-    const applySidebarRules = (dropdown, yearId) => {
-        const yr = document.getElementById(yearId).value;
-        Array.from(dropdown.options).forEach(opt => {
-            if (yr === "2025") {
-                opt.style.display = (opt.value === "actual") ? "block" : "none";
-            } else {
-                opt.style.display = (opt.value === "actual" || opt.value === "pessimistic") ? "block" : "none";
-            }
-        });
-        if (dropdown.options[dropdown.selectedIndex].style.display === "none") dropdown.value = "actual";
-    };
-
-    applySidebarRules(document.getElementById('compScen1'), 'compYear1');
-    applySidebarRules(document.getElementById('compScen2'), 'compYear2');
-
-    // --- Data Load & Sync ---
     const s = scenSelect.value;
-    const snapshot = await db.ref(`reports/${p}/${s}/${fy}`).once('value');
+
+    // Fetch Logic: 2026 Realistic/Optimistic uses Pessimistic as the base
+    const fetchScen = (fy === "2026" && (s === "realistic" || s === "optimistic")) ? "pessimistic" : s;
+    
+    const snapshot = await db.ref(`reports/${p}/${fetchScen}/${fy}`).once('value');
     const data = snapshot.val() || {};
 
-    document.querySelectorAll('input').forEach(inp => inp.value = 0);
+    // Clear and Fill Data
+    document.querySelectorAll('input').forEach(inp => {
+        if(!inp.classList.contains('calc-field')) inp.value = "0.00";
+    });
+    
     Object.keys(data).forEach(key => {
         if (Array.isArray(data[key])) {
             data[key].forEach((val, i) => {
+                let finalVal = parseFloat(val) || 0;
+                
+                // APPLY AUTO-INCREASE LOGIC ONLY FOR 2026 PROJECTIONS
+                if (fy === "2026") {
+                    if (s === "realistic") finalVal = finalVal * 1.08;
+                    if (s === "optimistic") finalVal = finalVal * 1.12;
+                }
+
                 const el = document.getElementById(`${key}_${i}`);
-                if (el) el.value = val;
+                if (el) el.value = finalVal.toFixed(2);
             });
         }
     });
 
-    calc();
+    calc(); // Recalculate totals and EBITDA
     updateGlobalEbitda();
     updateLocationBreakdown();
 }
