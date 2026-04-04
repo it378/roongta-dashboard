@@ -1,4 +1,4 @@
-RE<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -147,16 +147,9 @@ RE<!DOCTYPE html>
                 <div class="">
                     <label>Fiscal Year</label>
                     <select id="fySelect" onchange="refreshData()">
-    <option value="2025" selected>FY 2025-26</option>
-    <option value="2026">FY 2026-27</option>
-</select>
-
-<select id="scen" onchange="refreshData()">
-    <option value="actual" selected>Actual (Monthly Data)</option>
-    <option value="pessimistic">Pessimistic (Base Target)</option>
-    <option value="realistic">Realistic (+8% of Target)</option>
-    <option value="optimistic">Optimistic (+12% of Target)</option>
-</select>
+                        <option value="2025" selected>FY 2025-26</option>
+                        <option value="2026">FY 2026-27</option>
+                    </select>
                 </div>
                 <div class="control-item">
                     <label>Property Location</label>
@@ -610,43 +603,44 @@ async function refreshData() {
     const p = document.getElementById('prop').value;
     const scenSelect = document.getElementById('scen');
     const fy = document.getElementById('fySelect').value;
-    
-    // RULE: For 2025-26, force "Actual" and hide projection options
+
+    // RULE 1: Main Dashboard - FY 2025-26 mein sirf 'Actual'
     if (fy === "2025") {
         scenSelect.value = "actual";
-        // Hide projection options for 2025
         Array.from(scenSelect.options).forEach(opt => {
-            if (opt.value !== 'actual') opt.style.display = 'none';
+            opt.style.display = (opt.value === "actual") ? "block" : "none";
         });
     } else {
-        // Show all options for 2026-27
-        Array.from(scenSelect.options).forEach(opt => opt.style.display = 'block');
+        Array.from(scenSelect.options).forEach(opt => opt.style.display = "block");
     }
 
-    const s = scenSelect.value;
+    // RULE 2: Advanced Comparison (Sidebar) Visibility Rules
+    const applySidebarRules = (dropdown, yearId) => {
+        const yr = document.getElementById(yearId).value;
+        Array.from(dropdown.options).forEach(opt => {
+            if (yr === "2025") {
+                opt.style.display = (opt.value === "actual") ? "block" : "none";
+            } else {
+                opt.style.display = (opt.value === "actual" || opt.value === "pessimistic") ? "block" : "none";
+            }
+        });
+        if (dropdown.options[dropdown.selectedIndex].style.display === "none") dropdown.value = "actual";
+    };
 
-    // Fetch Logic: 2026 Realistic/Optimistic uses Pessimistic as the base
-    const fetchScen = (fy === "2026" && (s === "realistic" || s === "optimistic")) ? "pessimistic" : s;
-    
-    const snapshot = await db.ref(`reports/${p}/${fetchScen}/${fy}`).once('value');
+    applySidebarRules(document.getElementById('compScen1'), 'compYear1');
+    applySidebarRules(document.getElementById('compScen2'), 'compYear2');
+
+    // --- Data Load & Sync ---
+    const s = scenSelect.value;
+    const snapshot = await db.ref(`reports/${p}/${s}/${fy}`).once('value');
     const data = snapshot.val() || {};
 
-    // Clear and Fill
-    document.querySelectorAll('input').forEach(inp => inp.value = "0.00");
-    
+    document.querySelectorAll('input').forEach(inp => inp.value = 0);
     Object.keys(data).forEach(key => {
         if (Array.isArray(data[key])) {
             data[key].forEach((val, i) => {
-                let finalVal = parseFloat(val) || 0;
-                
-                // Only apply increase logic if year is 2026
-                if (fy === "2026") {
-                    if (s === "realistic") finalVal = finalVal * 1.08;
-                    if (s === "optimistic") finalVal = finalVal * 1.12;
-                }
-
                 const el = document.getElementById(`${key}_${i}`);
-                if (el) el.value = finalVal.toFixed(2);
+                if (el) el.value = val;
             });
         }
     });
