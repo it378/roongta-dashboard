@@ -496,37 +496,70 @@ function renderRow(r) {
     for(let i=0; i <= 12; i++) {
         let isY = i === 12;
         let ro = (r.type !== 'in' || isY) ? 'readonly class="calc-field"' : '';
-        html += `<td class="${isY?'year-col':''}"><input type="number" id="${r.id}_${i}" value="0" ${ro} oninput="calc()"></td>`;
+        html += `<td class="${isY?'year-col':''}"><input type="number" id="${r.id}_${i}" value="0" ${ro} oninput=""></td>`;
     }
     return html + '</tr>';
 }
 
 function calc() {
-    const seats = parseInt(document.getElementById('prop').options[document.getElementById('prop').selectedIndex].getAttribute('data-seats'));
+    const propElement = document.getElementById('prop');
+    const propValue = propElement.value; // Get the selected property ID (e.g., 'surat')
+    const seats = parseInt(propElement.options[propElement.selectedIndex].getAttribute('data-seats'));
+
     for (let i = 0; i < 12; i++) {
         let ff = parseFloat(document.getElementById(`ff_${i}`).value) || 0;
         let atpG = parseFloat(document.getElementById(`atp_g_${i}`).value) || 0;
         let sphG = parseFloat(document.getElementById(`sph_g_${i}`).value) || 0;
 
+        // --- PROPERTY SPECIFIC LOGIC START ---
+        let atp_n_factor = 0;
+        let service_multiplier = 0;
+
+        switch (propValue) {
+            case 'surat':
+            case 'adipur':
+                atp_n_factor = 25;
+                service_multiplier = 25;
+                break;
+            case 'muzaffarnagar':
+            case 'ghaziabad':
+                atp_n_factor = 9.32;
+                service_multiplier = 9.32;
+                break;
+            case 'hyderabad':
+                atp_n_factor = 5;
+                service_multiplier = 4.23;
+                break;
+            default:
+                atp_n_factor = 0;
+                service_multiplier = 0;
+        }
+
+        // Calculate the values based on the factors determined above
+        let atp_n_val = (atpG / 1.18) - atp_n_factor;
+        let nServ = (ff * service_multiplier) / 100000;
+        // --- PROPERTY SPECIFIC LOGIC END ---
+
         // Capacity and Nets
         let cap = seats * 5 * 30;
         document.getElementById(`cap_${i}`).value = cap;
-        document.getElementById(`occ_${i}`).value = (cap > 0 ? (ff/cap)*100 : 0).toFixed(0);
-        document.getElementById(`atp_n_${i}`).value = ((atpG / 1.18) - 25).toFixed(2);
+        document.getElementById(`occ_${i}`).value = (cap > 0 ? (ff / cap) * 100 : 0).toFixed(0);
+        
+        // Use the new calculated ATP Net
+        document.getElementById(`atp_n_${i}`).value = atp_n_val.toFixed(2);
         document.getElementById(`sph_n_${i}`).value = (sphG / 1.05).toFixed(2);
 
         // Revenue Calculations
         let gCafe = (ff * sphG) / 100000;
         let gTkt = (ff * atpG) / 100000;
         let nCafe = (ff * (sphG / 1.05)) / 100000;
-        let nTkt = (ff * ((atpG/1.18)-25)) / 100000;
-        let nServ = (ff * 25) / 100000;
+        let nTkt = (ff * atp_n_val) / 100000; // Updated to use dynamic ATP Net
 
         document.getElementById(`rev_c_g_${i}`).value = gCafe.toFixed(2);
         document.getElementById(`rev_t_g_${i}`).value = gTkt.toFixed(2);
         document.getElementById(`rev_c_n_${i}`).value = nCafe.toFixed(2);
         document.getElementById(`rev_t_n_${i}`).value = nTkt.toFixed(2);
-        document.getElementById(`service_${i}`).value = nServ.toFixed(2);
+        document.getElementById(`service_${i}`).value = nServ.toFixed(2); // Updated to use dynamic Service Charge
 
         // Revenue From Others
         let otherSum = 0;
@@ -544,23 +577,21 @@ function calc() {
         // EXPENSES
         let grandExp = 0;
         detailedSections.forEach(sec => {
-            if(sec.id === 'rev_other') return; 
+            if (sec.id === 'rev_other') return;
             let sum = sec.rows.reduce((acc, r) => acc + (parseFloat(document.getElementById(`${r.id}_${i}`).value) || 0), 0);
             document.getElementById(`${sec.id}_det_${i}`).value = sum.toFixed(2);
             let summaryRowId = (sec.id === 'var_exp') ? 'sum_var_exp' : 'sum_' + sec.id;
-            if(document.getElementById(`${summaryRowId}_${i}`)) {
+            if (document.getElementById(`${summaryRowId}_${i}`)) {
                 document.getElementById(`${summaryRowId}_${i}`).value = sum.toFixed(2);
             }
             grandExp += sum;
         });
 
         document.getElementById(`total_exp_${i}`).value = grandExp.toFixed(2);
-        // FORMULA: EBITDA = TOTAL GROSS - TOTAL EXPENSE
         document.getElementById(`ebitda_${i}`).value = (totalG - grandExp).toFixed(2);
     }
     updateYearTotals();
 }
-
 function updateYearTotals() {
     const allInputIds = [...revenueRows, ...mainSummaryRows, ...detailedSections.flatMap(s=>s.rows), ...detailedSections.map(s=>({id:s.id+'_det'}))].map(r=>r.id);
     allInputIds.forEach(id => {
