@@ -616,25 +616,41 @@ function updateYearTotals() {
 
 async function updateGlobalEbitda() {
     const props = ['surat', 'ghaziabad', 'muzaffarnagar', 'adipur', 'hyderabad'];
-    const fy = document.getElementById('fySelect').value;
-    let totalAllProps = 0;
+    const fy = document.getElementById('fySelect').value; // Get year from UI
+    let groupTotal = 0;
     
-    // FIXED: Always fetch "actual" for the header, never the projection
-    const fixedScen = "actual"; 
-
+    // Always fetch "actual" for the Live Box, regardless of projection view
     for (const p of props) {
-        // Specifically pull the Year Total (index 12) for the actual EBITDA
-        const snap = await db.ref(`reports/${p}/${fixedScen}/${fy}/ebitda`).once('value');
+        // Specifically target index 12 (the Year Total column) in the ebitda array
+        const snap = await db.ref(`reports/${p}/actual/${fy}/ebitda`).once('value');
         const ebitdaData = snap.val();
         if (ebitdaData && ebitdaData[12]) {
-            totalAllProps += parseFloat(ebitdaData[12]) || 0;
+            groupTotal += parseFloat(ebitdaData[12]) || 0;
         }
     }
 
     const display = document.getElementById('global-total');
     if (display) {
-        display.innerText = `₹ ${totalAllProps.toFixed(2)} L`;
+        display.innerText = `₹ ${groupTotal.toFixed(2)} L`;
     }
+
+    // Also update the year-specific summary IDs in the header
+    const total2025 = await calculateYearlyTotal("2025");
+    const total2026 = await calculateYearlyTotal("2026");
+    
+    document.getElementById('total-2025').innerText = `₹ ${total2025.toFixed(2)} L`;
+    document.getElementById('total-2026').innerText = `₹ ${total2026.toFixed(2)} L`;
+}
+
+// Helper to get group actuals for header summaries
+async function calculateYearlyTotal(year) {
+    const props = ['surat', 'ghaziabad', 'muzaffarnagar', 'adipur', 'hyderabad'];
+    let total = 0;
+    for (const p of props) {
+        const snap = await db.ref(`reports/${p}/actual/${year}/ebitda/12`).once('value');
+        total += parseFloat(snap.val()) || 0;
+    }
+    return total;
 }
 
 async function refreshData() {
@@ -642,25 +658,29 @@ async function refreshData() {
     const scenSelect = document.getElementById('scen');
     const fy = document.getElementById('fySelect').value;
 
-    // RULE 1: For FY 2025-26, ONLY allow "Actual" and hide other options
+    // RULE: For 2025-26, ONLY allow "Actual"
     if (fy === "2025") {
         scenSelect.value = "actual";
         Array.from(scenSelect.options).forEach(opt => {
             opt.style.display = (opt.value === 'actual') ? 'block' : 'none';
         });
     } else {
-        // Restore all projection options for 2026-27
+        // Restore all options for 2026-27
         Array.from(scenSelect.options).forEach(opt => opt.style.display = 'block');
     }
 
     const s = scenSelect.value;
     
-    // RULE 2: Realistic is the 'Base' for projections. 
-    // If user picks Pessimistic or Optimistic, we fetch Realistic data to apply formulas.
+    // FETCH LOGIC: Realistic is the base for 2026 projections
     const fetchScen = (fy === "2026" && (s === "pessimistic" || s === "optimistic")) ? "realistic" : s;
     
     const snapshot = await db.ref(`reports/${p}/${fetchScen}/${fy}`).once('value');
     const data = snapshot.val() || {};
+
+    // --- FIX: CLEAR UI BEFORE LOADING NEW YEAR DATA ---
+    document.querySelectorAll('input').forEach(inp => {
+        if(!inp.classList.contains('calc-field')) inp.value = "";
+    });
 
     // Load data and apply formulas
     Object.keys(data).forEach(key => {
@@ -668,10 +688,10 @@ async function refreshData() {
             data[key].forEach((val, i) => {
                 let finalVal = parseFloat(val) || 0;
                 
-                // NEW PROJECTION FORMULAS for 2026-27
+                // NEW PROJECTION FORMULAS (Only for 2026-27)
                 if (fy === "2026") {
-                    if (s === "pessimistic") finalVal *= 0.92; // -8% of Realistic
-                    else if (s === "optimistic") finalVal *= 1.04; // +4% of Realistic
+                    if (s === "pessimistic") finalVal *= 0.92; // -8%
+                    else if (s === "optimistic") finalVal *= 1.04;  // +4%
                 }
 
                 const el = document.getElementById(`${key}_${i}`);
@@ -681,7 +701,7 @@ async function refreshData() {
     });
 
     calc();
-    updateGlobalEbitda(); // Now uses the new fixed 'Actual' logic
+    updateGlobalEbitda();
     updateLocationBreakdown();
 }
 
