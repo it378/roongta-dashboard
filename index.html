@@ -621,11 +621,11 @@ async function updateGlobalEbitda() {
 
     try {
         for (const p of props) {
-            // We specifically look for the "Actual" scenario for the current year
+            // Force fetch "actual" scenario for the selected year
             const snap = await db.ref(`reports/${p}/actual/${fy}/ebitda`).once('value');
             const ebitdaArray = snap.val();
             
-            // Check if array exists and index 12 (Year Total) has a value
+            // Safe check: Only sum if the data and the Year Total (index 12) exist
             if (ebitdaArray && ebitdaArray[12]) {
                 groupTotal += parseFloat(ebitdaArray[12]) || 0;
             }
@@ -636,10 +636,7 @@ async function updateGlobalEbitda() {
             display.innerText = `₹ ${groupTotal.toFixed(2)} L`;
         }
     } catch (err) {
-        console.error("Global EBITDA Error:", err);
-        if (document.getElementById('global-total')) {
-            document.getElementById('global-total').innerText = "₹ 0.00 L";
-        }
+        console.error("Global EBITDA Load Error:", err);
     }
 }
 
