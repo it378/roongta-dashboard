@@ -621,12 +621,12 @@ async function updateGlobalEbitda() {
 
     try {
         for (const p of props) {
-            // Force fetch "actual" scenario for the selected year
+            // We force "actual" because Global EBITDA (LIVE) must show real data
             const snap = await db.ref(`reports/${p}/actual/${fy}/ebitda`).once('value');
             const ebitdaArray = snap.val();
             
-            // Safe check: Only sum if the data and the Year Total (index 12) exist
-            if (ebitdaArray && ebitdaArray[12]) {
+            // In your database, index 12 is the 'YEAR TOTAL' column
+            if (ebitdaArray && ebitdaArray[12] !== undefined) {
                 groupTotal += parseFloat(ebitdaArray[12]) || 0;
             }
         }
@@ -635,8 +635,28 @@ async function updateGlobalEbitda() {
         if (display) {
             display.innerText = `₹ ${groupTotal.toFixed(2)} L`;
         }
+
+        // Also update the individual year displays in the top bar
+        updateYearlySummaries();
+
     } catch (err) {
-        console.error("Global EBITDA Load Error:", err);
+        console.error("Global EBITDA Error:", err);
+    }
+}
+
+// Helper function to update the FY 2025 and FY 2026 summary boxes
+async function updateYearlySummaries() {
+    const props = ['surat', 'ghaziabad', 'muzaffarnagar', 'adipur', 'hyderabad'];
+    const years = ["2025", "2026"];
+
+    for (const year of years) {
+        let yearSum = 0;
+        for (const p of props) {
+            const snap = await db.ref(`reports/${p}/actual/${year}/ebitda/12`).once('value');
+            yearSum += parseFloat(snap.val()) || 0;
+        }
+        const el = document.getElementById(`total-${year}`);
+        if (el) el.innerText = `₹ ${yearSum.toFixed(2)} L`;
     }
 }
 
