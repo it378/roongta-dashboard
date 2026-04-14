@@ -616,16 +616,16 @@ function updateYearTotals() {
 
 async function updateGlobalEbitda() {
     const props = ['surat', 'ghaziabad', 'muzaffarnagar', 'adipur', 'hyderabad'];
-    const fy = document.getElementById('fySelect').value;
+    const fy = document.getElementById('fySelect').value; // Use current selected year
     let groupTotal = 0;
 
     try {
         for (const p of props) {
-            // We force "actual" because Global EBITDA (LIVE) must show real data
+            // Fetch "actual" EBITDA for the specific year
             const snap = await db.ref(`reports/${p}/actual/${fy}/ebitda`).once('value');
             const ebitdaArray = snap.val();
             
-            // In your database, index 12 is the 'YEAR TOTAL' column
+            // index 12 is the 'YEAR TOTAL' column in your table
             if (ebitdaArray && ebitdaArray[12] !== undefined) {
                 groupTotal += parseFloat(ebitdaArray[12]) || 0;
             }
@@ -635,28 +635,11 @@ async function updateGlobalEbitda() {
         if (display) {
             display.innerText = `₹ ${groupTotal.toFixed(2)} L`;
         }
-
-        // Also update the individual year displays in the top bar
+        
+        // Update the top header summary boxes
         updateYearlySummaries();
-
     } catch (err) {
         console.error("Global EBITDA Error:", err);
-    }
-}
-
-// Helper function to update the FY 2025 and FY 2026 summary boxes
-async function updateYearlySummaries() {
-    const props = ['surat', 'ghaziabad', 'muzaffarnagar', 'adipur', 'hyderabad'];
-    const years = ["2025", "2026"];
-
-    for (const year of years) {
-        let yearSum = 0;
-        for (const p of props) {
-            const snap = await db.ref(`reports/${p}/actual/${year}/ebitda/12`).once('value');
-            yearSum += parseFloat(snap.val()) || 0;
-        }
-        const el = document.getElementById(`total-${year}`);
-        if (el) el.innerText = `₹ ${yearSum.toFixed(2)} L`;
     }
 }
 
@@ -719,22 +702,29 @@ async function saveToCloud() {
     const s = document.getElementById('scen').value;
     const fy = document.getElementById('fySelect').value;
     const data = {};
-    
+
+    // 1. Save all input rows
     const allInputRows = [
         ...revenueRows.filter(r => r.type === 'in'),
         ...detailedSections.flatMap(sec => sec.rows)
     ];
 
     allInputRows.forEach(r => {
-        data[r.id] = []; 
-        for(let i = 0; i < 12; i++) {
+        data[r.id] = [];
+        for(let i = 0; i <= 12; i++) { // Include index 12 for the Year Total
             data[r.id].push(document.getElementById(`${r.id}_${i}`).value || "0");
         }
     });
 
+    // 2. IMPORTANT: Save the calculated EBITDA array so Global EBITDA can see it
+    data['ebitda'] = [];
+    for(let i = 0; i <= 12; i++) {
+        data['ebitda'].push(document.getElementById(`ebitda_${i}`).value || "0");
+    }
+
     try {
         await db.ref(`reports/${p}/${s}/${fy}`).set(data);
-        await updateGlobalEbitda();
+        await updateGlobalEbitda(); // Refresh the top bar after saving
         alert(`Cloud Sync Successful: ${p.toUpperCase()} (${s}) FY ${fy}`);
     } catch (error) {
         alert("Sync Failed: " + error.message);
