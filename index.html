@@ -616,41 +616,31 @@ function updateYearTotals() {
 
 async function updateGlobalEbitda() {
     const props = ['surat', 'ghaziabad', 'muzaffarnagar', 'adipur', 'hyderabad'];
-    const fy = document.getElementById('fySelect').value; // Get year from UI
+    const fy = document.getElementById('fySelect').value;
     let groupTotal = 0;
-    
-    // Always fetch "actual" for the Live Box, regardless of projection view
-    for (const p of props) {
-        // Specifically target index 12 (the Year Total column) in the ebitda array
-        const snap = await db.ref(`reports/${p}/actual/${fy}/ebitda`).once('value');
-        const ebitdaData = snap.val();
-        if (ebitdaData && ebitdaData[12]) {
-            groupTotal += parseFloat(ebitdaData[12]) || 0;
+
+    try {
+        for (const p of props) {
+            // We specifically look for the "Actual" scenario for the current year
+            const snap = await db.ref(`reports/${p}/actual/${fy}/ebitda`).once('value');
+            const ebitdaArray = snap.val();
+            
+            // Check if array exists and index 12 (Year Total) has a value
+            if (ebitdaArray && ebitdaArray[12]) {
+                groupTotal += parseFloat(ebitdaArray[12]) || 0;
+            }
+        }
+
+        const display = document.getElementById('global-total');
+        if (display) {
+            display.innerText = `₹ ${groupTotal.toFixed(2)} L`;
+        }
+    } catch (err) {
+        console.error("Global EBITDA Error:", err);
+        if (document.getElementById('global-total')) {
+            document.getElementById('global-total').innerText = "₹ 0.00 L";
         }
     }
-
-    const display = document.getElementById('global-total');
-    if (display) {
-        display.innerText = `₹ ${groupTotal.toFixed(2)} L`;
-    }
-
-    // Also update the year-specific summary IDs in the header
-    const total2025 = await calculateYearlyTotal("2025");
-    const total2026 = await calculateYearlyTotal("2026");
-    
-    document.getElementById('total-2025').innerText = `₹ ${total2025.toFixed(2)} L`;
-    document.getElementById('total-2026').innerText = `₹ ${total2026.toFixed(2)} L`;
-}
-
-// Helper to get group actuals for header summaries
-async function calculateYearlyTotal(year) {
-    const props = ['surat', 'ghaziabad', 'muzaffarnagar', 'adipur', 'hyderabad'];
-    let total = 0;
-    for (const p of props) {
-        const snap = await db.ref(`reports/${p}/actual/${year}/ebitda/12`).once('value');
-        total += parseFloat(snap.val()) || 0;
-    }
-    return total;
 }
 
 async function refreshData() {
@@ -658,47 +648,49 @@ async function refreshData() {
     const scenSelect = document.getElementById('scen');
     const fy = document.getElementById('fySelect').value;
 
-    // RULE: For 2025-26, ONLY allow "Actual"
+    // 1. Handle FY 2025-26 Constraints
     if (fy === "2025") {
         scenSelect.value = "actual";
         Array.from(scenSelect.options).forEach(opt => {
             opt.style.display = (opt.value === 'actual') ? 'block' : 'none';
         });
     } else {
-        // Restore all options for 2026-27
         Array.from(scenSelect.options).forEach(opt => opt.style.display = 'block');
     }
 
     const s = scenSelect.value;
     
-    // FETCH LOGIC: Realistic is the base for 2026 projections
+    // 2. Realistic is the BASE for 2026. Pessimistic/Optimistic fetch Realistic data.
     const fetchScen = (fy === "2026" && (s === "pessimistic" || s === "optimistic")) ? "realistic" : s;
     
-    const snapshot = await db.ref(`reports/${p}/${fetchScen}/${fy}`).once('value');
-    const data = snapshot.val() || {};
-
-    // --- FIX: CLEAR UI BEFORE LOADING NEW YEAR DATA ---
+    // 3. Clear all inputs before loading new data (Prevents the "not refreshing" issue)
     document.querySelectorAll('input').forEach(inp => {
-        if(!inp.classList.contains('calc-field')) inp.value = "";
+        if(!inp.classList.contains('calc-field')) inp.value = "0.00";
     });
 
-    // Load data and apply formulas
-    Object.keys(data).forEach(key => {
-        if (Array.isArray(data[key])) {
-            data[key].forEach((val, i) => {
-                let finalVal = parseFloat(val) || 0;
-                
-                // NEW PROJECTION FORMULAS (Only for 2026-27)
-                if (fy === "2026") {
-                    if (s === "pessimistic") finalVal *= 0.92; // -8%
-                    else if (s === "optimistic") finalVal *= 1.04;  // +4%
-                }
+    try {
+        const snapshot = await db.ref(`reports/${p}/${fetchScen}/${fy}`).once('value');
+        const data = snapshot.val() || {};
 
-                const el = document.getElementById(`${key}_${i}`);
-                if (el) el.value = finalVal.toFixed(2);
-            });
-        }
-    });
+        // 4. Fill Data and Apply Projections
+        Object.keys(data).forEach(key => {
+            if (Array.isArray(data[key])) {
+                data[key].forEach((val, i) => {
+                    let finalVal = parseFloat(val) || 0;
+                    
+                    if (fy === "2026") {
+                        if (s === "pessimistic") finalVal *= 0.92; // -8%
+                        else if (s === "optimistic") finalVal *= 1.04; // +4%
+                    }
+
+                    const el = document.getElementById(`${key}_${i}`);
+                    if (el) el.value = finalVal.toFixed(2);
+                });
+            }
+        });
+    } catch (e) {
+        console.error("Data Load Error:", e);
+    }
 
     calc();
     updateGlobalEbitda();
