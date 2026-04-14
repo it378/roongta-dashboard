@@ -616,51 +616,58 @@ function updateYearTotals() {
 async function updateGlobalEbitda() {
     const props = ['surat', 'ghaziabad', 'muzaffarnagar', 'adipur', 'hyderabad'];
     const fy = document.getElementById('fySelect').value;
-    let totalAllYears = 0;
+    let totalAllProps = 0;
     
-    // We force "actual" here so the header ALWAYS shows Actual Global EBITDA
+    // FIXED: Always fetch "actual" for the header, never the projection
     const fixedScen = "actual"; 
 
     for (const p of props) {
         const snap = await db.ref(`reports/${p}/${fixedScen}/${fy}`).once('value');
         const data = snap.val() || {};
         if (data.ebitda) {
-            // Sum the 12th index (Year Total) for each property
-            totalAllYears += parseFloat(data.ebitda[12]) || 0;
+            // Index 12 is the Year Total column
+            totalAllProps += parseFloat(data.ebitda[12]) || 0;
         }
     }
 
-    document.getElementById('global-total').innerText = `₹ ${totalAllYears.toFixed(2)} L`;
+    document.getElementById('global-total').innerText = `₹ ${totalAllProps.toFixed(2)} L`;
 }
 
 async function refreshData() {
     const p = document.getElementById('prop').value;
     const scenSelect = document.getElementById('scen');
     const fy = document.getElementById('fySelect').value;
-    const s = scenSelect.value;
 
-    // RULE: Realistic is now the 'Base' for projections. 
-    // If user picks Pessimistic or Optimistic, we fetch Realistic data to apply formulas.
+    // RULE 1: For 2025-26, ONLY allow "Actual"
+    if (fy === "2025") {
+        scenSelect.value = "actual";
+        Array.from(scenSelect.options).forEach(opt => {
+            opt.style.display = (opt.value === 'actual') ? 'block' : 'none';
+        });
+    } else {
+        // Restore all options for 2026-27
+        Array.from(scenSelect.options).forEach(opt => opt.style.display = 'block');
+    }
+
+    const s = scenSelect.value;
+    
+    // RULE 2: Realistic is now the base. Pessimistic (-8%) and Optimistic (+4%) 
+    // are calculated from Realistic data.
     const fetchScen = (s === "pessimistic" || s === "optimistic") ? "realistic" : s;
     
     const snapshot = await db.ref(`reports/${p}/${fetchScen}/${fy}`).once('value');
     const data = snapshot.val() || {};
 
-    // Clear and Fill Data
-    document.querySelectorAll('input').forEach(inp => {
-        if(!inp.classList.contains('calc-field')) inp.value = "0.00";
-    });
-    
+    // Load and apply formulas
     Object.keys(data).forEach(key => {
         if (Array.isArray(data[key])) {
             data[key].forEach((val, i) => {
                 let finalVal = parseFloat(val) || 0;
                 
-                // NEW PROJECTION FORMULAS
-                if (s === "pessimistic") {
-                    finalVal = finalVal * 0.92; // -8% of Realistic
-                } else if (s === "optimistic") {
-                    finalVal = finalVal * 1.04; // +4% of Realistic
+                // NEW FORMULAS (Only for 2026-27 projections)
+                if (fy === "2026") {
+                    if (s === "pessimistic") finalVal *= 0.92; // -8%
+                    if (s === "optimistic") finalVal *= 1.04;  // +4%
                 }
 
                 const el = document.getElementById(`${key}_${i}`);
@@ -669,8 +676,8 @@ async function refreshData() {
         }
     });
 
-    calc(); 
-    updateGlobalEbitda(); // This will now use the fixed 'Actual' logic below
+    calc();
+    updateGlobalEbitda();
     updateLocationBreakdown();
 }
 
