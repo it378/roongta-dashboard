@@ -176,11 +176,10 @@
                 <div class="control-item">
                     <label>Projection Logic</label>
                     <select id="scen" onchange="refreshData()">
-                        <option value="actual">Actual (Monthly Data)</option>
-                        <option value="pessimistic" selected>Pessimistic (Base Target)</option>
-                        <option value="realistic">Realistic (+8% of Target)</option>
-                        <option value="optimistic">Optimistic (+12% of Target)</option>
-                    </select>
+    <option value="actual">Actual (Monthly Data)</option>
+    <option value="realistic">Realistic (Base Target)</option> <option value="pessimistic">Pessimistic (-8% of Realistic)</option>
+    <option value="optimistic">Optimistic (+4% of Realistic)</option>
+</select>
                 </div>
             </div>
             <div class="btn-group">
@@ -615,53 +614,34 @@ function updateYearTotals() {
 }
 
 async function updateGlobalEbitda() {
-    let totals = { "2025": 0, "2026": 0 };
-    const currentScen = document.getElementById('scen').value;
-    const snap = await db.ref('reports').once('value');
-    const allData = snap.val() || {};
+    const props = ['surat', 'ghaziabad', 'muzaffarnagar', 'adipur', 'hyderabad'];
+    const fy = document.getElementById('fySelect').value;
+    let totalAllYears = 0;
+    
+    // We force "actual" here so the header ALWAYS shows Actual Global EBITDA
+    const fixedScen = "actual"; 
 
-    Object.keys(allData).forEach(loc => {
-        [2025, 2026].forEach(year => {
-            const d = allData[loc]?.[currentScen]?.[year];
-            if (d) {
-                for (let i = 0; i < 12; i++) {
-                    const ff = parseFloat(d.ff?.[i] || 0);
-                    const grossRev = (ff * (parseFloat(d.atp_g?.[i] || 0) + parseFloat(d.sph_g?.[i] || 0))) / 100000;
-                    let other = 0;
-                    ['rev_oth','rev_3d','rev_park','rev_mgmt','rev_adv'].forEach(k => other += parseFloat(d[k]?.[i] || 0));
-                    let exp = 0;
-                    detailedSections.forEach(s => { if(s.id !== 'rev_other') s.rows.forEach(r => exp += parseFloat(d[r.id]?.[i] || 0)); });
-                    totals[year] += (grossRev + other - exp);
-                }
-            }
-        });
-    });
+    for (const p of props) {
+        const snap = await db.ref(`reports/${p}/${fixedScen}/${fy}`).once('value');
+        const data = snap.val() || {};
+        if (data.ebitda) {
+            // Sum the 12th index (Year Total) for each property
+            totalAllYears += parseFloat(data.ebitda[12]) || 0;
+        }
+    }
 
-    document.getElementById('total-2025').innerText = `₹ ${totals["2025"].toFixed(2)} L`;
-    document.getElementById('total-2026').innerText = `₹ ${totals["2026"].toFixed(2)} L`;
-    document.getElementById('global-total').innerText = `₹ ${(totals["2025"] + totals["2026"]).toFixed(2)} L`;
+    document.getElementById('global-total').innerText = `₹ ${totalAllYears.toFixed(2)} L`;
 }
 
 async function refreshData() {
     const p = document.getElementById('prop').value;
     const scenSelect = document.getElementById('scen');
     const fy = document.getElementById('fySelect').value;
-    
-    // RULE: For 2025-26, force "Actual" and hide projection options
-    if (fy === "2025") {
-        scenSelect.value = "actual";
-        Array.from(scenSelect.options).forEach(opt => {
-            if (opt.value !== 'actual') opt.style.display = 'none';
-        });
-    } else {
-        // Show all options for 2026-27
-        Array.from(scenSelect.options).forEach(opt => opt.style.display = 'block');
-    }
-
     const s = scenSelect.value;
 
-    // Fetch Logic: 2026 Realistic/Optimistic uses Pessimistic as the base
-    const fetchScen = (fy === "2026" && (s === "realistic" || s === "optimistic")) ? "pessimistic" : s;
+    // RULE: Realistic is now the 'Base' for projections. 
+    // If user picks Pessimistic or Optimistic, we fetch Realistic data to apply formulas.
+    const fetchScen = (s === "pessimistic" || s === "optimistic") ? "realistic" : s;
     
     const snapshot = await db.ref(`reports/${p}/${fetchScen}/${fy}`).once('value');
     const data = snapshot.val() || {};
@@ -676,10 +656,11 @@ async function refreshData() {
             data[key].forEach((val, i) => {
                 let finalVal = parseFloat(val) || 0;
                 
-                // APPLY AUTO-INCREASE LOGIC ONLY FOR 2026 PROJECTIONS
-                if (fy === "2026") {
-                    if (s === "realistic") finalVal = finalVal * 1.08;
-                    if (s === "optimistic") finalVal = finalVal * 1.12;
+                // NEW PROJECTION FORMULAS
+                if (s === "pessimistic") {
+                    finalVal = finalVal * 0.92; // -8% of Realistic
+                } else if (s === "optimistic") {
+                    finalVal = finalVal * 1.04; // +4% of Realistic
                 }
 
                 const el = document.getElementById(`${key}_${i}`);
@@ -688,8 +669,8 @@ async function refreshData() {
         }
     });
 
-    calc(); // Recalculate totals and EBITDA
-    updateGlobalEbitda();
+    calc(); 
+    updateGlobalEbitda(); // This will now use the fixed 'Actual' logic below
     updateLocationBreakdown();
 }
 
