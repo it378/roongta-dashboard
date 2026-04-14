@@ -177,7 +177,8 @@
                     <label>Projection Logic</label>
                     <select id="scen" onchange="refreshData()">
     <option value="actual">Actual (Monthly Data)</option>
-    <option value="realistic">Realistic (Base Target)</option> <option value="pessimistic">Pessimistic (-8% of Realistic)</option>
+    <option value="realistic" selected>Realistic (Base Target)</option>
+    <option value="pessimistic">Pessimistic (-8% of Realistic)</option>
     <option value="optimistic">Optimistic (+4% of Realistic)</option>
 </select>
                 </div>
@@ -513,32 +514,38 @@ function renderRow(r) {
 }
 
 function calc() {
-    const prop = document.getElementById('prop').value;
-    const seats = parseInt(document.getElementById('prop').options[document.getElementById('prop').selectedIndex].getAttribute('data-seats'));
+    const propElement = document.getElementById('prop');
+    const propValue = propElement.value; // Get the selected property ID (e.g., 'surat')
+    const seats = parseInt(propElement.options[propElement.selectedIndex].getAttribute('data-seats'));
 
-    for (let i = 0; i <= 12; i++) { // Include index 12 for totals
-        if (i === 12) continue; // Skip math for the total column, handled by updateYearTotals
-
+    for (let i = 0; i < 12; i++) {
         let ff = parseFloat(document.getElementById(`ff_${i}`).value) || 0;
         let atpG = parseFloat(document.getElementById(`atp_g_${i}`).value) || 0;
+        let sphG = parseFloat(document.getElementById(`sph_g_${i}`).value) || 0;
 
-        let atpNetFactor = 0;
-        let servFactor = 0;
+        // --- PROPERTY SPECIFIC LOGIC START ---
+        let atp_n_factor = 0;
+        let service_multiplier = 0;
 
-        // Apply Property-Specific Formulas
-        if (prop === 'surat' || prop === 'adipur') { 
-            atpNetFactor = 25; servFactor = 25; 
-        } else if (prop === 'muzaffarnagar' || prop === 'ghaziabad') { 
-            atpNetFactor = 9.32; servFactor = 9.32; 
-        } else if (prop === 'hyderabad') { 
-            atpNetFactor = 5; servFactor = 4.23; 
+        switch (propValue) {
+            case 'surat':
+            case 'adipur':
+                atp_n_factor = 25;
+                service_multiplier = 25;
+                break;
+            case 'muzaffarnagar':
+            case 'ghaziabad':
+                atp_n_factor = 9.32;
+                service_multiplier = 9.32;
+                break;
+            case 'hyderabad':
+                atp_n_factor = 5;
+                service_multiplier = 4.23;
+                break;
+            default:
+                atp_n_factor = 0;
+                service_multiplier = 0;
         }
-
-        let atpNet = (atpG / 1.18) - atpNetFactor;
-        let nServ = (ff * servFactor) / 100000;
-
-        document.getElementById(`atp_n_${i}`).value = atpNet.toFixed(2);
-        document.getElementById(`service_${i}`).value = nServ.toFixed(2);
 
         // Calculate the values based on the factors determined above
         let atp_n_val = (atpG / 1.18) - atp_n_factor;
@@ -610,20 +617,23 @@ function updateYearTotals() {
 async function updateGlobalEbitda() {
     const props = ['surat', 'ghaziabad', 'muzaffarnagar', 'adipur', 'hyderabad'];
     const fy = document.getElementById('fySelect').value;
-    let groupTotal = 0;
+    let totalAllProps = 0;
     
-    // Always fetch "actual" for the Global Live Box
+    // FIXED: Always fetch "actual" for the header, never the projection
+    const fixedScen = "actual"; 
+
     for (const p of props) {
-        const snap = await db.ref(`reports/${p}/actual/${fy}/ebitda`).once('value');
-        const ebitdaArray = snap.val();
-        if (ebitdaArray && ebitdaArray[12]) {
-            groupTotal += parseFloat(ebitdaArray[12]) || 0;
+        // Specifically pull the Year Total (index 12) for the actual EBITDA
+        const snap = await db.ref(`reports/${p}/${fixedScen}/${fy}/ebitda`).once('value');
+        const ebitdaData = snap.val();
+        if (ebitdaData && ebitdaData[12]) {
+            totalAllProps += parseFloat(ebitdaData[12]) || 0;
         }
     }
 
     const display = document.getElementById('global-total');
     if (display) {
-        display.innerText = `₹ ${groupTotal.toFixed(2)} L`;
+        display.innerText = `₹ ${totalAllProps.toFixed(2)} L`;
     }
 }
 
@@ -632,30 +642,25 @@ async function refreshData() {
     const scenSelect = document.getElementById('scen');
     const fy = document.getElementById('fySelect').value;
 
-    // --- RULE 1: For 2025-26, ONLY allow "Actual" ---
+    // RULE 1: For FY 2025-26, ONLY allow "Actual" and hide other options
     if (fy === "2025") {
         scenSelect.value = "actual";
         Array.from(scenSelect.options).forEach(opt => {
             opt.style.display = (opt.value === 'actual') ? 'block' : 'none';
         });
     } else {
-        // Restore all options for 2026-27
+        // Restore all projection options for 2026-27
         Array.from(scenSelect.options).forEach(opt => opt.style.display = 'block');
     }
 
     const s = scenSelect.value;
     
-    // --- RULE 2: Realistic is now the base for 2026-27 projections ---
-    // Pessimistic and Optimistic fetch "Realistic" data to apply formulas
+    // RULE 2: Realistic is the 'Base' for projections. 
+    // If user picks Pessimistic or Optimistic, we fetch Realistic data to apply formulas.
     const fetchScen = (fy === "2026" && (s === "pessimistic" || s === "optimistic")) ? "realistic" : s;
     
     const snapshot = await db.ref(`reports/${p}/${fetchScen}/${fy}`).once('value');
     const data = snapshot.val() || {};
-
-    // --- IMPORTANT: Clear UI before loading new year data ---
-    document.querySelectorAll('input').forEach(inp => {
-        if(!inp.classList.contains('calc-field')) inp.value = "";
-    });
 
     // Load data and apply formulas
     Object.keys(data).forEach(key => {
@@ -663,10 +668,10 @@ async function refreshData() {
             data[key].forEach((val, i) => {
                 let finalVal = parseFloat(val) || 0;
                 
-                // Applying formulas for 2026-27 projections
+                // NEW PROJECTION FORMULAS for 2026-27
                 if (fy === "2026") {
-                    if (s === "pessimistic") finalVal *= 0.92; // -8%
-                    else if (s === "optimistic") finalVal *= 1.04; // +4%
+                    if (s === "pessimistic") finalVal *= 0.92; // -8% of Realistic
+                    else if (s === "optimistic") finalVal *= 1.04; // +4% of Realistic
                 }
 
                 const el = document.getElementById(`${key}_${i}`);
@@ -675,9 +680,8 @@ async function refreshData() {
         }
     });
 
-    // Recalculate everything
-    calc(); 
-    updateGlobalEbitda();
+    calc();
+    updateGlobalEbitda(); // Now uses the new fixed 'Actual' logic
     updateLocationBreakdown();
 }
 
