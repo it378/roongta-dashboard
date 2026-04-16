@@ -616,18 +616,18 @@ function updateYearTotals() {
 
 async function updateGlobalEbitda() {
     const props = ['surat', 'ghaziabad', 'muzaffarnagar', 'adipur', 'hyderabad'];
-    const fy = document.getElementById('fySelect').value; // Use current selected year
+    const fy = document.getElementById('fySelect').value;
     let groupTotal = 0;
 
     try {
         for (const p of props) {
-            // Fetch "actual" EBITDA for the specific year
+            // Always pull "actual" for the Global Live Box
             const snap = await db.ref(`reports/${p}/actual/${fy}/ebitda`).once('value');
-            const ebitdaArray = snap.val();
+            const ebitdaData = snap.val();
             
-            // index 12 is the 'YEAR TOTAL' column in your table
-            if (ebitdaArray && ebitdaArray[12] !== undefined) {
-                groupTotal += parseFloat(ebitdaArray[12]) || 0;
+            // Index 12 is the 'YEAR TOTAL' column in your table
+            if (ebitdaData && ebitdaData[12]) {
+                groupTotal += parseFloat(ebitdaData[12]) || 0;
             }
         }
 
@@ -635,11 +635,27 @@ async function updateGlobalEbitda() {
         if (display) {
             display.innerText = `₹ ${groupTotal.toFixed(2)} L`;
         }
-        
-        // Update the top header summary boxes
-        updateYearlySummaries();
+
+        // Also update the small FY 2025 and FY 2026 header boxes
+        updateStaticSummaries();
     } catch (err) {
         console.error("Global EBITDA Error:", err);
+    }
+}
+
+// New helper to update the top individual year boxes
+async function updateStaticSummaries() {
+    const props = ['surat', 'ghaziabad', 'muzaffarnagar', 'adipur', 'hyderabad'];
+    const years = ["2025", "2026"];
+
+    for (const year of years) {
+        let yearSum = 0;
+        for (const p of props) {
+            const snap = await db.ref(`reports/${p}/actual/${year}/ebitda/12`).once('value');
+            yearSum += parseFloat(snap.val()) || 0;
+        }
+        const el = document.getElementById(`total-${year}`);
+        if (el) el.innerText = `₹ ${yearSum.toFixed(2)} L`;
     }
 }
 
@@ -703,7 +719,7 @@ async function saveToCloud() {
     const fy = document.getElementById('fySelect').value;
     const data = {};
 
-    // 1. Save all input rows
+    // 1. Map all manual input rows
     const allInputRows = [
         ...revenueRows.filter(r => r.type === 'in'),
         ...detailedSections.flatMap(sec => sec.rows)
@@ -711,12 +727,12 @@ async function saveToCloud() {
 
     allInputRows.forEach(r => {
         data[r.id] = [];
-        for(let i = 0; i <= 12; i++) { // Include index 12 for the Year Total
+        for(let i = 0; i <= 12; i++) {
             data[r.id].push(document.getElementById(`${r.id}_${i}`).value || "0");
         }
     });
 
-    // 2. IMPORTANT: Save the calculated EBITDA array so Global EBITDA can see it
+    // 2. CRITICAL FIX: Explicitly save the calculated EBITDA row
     data['ebitda'] = [];
     for(let i = 0; i <= 12; i++) {
         data['ebitda'].push(document.getElementById(`ebitda_${i}`).value || "0");
@@ -724,7 +740,7 @@ async function saveToCloud() {
 
     try {
         await db.ref(`reports/${p}/${s}/${fy}`).set(data);
-        await updateGlobalEbitda(); // Refresh the top bar after saving
+        await updateGlobalEbitda(); // Refresh Global UI immediately
         alert(`Cloud Sync Successful: ${p.toUpperCase()} (${s}) FY ${fy}`);
     } catch (error) {
         alert("Sync Failed: " + error.message);
