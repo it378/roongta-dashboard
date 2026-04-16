@@ -616,47 +616,55 @@ function updateYearTotals() {
 
 async function updateGlobalEbitda() {
     const props = ['surat', 'ghaziabad', 'muzaffarnagar', 'adipur', 'hyderabad'];
-    const fy = document.getElementById('fySelect').value;
-    let groupTotal = 0;
+    const currentFY = document.getElementById('fySelect').value;
+    
+    // We will sum Actuals for BOTH years to get a cumulative live total
+    const yearsToSum = ["2025", "2026"]; 
+    let cumulativeTotal = 0;
 
     try {
-        for (const p of props) {
-            // ALWAYS pull 'actual' for the Global Live Box
-            const snap = await db.ref(`reports/${p}/actual/${fy}/ebitda`).once('value');
-            const ebitdaArray = snap.val();
-            
-            // Index 12 is the 'YEAR TOTAL' column in your table
-            if (ebitdaArray && ebitdaArray[12]) {
-                groupTotal += parseFloat(ebitdaArray[12]) || 0;
+        for (const year of yearsToSum) {
+            // If the user is looking at 2025, don't add 2026 data yet
+            if (year > currentFY) continue; 
+
+            for (const p of props) {
+                const snap = await db.ref(`reports/${p}/actual/${year}/ebitda/12`).once('value');
+                cumulativeTotal += parseFloat(snap.val()) || 0;
             }
         }
 
-        // Update the big "Global EBITDA Live" text
         const display = document.getElementById('global-total');
-        if (display) display.innerText = `₹ ${groupTotal.toFixed(2)} L`;
+        if (display) {
+            display.innerText = `₹ ${cumulativeTotal.toFixed(2)} L`;
+        }
 
-        // Update the small boxes at the top (FY 25 and FY 26)
-        updateHeaderSummaries();
+        // Also update the individual FY summary boxes in the header
+        updateHeaderStaticBoxes();
 
     } catch (err) {
-        console.error("Global EBITDA Error:", err);
+        console.error("Global Total Error:", err);
     }
 }
 
-// Helper to keep the top static boxes updated
-async function updateHeaderSummaries() {
+// Helper to keep the small FY 25 and FY 26 boxes accurate
+async function updateHeaderStaticBoxes() {
     const props = ['surat', 'ghaziabad', 'muzaffarnagar', 'adipur', 'hyderabad'];
-    const years = ["2025", "2026"];
-
-    for (const year of years) {
-        let yearTotal = 0;
-        for (const p of props) {
-            const snap = await db.ref(`reports/${p}/actual/${year}/ebitda/12`).once('value');
-            yearTotal += parseFloat(snap.val()) || 0;
-        }
-        const el = document.getElementById(`total-${year}`);
-        if (el) el.innerText = `₹ ${yearTotal.toFixed(2)} L`;
+    
+    // Total for 2025
+    let total25 = 0;
+    for (const p of props) {
+        const snap = await db.ref(`reports/${p}/actual/2025/ebitda/12`).once('value');
+        total25 += parseFloat(snap.val()) || 0;
     }
+    document.getElementById('total-2025').innerText = `₹ ${total25.toFixed(2)} L`;
+
+    // Total for 2026
+    let total26 = 0;
+    for (const p of props) {
+        const snap = await db.ref(`reports/${p}/actual/2026/ebitda/12`).once('value');
+        total26 += parseFloat(snap.val()) || 0;
+    }
+    document.getElementById('total-2026').innerText = `₹ ${total26.toFixed(2)} L`;
 }
 
 async function refreshData() {
@@ -711,6 +719,7 @@ async function refreshData() {
     calc();
     updateGlobalEbitda();
     updateLocationBreakdown();
+    await updateGlobalEbitda();
 }
 
 async function saveToCloud() {
