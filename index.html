@@ -616,36 +616,32 @@ function updateYearTotals() {
 
 async function updateGlobalEbitda() {
     const props = ['surat', 'ghaziabad', 'muzaffarnagar', 'adipur', 'hyderabad'];
-    const currentFY = document.getElementById('fySelect').value;
-    const yearsToSum = ["2025", "2026"];
+    // Parse current year as integer for safe comparison
+    const currentFY = parseInt(document.getElementById('fySelect').value); 
     
     let cumulativeTotal = 0;
 
     try {
-        // Create an array of promises to fetch all data simultaneously
-        const promises = [];
-        for (const year of yearsToSum) {
-            if (parseInt(year) <= parseInt(currentFY)) {
-                for (const p of props) {
-                    promises.push(db.ref(`reports/${p}/actual/${year}/ebitda/12`).once('value'));
+        // Loop through properties
+        for (const p of props) {
+            // Loop through years (2025 and 2026)
+            for (const year of [2025, 2026]) {
+                // Logic: Only add if the year is <= the selected year in the dropdown
+                if (year <= currentFY) {
+                    const snap = await db.ref(`reports/${p}/actual/${year}/ebitda/12`).once('value');
+                    const val = parseFloat(snap.val()) || 0;
+                    cumulativeTotal += val;
                 }
             }
         }
-
-        const snapshots = await Promise.all(promises);
-        
-        // Sum everything up
-        snapshots.forEach(snap => {
-            cumulativeTotal += parseFloat(snap.val() || 0);
-        });
 
         const display = document.getElementById('global-total');
         if (display) {
             display.innerText = `₹ ${cumulativeTotal.toFixed(2)} L`;
         }
-
+        
+        // Refresh individual boxes
         updateHeaderStaticBoxes();
-
     } catch (err) {
         console.error("Global Total Error:", err);
     }
