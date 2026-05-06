@@ -617,28 +617,33 @@ function updateYearTotals() {
 async function updateGlobalEbitda() {
     const props = ['surat', 'ghaziabad', 'muzaffarnagar', 'adipur', 'hyderabad'];
     const currentFY = document.getElementById('fySelect').value;
+    const yearsToSum = ["2025", "2026"];
     
-    // We will sum Actuals for BOTH years to get a cumulative live total
-    const yearsToSum = ["2025", "2026"]; 
     let cumulativeTotal = 0;
 
     try {
+        // Create an array of promises to fetch all data simultaneously
+        const promises = [];
         for (const year of yearsToSum) {
-            // If the user is looking at 2025, don't add 2026 data yet
-            if (year > currentFY) continue; 
-
-            for (const p of props) {
-                const snap = await db.ref(`reports/${p}/actual/${year}/ebitda/12`).once('value');
-                cumulativeTotal += parseFloat(snap.val()) || 0;
+            if (parseInt(year) <= parseInt(currentFY)) {
+                for (const p of props) {
+                    promises.push(db.ref(`reports/${p}/actual/${year}/ebitda/12`).once('value'));
+                }
             }
         }
+
+        const snapshots = await Promise.all(promises);
+        
+        // Sum everything up
+        snapshots.forEach(snap => {
+            cumulativeTotal += parseFloat(snap.val() || 0);
+        });
 
         const display = document.getElementById('global-total');
         if (display) {
             display.innerText = `₹ ${cumulativeTotal.toFixed(2)} L`;
         }
 
-        // Also update the individual FY summary boxes in the header
         updateHeaderStaticBoxes();
 
     } catch (err) {
@@ -646,28 +651,7 @@ async function updateGlobalEbitda() {
     }
 }
 
-// Helper to keep the small FY 25 and FY 26 boxes accurate
-async function updateHeaderStaticBoxes() {
-    const props = ['surat', 'ghaziabad', 'muzaffarnagar', 'adipur', 'hyderabad'];
-    
-    // Total for 2025
-    let total25 = 0;
-    for (const p of props) {
-        const snap = await db.ref(`reports/${p}/actual/2025/ebitda/12`).once('value');
-        total25 += parseFloat(snap.val()) || 0;
-    }
-    document.getElementById('total-2025').innerText = `₹ ${total25.toFixed(2)} L`;
-
-    // Total for 2026
-    let total26 = 0;
-    for (const p of props) {
-        const snap = await db.ref(`reports/${p}/actual/2026/ebitda/12`).once('value');
-        total26 += parseFloat(snap.val()) || 0;
-    }
-    document.getElementById('total-2026').innerText = `₹ ${total26.toFixed(2)} L`;
-}
-
-async function refreshData() {
+    async function refreshData() {
     const p = document.getElementById('prop').value;
     const scenSelect = document.getElementById('scen');
     const fy = document.getElementById('fySelect').value;
