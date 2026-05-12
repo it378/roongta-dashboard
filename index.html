@@ -603,8 +603,6 @@ function calc() {
         document.getElementById(`ebitda_${i}`).value = (totalG - grandExp).toFixed(2);
     }
     updateYearTotals();
-    // Add this at the very end of your calc() function
-updateLocationBreakdown(); // This ensures the breakdown table updates
 }
 function updateYearTotals() {
     const allInputIds = [...revenueRows, ...mainSummaryRows, ...detailedSections.flatMap(s=>s.rows), ...detailedSections.map(s=>({id:s.id+'_det'}))].map(r=>r.id);
@@ -618,53 +616,40 @@ function updateYearTotals() {
 
 async function updateGlobalEbitda() {
     const props = ['surat', 'ghaziabad', 'muzaffarnagar', 'adipur', 'hyderabad'];
-    const currentFY = document.getElementById('fySelect').value;
-    let total = 0;
+    // We want the total of 2025 + 2026 always
+    const years = ["2025", "2026"]; 
+    let cumulativeTotal = 0;
 
-    for (const p of props) {
-        // Safe Fetch: if year data doesn't exist, use 0
-        const snap = await db.ref(`reports/${p}/actual/${currentFY}/ebitda/12`).once('value');
-        const val = parseFloat(snap.val());
-        
-        if (!isNaN(val)) {
-            total += val;
+    try {
+        for (const p of props) {
+            for (const year of years) {
+                // Fetch the 'Year Total' column (index 12) for EBITDA
+                const snap = await db.ref(`reports/${p}/actual/${year}/ebitda/12`).once('value');
+                const val = parseFloat(snap.val());
+                
+                // If the value exists and is a number, add it
+                if (!isNaN(val)) {
+                    cumulativeTotal += val;
+                }
+            }
         }
-    }
-    document.getElementById('global-total').innerText = `₹ ${total.toFixed(2)} L`;
-}
 
         const display = document.getElementById('global-total');
         if (display) {
             display.innerText = `₹ ${cumulativeTotal.toFixed(2)} L`;
         }
+        
+        // This updates the Cinema Ops EBITDA in your HO Dashboard
+        const hoDisplay = document.getElementById('ho-cinema-ebitda');
+        if (hoDisplay) {
+            hoDisplay.innerText = `₹ ${cumulativeTotal.toFixed(2)} L`;
+        }
 
-        // Also update the individual FY summary boxes in the header
+        // Keep the small header boxes updated
         updateHeaderStaticBoxes();
-
     } catch (err) {
-        console.error("Global Total Error:", err);
+        console.error("Global Total Calculation Error:", err);
     }
-}
-
-// Helper to keep the small FY 25 and FY 26 boxes accurate
-async function updateHeaderStaticBoxes() {
-    const props = ['surat', 'ghaziabad', 'muzaffarnagar', 'adipur', 'hyderabad'];
-    
-    // Total for 2025
-    let total25 = 0;
-    for (const p of props) {
-        const snap = await db.ref(`reports/${p}/actual/2025/ebitda/12`).once('value');
-        total25 += parseFloat(snap.val()) || 0;
-    }
-    document.getElementById('total-2025').innerText = `₹ ${total25.toFixed(2)} L`;
-
-    // Total for 2026
-    let total26 = 0;
-    for (const p of props) {
-        const snap = await db.ref(`reports/${p}/actual/2026/ebitda/12`).once('value');
-        total26 += parseFloat(snap.val()) || 0;
-    }
-    document.getElementById('total-2026').innerText = `₹ ${total26.toFixed(2)} L`;
 }
 
 async function refreshData() {
