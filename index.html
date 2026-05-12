@@ -616,39 +616,41 @@ function updateYearTotals() {
 
 async function updateGlobalEbitda() {
     const props = ['surat', 'ghaziabad', 'muzaffarnagar', 'adipur', 'hyderabad'];
-    // We want the total of 2025 + 2026 always
     const years = ["2025", "2026"]; 
     let cumulativeTotal = 0;
 
     try {
+        // Fetch all values in parallel for speed
+        const promises = [];
         for (const p of props) {
             for (const year of years) {
-                // Fetch the 'Year Total' column (index 12) for EBITDA
-                const snap = await db.ref(`reports/${p}/actual/${year}/ebitda/12`).once('value');
-                const val = parseFloat(snap.val());
-                
-                // If the value exists and is a number, add it
-                if (!isNaN(val)) {
-                    cumulativeTotal += val;
-                }
+                promises.push(db.ref(`reports/${p}/actual/${year}/ebitda/12`).once('value'));
             }
         }
 
-        const display = document.getElementById('global-total');
-        if (display) {
-            display.innerText = `₹ ${cumulativeTotal.toFixed(2)} L`;
-        }
+        const snapshots = await Promise.all(promises);
         
-        // This updates the Cinema Ops EBITDA in your HO Dashboard
-        const hoDisplay = document.getElementById('ho-cinema-ebitda');
-        if (hoDisplay) {
-            hoDisplay.innerText = `₹ ${cumulativeTotal.toFixed(2)} L`;
-        }
+        // Sum values with a safety check
+        snapshots.forEach(snap => {
+            const val = parseFloat(snap.val());
+            if (!isNaN(val)) {
+                cumulativeTotal += val;
+            }
+        });
 
-        // Keep the small header boxes updated
+        // Update the Big Global Box
+        const display = document.getElementById('global-total');
+        if (display) display.innerText = `₹ ${cumulativeTotal.toFixed(2)} L`;
+
+        // Update the Cinema Ops EBITDA in HO (if it exists on page)
+        const hoDisplay = document.getElementById('ho-cinema-ebitda');
+        if (hoDisplay) hoDisplay.innerText = `₹ ${cumulativeTotal.toFixed(2)} L`;
+
+        // Update the small FY 25 and FY 26 boxes
         updateHeaderStaticBoxes();
+
     } catch (err) {
-        console.error("Global Total Calculation Error:", err);
+        console.error("Global Sync Error:", err);
     }
 }
 
@@ -657,7 +659,7 @@ async function refreshData() {
     const scenSelect = document.getElementById('scen');
     const fy = document.getElementById('fySelect').value;
 
-    // 1. Handle FY 2025-26 Constraints
+    // Handle FY Visibility
     if (fy === "2025") {
         scenSelect.value = "actual";
         Array.from(scenSelect.options).forEach(opt => {
@@ -668,43 +670,38 @@ async function refreshData() {
     }
 
     const s = scenSelect.value;
-    
-    // 2. Realistic is the BASE for 2026. Pessimistic/Optimistic fetch Realistic data.
     const fetchScen = (fy === "2026" && (s === "pessimistic" || s === "optimistic")) ? "realistic" : s;
     
-    // 3. Clear all inputs before loading new data (Prevents the "not refreshing" issue)
-    document.querySelectorAll('input').forEach(inp => {
-        if(!inp.classList.contains('calc-field')) inp.value = "0.00";
-    });
+    // Clear old inputs to prevent ghost data
+    document.querySelectorAll('input:not(.calc-field)').forEach(inp => inp.value = "0.00");
 
     try {
+        // WAIT for the main data
         const snapshot = await db.ref(`reports/${p}/${fetchScen}/${fy}`).once('value');
         const data = snapshot.val() || {};
 
-        // 4. Fill Data and Apply Projections
         Object.keys(data).forEach(key => {
             if (Array.isArray(data[key])) {
                 data[key].forEach((val, i) => {
                     let finalVal = parseFloat(val) || 0;
-                    
                     if (fy === "2026") {
-                        if (s === "pessimistic") finalVal *= 0.92; // -8%
-                        else if (s === "optimistic") finalVal *= 1.04; // +4%
+                        if (s === "pessimistic") finalVal *= 0.92;
+                        else if (s === "optimistic") finalVal *= 1.04;
                     }
-
                     const el = document.getElementById(`${key}_${i}`);
                     if (el) el.value = finalVal.toFixed(2);
                 });
             }
         });
-    } catch (e) {
-        console.error("Data Load Error:", e);
-    }
 
-    calc();
-    updateGlobalEbitda();
-    updateLocationBreakdown();
-    await updateGlobalEbitda();
+        // RECALCULATE everything in the correct order
+        calc(); 
+        updateLocationBreakdown();
+        await updateGlobalEbitda(); // Wait for the global sum to finish
+
+    } catch (e) {
+        console.error("Critical Load Error:", e);
+    }
 }
 
 async function saveToCloud() {
