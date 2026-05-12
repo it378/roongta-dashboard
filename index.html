@@ -603,6 +603,8 @@ function calc() {
         document.getElementById(`ebitda_${i}`).value = (totalG - grandExp).toFixed(2);
     }
     updateYearTotals();
+    // Add this at the very end of your calc() function
+updateLocationBreakdown(); // This ensures the breakdown table updates
 }
 function updateYearTotals() {
     const allInputIds = [...revenueRows, ...mainSummaryRows, ...detailedSections.flatMap(s=>s.rows), ...detailedSections.map(s=>({id:s.id+'_det'}))].map(r=>r.id);
@@ -617,21 +619,19 @@ function updateYearTotals() {
 async function updateGlobalEbitda() {
     const props = ['surat', 'ghaziabad', 'muzaffarnagar', 'adipur', 'hyderabad'];
     const currentFY = document.getElementById('fySelect').value;
-    
-    // We will sum Actuals for BOTH years to get a cumulative live total
-    const yearsToSum = ["2025", "2026"]; 
-    let cumulativeTotal = 0;
+    let total = 0;
 
-    try {
-        for (const year of yearsToSum) {
-            // If the user is looking at 2025, don't add 2026 data yet
-            if (year > currentFY) continue; 
-
-            for (const p of props) {
-                const snap = await db.ref(`reports/${p}/actual/${year}/ebitda/12`).once('value');
-                cumulativeTotal += parseFloat(snap.val()) || 0;
-            }
+    for (const p of props) {
+        // Safe Fetch: if year data doesn't exist, use 0
+        const snap = await db.ref(`reports/${p}/actual/${currentFY}/ebitda/12`).once('value');
+        const val = parseFloat(snap.val());
+        
+        if (!isNaN(val)) {
+            total += val;
         }
+    }
+    document.getElementById('global-total').innerText = `₹ ${total.toFixed(2)} L`;
+}
 
         const display = document.getElementById('global-total');
         if (display) {
