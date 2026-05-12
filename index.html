@@ -617,40 +617,49 @@ function updateYearTotals() {
 async function updateGlobalEbitda() {
     const props = ['surat', 'ghaziabad', 'muzaffarnagar', 'adipur', 'hyderabad'];
     const years = ["2025", "2026"]; 
-    let cumulativeTotal = 0;
+    let grandTotal = 0;
+    let total25 = 0;
+    let total26 = 0;
 
     try {
-        // Fetch all values in parallel for speed
-        const promises = [];
+        // Fetch all data points simultaneously for speed
+        const fetchPromises = [];
         for (const p of props) {
             for (const year of years) {
-                promises.push(db.ref(`reports/${p}/actual/${year}/ebitda/12`).once('value'));
+                fetchPromises.push(
+                    db.ref(`reports/${p}/actual/${year}/ebitda/12`).once('value').then(snap => ({
+                        year,
+                        val: parseFloat(snap.val()) || 0
+                    }))
+                );
             }
         }
 
-        const snapshots = await Promise.all(promises);
-        
-        // Sum values with a safety check
-        snapshots.forEach(snap => {
-            const val = parseFloat(snap.val());
-            if (!isNaN(val)) {
-                cumulativeTotal += val;
-            }
+        const results = await Promise.all(fetchPromises);
+
+        // Sum the results properly
+        results.forEach(res => {
+            if (res.year === "2025") total25 += res.val;
+            if (res.year === "2026") total26 += res.val;
+            grandTotal += res.val;
         });
 
-        // Update the Big Global Box
-        const display = document.getElementById('global-total');
-        if (display) display.innerText = `₹ ${cumulativeTotal.toFixed(2)} L`;
+        // UPDATE UI - Big Global Box
+        const globalEl = document.getElementById('global-total');
+        if (globalEl) globalEl.innerText = `₹ ${grandTotal.toFixed(2)} L`;
 
-        // Update the Cinema Ops EBITDA in HO (if it exists on page)
-        const hoDisplay = document.getElementById('ho-cinema-ebitda');
-        if (hoDisplay) hoDisplay.innerText = `₹ ${cumulativeTotal.toFixed(2)} L`;
+        // UPDATE UI - Small Year Boxes
+        const el25 = document.getElementById('total-2025');
+        const el26 = document.getElementById('total-2026');
+        if (el25) el25.innerText = `₹ ${total25.toFixed(2)} L`;
+        if (el26) el26.innerText = `₹ ${total26.toFixed(2)} L`;
 
-        // Update the small FY 25 and FY 26 boxes
-        updateHeaderStaticBoxes();
+        // UPDATE UI - HO Dashboard Specific
+        const hoEl = document.getElementById('ho-cinema-ebitda');
+        if (hoEl) hoEl.innerText = `₹ ${grandTotal.toFixed(2)} L`;
 
     } catch (err) {
-        console.error("Global Sync Error:", err);
+        console.error("Global Dashboard Sync Error:", err);
     }
 }
 
