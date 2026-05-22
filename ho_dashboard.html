@@ -291,34 +291,39 @@
         rows.forEach(r => r.style.display = isHidden ? 'table-row' : 'none');
     }
 
-    async function refreshHOData() {
-        const fy = document.getElementById('fySelect').value;
-        const snapshot = await db.ref('reports').once('value');
-        const all = snapshot.val() || {};
-        const locations = ['surat', 'ghaziabad', 'muzaffarnagar', 'adipur', 'hyderabad'];
+    // Inside ho_dashboard.html -> loadCinemas()
+async function loadCinemas() {
+    const props = ['surat', 'ghaziabad', 'muzaffarnagar', 'adipur', 'hyderabad'];
+    const fy = document.getElementById('fySelect').value;
+    
+    // Reset totals
+    let hoCinemaTotals = new Array(13).fill(0);
+    
+    // Fetch all data
+    const snapshot = await db.ref('reports').once('value');
+    const allReports = snapshot.val() || {};
 
-        for (let i = 0; i < 12; i++) {
-            let totalCin = 0;
-            locations.forEach(loc => {
-                const d = all[loc]?.['actual']?.[fy];
-                if (d) {
-                    const ff = parseFloat(d.ff?.[i] || 0);
-                    const core = (ff * (parseFloat(d.atp_g?.[i] || 0) + parseFloat(d.sph_g?.[i] || 0))) / 100000;
-                    let o = 0; ['rev_oth','rev_3d','rev_park','rev_mgmt','rev_adv'].forEach(k => o += parseFloat(d[k]?.[i] || 0));
-                    let e = 0; Object.keys(d).forEach(k => { if(!['ff','atp_g','sph_g','atp_n','sph_n','rev_oth','rev_3d','rev_park','rev_mgmt','rev_adv','cap','occ'].includes(k) && Array.isArray(d[k])) e += parseFloat(d[k][i] || 0); });
-                    totalCin += (core + o - e);
+    for (const p of props) {
+        if (allReports[p] && allReports[p]['actual']) {
+            // ONLY PULL THE SELECTED FY to match the HO standard, 
+            // OR change this to pull both if you want HO to be cumulative.
+            const yearData = allReports[p]['actual'][fy] || {};
+            const ebitdaArr = yearData['ebitda'] || [];
+            
+            for (let m = 0; m <= 12; m++) {
+                if (ebitdaArr[m] !== undefined) {
+                    hoCinemaTotals[m] += parseFloat(ebitdaArr[m]);
                 }
-            });
-            document.getElementById(`cinema_ebitda_${i}`).value = totalCin.toFixed(2);
+            }
         }
-
-        const hoSnap = await db.ref(`reports/HO/actual/${fy}`).once('value');
-        const hoData = hoSnap.val() || {};
-        [...revenueRows, ...expenseRows].forEach(r => {
-            if(hoData[r.id]) hoData[r.id].forEach((v, idx) => { if(document.getElementById(`${r.id}_${idx}`)) document.getElementById(`${r.id}_${idx}`).value = v; });
-        });
-        calcHO();
     }
+
+    // Write to HO Screen
+    for (let m = 0; m <= 12; m++) {
+        document.getElementById(`cinema_ebitda_${m}`).value = hoCinemaTotals[m].toFixed(2);
+    }
+    calcHO();
+}
 
     function calcHO() {
         for (let i = 0; i <= 12; i++) {
