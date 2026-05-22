@@ -607,10 +607,14 @@ function calc() {
 function updateYearTotals() {
     const allInputIds = [...revenueRows, ...mainSummaryRows, ...detailedSections.flatMap(s=>s.rows), ...detailedSections.map(s=>({id:s.id+'_det'}))].map(r=>r.id);
     allInputIds.forEach(id => {
-        let sum = 0; 
-        for(let i=0; i<12; i++) sum += parseFloat(document.getElementById(`${id}_${i}`).value) || 0;
-        let el = document.getElementById(`${id}_12`);
-        if(el) el.value = ['occ','atp_n','sph_n','atp_g','sph_g'].includes(id) ? (sum/12).toFixed(2) : sum.toFixed(2);
+        let total = 0;
+for (let m = 0; m < 12; m++) {
+    // Parse the raw calculated value, not the truncated text
+    let monthVal = parseFloat(document.getElementById(`ebitda_${m}`).value) || 0;
+    total += monthVal;
+}
+// Apply rounding only to the final year total
+document.getElementById('ebitda_12').value = total.toFixed(2);
     });
 }
 
