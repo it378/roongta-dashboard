@@ -154,102 +154,67 @@
     </button>
 </div>
 
-        <div class="header-flex">
-            <div class="controls">
-                <div class="">
-                    <label>Fiscal Year</label>
-                    <select id="fySelect" onchange="refreshData()">
-                        <option value="2025" selected>FY 2025-26</option>
-                        <option value="2026">FY 2026-27</option>
-                    </select>
-                </div>
-                <div class="control-item">
-                    <label>Property Location</label>
-                    <select id="prop" onchange="refreshData()">
-                        <option value="surat" data-seats="315">Surat</option>
-                        <option value="ghaziabad" data-seats="556">Ghaziabad</option>
-                        <option value="muzaffarnagar" data-seats="757">Muzaffarnagar</option>
-                        <option value="adipur" data-seats="777">Adipur</option>
-                        <option value="hyderabad" data-seats="291">Hyderabad</option>
-                    </select>
-                </div>
-                <div class="control-item">
-                    <label>Projection Logic</label>
-                    <select id="scen" onchange="refreshData()">
-    <option value="actual">Actual (Monthly Data)</option>
-    <option value="realistic" selected>Realistic (Base Target)</option>
-    <option value="pessimistic">Pessimistic (-8% of Realistic)</option>
-    <option value="optimistic">Optimistic (+4% of Realistic)</option>
-</select>
-                </div>
+        <div class="header-flex" style="display: flex; flex-direction: column; gap: 15px; margin-bottom: 20px; background: #f1f5f9; padding: 20px; border-radius: 12px;">
+    <div style="display: flex; justify-content: space-between; align-items: flex-end; width: 100%; gap: 15px;">
+        <div class="controls" style="display: flex; gap: 15px; align-items: center; flex-wrap: nowrap;">
+            <div>
+                <label>Fiscal Year</label>
+                <select id="fySelect" onchange="refreshData()">
+                    <option value="2025" selected>FY 2025-26</option>
+                    <option value="2026">FY 2026-27</option>
+                </select>
             </div>
-            <div id="securityPanel" style="background: white; padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #e2e8f0; display: flex; align-items: center; gap: 15px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);">
-    <h3 style="margin: 0; color: #0f172a; font-size: 14px;">🔒 Security Settings</h3>
-    
-    <span id="lockStatusText" style="font-weight: 600; font-size: 12px; padding: 5px 10px; background: #f1f5f9; border-radius: 4px;">Checking Locks...</span>
-
-    <button id="btnLock2025" onclick="toggleGlobalLock()" style="background: #ef4444; color: white; padding: 8px 16px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold;">
-        Lock/Unlock Entire 2025-26
-    </button>
-
-    <div id="monthlyLockControls" style="display: flex; gap: 10px; align-items: center;">
-        <select id="monthLockSelect" style="padding: 8px; border-radius: 6px; border: 1px solid #cbd5e1;">
-            <option value="0">April</option> <option value="1">May</option> <option value="2">June</option>
-            <option value="3">July</option> <option value="4">August</option> <option value="5">September</option>
-            <option value="6">October</option> <option value="7">November</option> <option value="8">December</option>
-            <option value="9">January</option> <option value="10">February</option> <option value="11">March</option>
-        </select>
-        <button onclick="toggleMonthLock()" style="background: #f59e0b; color: white; padding: 8px 16px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold;">
-            Lock/Unlock Selected Month (2026)
-        </button>
-    </div>
-</div>
-            <div class="btn-group">
-                <button class="btn btn-save" onclick="saveToCloud()">Push to Cloud</button>
-                <button class="btn btn-export" onclick="exportFullFile()">Export HTML</button>
+            <div class="control-item">
+                <label>Property Location</label>
+                <select id="prop" onchange="refreshData()">
+                    <option value="surat" data-seats="315">Surat</option>
+                    <option value="ghaziabad" data-seats="556">Ghaziabad</option>
+                    <option value="muzaffarnagar" data-seats="757">Muzaffarnagar</option>
+                    <option value="adipur" data-seats="777">Adipur</option>
+                    <option value="hyderabad" data-seats="291">Hyderabad</option>
+                </select>
+            </div>
+            <div class="control-item">
+                <label>Projection Logic</label>
+                <select id="scen" onchange="refreshData()">
+                    <option value="actual">Actual (Monthly Data)</option>
+                    <option value="realistic" selected>Realistic (Base Target)</option>
+                    <option value="pessimistic">Pessimistic (-8% of Realistic)</option>
+                    <option value="optimistic">Optimistic (+4% of Realistic)</option>
+                </select>
             </div>
         </div>
 
-        <div class="table-wrap">
-            <table id="targetTable">
-                <thead><tr id="hRow"><th class="sticky-col">FINANCIAL PARTICULARS</th></tr></thead>
-                <tbody id="tBody"></tbody>
-            </table>
+        <div class="btn-group" style="display: flex; gap: 12px;">
+            <button id="cloudSaveBtn" class="btn btn-save" onclick="saveToCloud()">Push to Cloud</button>
+            <button class="btn btn-export" onclick="exportFullFile()">Export HTML</button>
         </div>
     </div>
 
-    <div class="sidebar-card">
-    <h3>Advanced Comparison</h3>
-    
-    <label>Base Period (Reference)</label>
-    <div style="display:flex; gap:5px; margin-bottom: 8px;">
-        <select id="compYear1" class="comp-select" style="flex:1;" onchange="refreshData()">
-            <option value="2025">2025-26</option>
-            <option value="2026">2026-27</option>
-        </select>
-        <select id="compMonth1" class="comp-select" style="flex:1;"></select>
-    </div>
-    <select id="compScen1" class="comp-select">
-        <option value="actual">Actual</option>
-        <option value="pessimistic">Pessimistic</option>
-    </select>
+    <div id="securityPanel" style="background: white; padding: 12px 20px; border-radius: 8px; border: 1px solid #cbd5e1; display: flex; align-items: center; justify-content: space-between; gap: 15px; width: 100%; box-sizing: border-box;">
+        <div style="display: flex; align-items: center; gap: 10px;">
+            <span style="font-size: 13px;">🔒</span>
+            <label style="font-weight: 800; font-size: 10px; text-transform: uppercase; color: #0f172a; margin: 0;">Security Ledger Matrix:</label>
+            <span id="lockStatusText" style="font-weight: 700; font-size: 11px; padding: 3px 8px; background: #f1f5f9; border-radius: 4px; border: 1px solid #e2e8f0;">Checking Locks...</span>
+        </div>
+        
+        <div style="display: flex; align-items: center; gap: 10px;">
+            <button id="btnLock2025" onclick="toggleGlobalLock()" style="background: #ef4444; color: white; padding: 6px 14px; border: none; border-radius: 6px; cursor: pointer; font-weight: 700; font-size: 11px; display: none;">
+                Toggle Full Year Lock
+            </button>
 
-    <label>Compare To (Target/Result)</label>
-    <div style="display:flex; gap:5px; margin-bottom: 8px;">
-        <select id="compYear2" class="comp-select" style="flex:1;" onchange="refreshData()">
-            <option value="2025">2025-26</option>
-            <option value="2026">2026-27</option>
-        </select>
-        <select id="compMonth2" class="comp-select" style="flex:1;"></select>
-    </div>
-    <select id="compScen2" class="comp-select">
-        <option value="actual">Actual</option>
-        <option value="pessimistic">Pessimistic</option>
-    </select>
-
-    <button class="comp-btn" onclick="runComparison()">Analyze Variance</button>
-    <div id="compResult" class="comp-result">
-        <p style="text-align:center; opacity:0.5; margin:0; font-size:10px;">Compare Scenarios side-by-side</p>
+            <div id="monthlyLockControls" style="display: none; gap: 8px; align-items: center;">
+                <select id="monthLockSelect" style="padding: 4px 8px; border-radius: 6px; border: 1px solid #cbd5e1; font-size: 11px; min-width: 120px; height: auto;">
+                    <option value="0">April</option> <option value="1">May</option> <option value="2">June</option>
+                    <option value="3">July</option> <option value="4">August</option> <option value="5">September</option>
+                    <option value="6">October</option> <option value="7">November</option> <option value="8">December</option>
+                    <option value="9">January</option> <option value="10">February</option> <option value="11">March</option>
+                </select>
+                <button onclick="toggleMonthLock()" style="background: #f59e0b; color: white; padding: 6px 14px; border: none; border-radius: 6px; cursor: pointer; font-weight: 700; font-size: 11px;">
+                    Toggle Month Lock
+                </button>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -684,6 +649,113 @@ async function updateGlobalEbitda() {
     }
 }
 
+    const MASTER_PASSWORD = "admin123"; // Adjust to match master credentials
+
+async function applyLocks() {
+    const fy = document.getElementById('fySelect').value;
+    const cloudSaveBtn = document.getElementById('cloudSaveBtn');
+    
+    // 1. Reset cell edit permissions completely before evaluating locks
+    document.querySelectorAll('#targetTable input').forEach(inp => {
+        if(!inp.classList.contains('calc-field')) {
+            inp.disabled = false;
+            inp.style.backgroundColor = ""; 
+        }
+    });
+    if(cloudSaveBtn) cloudSaveBtn.style.display = 'inline-block';
+    
+    // 2. Display correct controls depending on active fiscal year selection
+    document.getElementById('btnLock2025').style.display = (fy === "2025") ? "block" : "none";
+    document.getElementById('monthlyLockControls').style.display = (fy === "2026") ? "flex" : "none";
+
+    try {
+        const snap = await db.ref(`locks/${fy}`).once('value');
+        const locks = snap.val() || {};
+
+        if (fy === "2025") {
+            if (locks.global) {
+                // Lock down all input cells for the entire year matrix
+                document.querySelectorAll('#targetTable input').forEach(inp => {
+                    if(!inp.classList.contains('calc-field')) {
+                        inp.disabled = true;
+                        inp.style.backgroundColor = "#fee2e2"; 
+                    }
+                });
+                if(cloudSaveBtn) cloudSaveBtn.style.display = 'none'; 
+                document.getElementById('lockStatusText').innerHTML = "<span style='color:#ef4444;'>🔒 FULL LEDGER SECURED</span>";
+            } else {
+                document.getElementById('lockStatusText').innerHTML = "<span style='color:#10b981;'>🔓 EDITABLE MODE</span>";
+            }
+        } 
+        else if (fy === "2026") {
+            let lockedCount = 0;
+            
+            // Loop over all 12 operational columns
+            for (let m = 0; m < 12; m++) {
+                if (locks.months && locks.months[m]) {
+                    // Lock down matching month columns across input fields
+                    const allRows = [...revenueRows, ...mainSummaryRows];
+                    allRows.forEach(row => {
+                        let targetInput = document.getElementById(`${row.id}_${m}`);
+                        if (targetInput && !targetInput.classList.contains('calc-field')) {
+                            targetInput.disabled = true;
+                            targetInput.style.backgroundColor = "#fee2e2";
+                        }
+                    });
+                    
+                    // Also lock deep detailed sections nested inside your table
+                    if (typeof detailedSections !== 'undefined') {
+                        detailedSections.forEach(sec => {
+                            sec.rows.forEach(row => {
+                                let targetInput = document.getElementById(`${row.id}_${m}`);
+                                if (targetInput && !targetInput.classList.contains('calc-field')) {
+                                    targetInput.disabled = true;
+                                    targetInput.style.backgroundColor = "#fee2e2";
+                                }
+                            });
+                        });
+                    }
+                    lockedCount++;
+                }
+            }
+            if (lockedCount === 12 && cloudSaveBtn) {
+                cloudSaveBtn.style.display = 'none';
+            }
+            document.getElementById('lockStatusText').innerHTML = `<span style='color: #f59e0b;'>🔒 ${lockedCount}/12 COLUMNS SECURED</span>`;
+        }
+    } catch(err) {
+        console.error("Lock Engine Exception:", err);
+    }
+}
+
+async function toggleGlobalLock() {
+    const pass = prompt("Enter Administration Password to modify entry access permissions:");
+    if (pass !== MASTER_PASSWORD) return alert("Incorrect administrative credentials.");
+
+    const snap = await db.ref(`locks/2025/global`).once('value');
+    const currentState = snap.val() || false;
+    await db.ref(`locks/2025/global`).set(!currentState);
+    
+    alert(`FY 2025-26 configuration shifted to: ${!currentState ? 'LOCKED' : 'UNLOCKED'}`);
+    await applyLocks();
+}
+
+async function toggleMonthLock() {
+    const monthSelect = document.getElementById('monthLockSelect');
+    const monthIndex = parseInt(monthSelect.value);
+    const monthName = monthSelect.options[monthSelect.selectedIndex].text;
+
+    const pass = prompt(`Enter Administration Password to change input permissions for ${monthName}:`);
+    if (pass !== MASTER_PASSWORD) return alert("Incorrect administrative credentials.");
+
+    const snap = await db.ref(`locks/2026/months/${monthIndex}`).once('value');
+    const currentState = snap.val() || false;
+    await db.ref(`locks/2026/months/${monthIndex}`).set(!currentState);
+    
+    alert(`${monthName} 2026-27 access configuration shifted to: ${!currentState ? 'LOCKED' : 'UNLOCKED'}`);
+    await applyLocks();
+}
+
 async function refreshData() {
     const p = document.getElementById('prop').value;
     const scenSelect = document.getElementById('scen');
@@ -731,8 +803,9 @@ async function refreshData() {
 
     } catch (e) {
         console.error("Critical Load Error:", e);
-        await applyLocks();
     }
+    // Trigger matrix lock calculation right after data rendering finishes
+    await applyLocks();
 }
 
 async function saveToCloud() {
@@ -888,85 +961,6 @@ function verifyHOPass() {
 }
 window.onload = init;
 </script>
-    // --- SECURITY & LOCKING SYSTEM ---
-const MASTER_PASSWORD = "admin123"; // CHANGE THIS TO YOUR PREFERRED PASSWORD
-
-async function applyLocks() {
-    const fy = document.getElementById('fySelect').value;
-    const saveBtn = document.querySelector('button[onclick="saveToCloud()"]'); 
-    
-    // 1. Reset everything to Unlocked first
-    document.querySelectorAll('input').forEach(inp => {
-        if(!inp.classList.contains('calc-field')) inp.disabled = false;
-        inp.style.backgroundColor = ""; // Reset background
-    });
-    if(saveBtn) saveBtn.style.display = 'inline-block';
-    
-    // Toggle UI buttons based on selected year
-    document.getElementById('btnLock2025').style.display = (fy === "2025") ? "block" : "none";
-    document.getElementById('monthlyLockControls').style.display = (fy === "2026") ? "flex" : "none";
-
-    // 2. Fetch Lock State from Database
-    const snap = await db.ref(`locks/${fy}`).once('value');
-    const locks = snap.val() || {};
-
-    // 3. Apply 2025-26 Global Lock
-    if (fy === "2025") {
-        if (locks.global) {
-            document.querySelectorAll('input').forEach(inp => {
-                inp.disabled = true;
-                inp.style.backgroundColor = "#fee2e2"; // Light red to indicate locked
-            });
-            if(saveBtn) saveBtn.style.display = 'none'; // Hide Save Button
-            document.getElementById('lockStatusText').innerHTML = "<span style='color:red;'>🔒 FULL YEAR LOCKED</span>";
-        } else {
-            document.getElementById('lockStatusText').innerHTML = "<span style='color:green;'>🔓 YEAR OPEN FOR EDITING</span>";
-        }
-    } 
-    // 4. Apply 2026-27 Monthly Locks
-    else if (fy === "2026") {
-        let lockedCount = 0;
-        for (let i = 0; i < 12; i++) {
-            if (locks.months && locks.months[i]) {
-                // Lock ALL inputs that end with this month's index (e.g., _0 for April)
-                document.querySelectorAll(`[id$="_${i}"]`).forEach(inp => {
-                    inp.disabled = true;
-                    inp.style.backgroundColor = "#fee2e2";
-                });
-                lockedCount++;
-            }
-        }
-        document.getElementById('lockStatusText').innerHTML = `<span style='color: #b45309;'>🔒 ${lockedCount}/12 MONTHS LOCKED</span>`;
-    }
-}
-
-async function toggleGlobalLock() {
-    const pass = prompt("Enter Master Password to change Global Lock:");
-    if (pass !== MASTER_PASSWORD) return alert("Incorrect Password!");
-
-    const snap = await db.ref(`locks/2025/global`).once('value');
-    const currentState = snap.val();
-    await db.ref(`locks/2025/global`).set(!currentState);
-    
-    alert(`FY 2025-26 is now ${!currentState ? 'LOCKED' : 'UNLOCKED'}`);
-    applyLocks(); // Instantly update UI
-}
-
-async function toggleMonthLock() {
-    const monthSelect = document.getElementById('monthLockSelect');
-    const monthIndex = monthSelect.value;
-    const monthName = monthSelect.options[monthSelect.selectedIndex].text;
-
-    const pass = prompt(`Enter Master Password to toggle lock for ${monthName}:`);
-    if (pass !== MASTER_PASSWORD) return alert("Incorrect Password!");
-
-    const snap = await db.ref(`locks/2026/months/${monthIndex}`).once('value');
-    const currentState = snap.val();
-    await db.ref(`locks/2026/months/${monthIndex}`).set(!currentState);
-    
-    alert(`${monthName} 2026-27 is now ${!currentState ? 'LOCKED' : 'UNLOCKED'}`);
-    applyLocks(); // Instantly update UI
-}
 <div id="hoPassOverlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.98); z-index: 9999; align-items: center; justify-content: center; font-family: 'Inter', sans-serif;">
     <div style="background: white; padding: 40px; border-radius: 16px; text-align: center; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); width: 320px;">
         <h2 style="color:#0f172a; margin:0; font-size: 20px;">HO ADMIN ACCESS</h2>
