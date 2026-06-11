@@ -14,374 +14,604 @@
 
         body { font-family: 'Inter', sans-serif; background: var(--bg-canvas); margin: 0; padding: 20px; color: var(--navy); font-size: 11px; }
         .dashboard-wrapper { display: grid; grid-template-columns: 1fr 340px; gap: 20px; }
-        .main-card { background: white; padding: 30px; border-radius: 16px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.05); border: 1px solid #e2e8f0; }
-        
-        .header-container { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
-        .brand-section h1 { margin: 0; font-size: 22px; font-weight: 800; letter-spacing: -0.5px; color: var(--navy); }
-        .brand-section p { margin: 5px 0 0 0; color: #64748b; font-size: 12px; }
-        
-        .controls-row { display: flex; gap: 12px; align-items: center; }
-        select { padding: 8px 16px; border-radius: 8px; border: 1px solid var(--border-color); background: white; font-weight: 600; color: var(--navy); font-size: 12px; outline: none; cursor: pointer; transition: all 0.2s; }
-        select:hover { border-color: var(--blue-accent); }
+        .main-card { background: white; padding: 30px; border-radius: 16px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); border: 1px solid #e2e8f0; }
 
-        .kpi-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 25px; }
-        .kpi-card { background: white; padding: 20px; border-radius: 12px; border: 1px solid #e2e8f0; display: flex; flex-direction: column; justify-content: center; position: relative; overflow: hidden; }
-        .kpi-card::before { content: ''; position: absolute; top: 0; left: 0; width: 4px; height: 100%; background: var(--border-color); }
-        .kpi-card.global::before { background: #8b5cf6; }
-        .kpi-card.fy25::before { background: #3b82f6; }
-        .kpi-card.fy26::before { background: #10b981; }
-        
-        .kpi-label { font-size: 11px; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; }
-        .kpi-value { font-size: 20px; font-weight: 800; color: var(--navy); margin-top: 5px; }
+        .exec-summary {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            color: white; padding: 20px; border-radius: 12px; margin-bottom: 25px;
+            display: flex; gap: 40px; border-left: 6px solid var(--ebitda);
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
+        }
+        .summary-item { display: flex; flex-direction: column; justify-content: center; }
+        .summary-label { font-size: 10px; text-transform: uppercase; color: #94a3b8; font-weight: 800; letter-spacing: 0.05em; margin-bottom: 4px; }
+        .summary-value { font-size: 24px; font-weight: 800; color: var(--ebitda); }
+        .summary-subtext { font-size: 11px; color: #cbd5e1; }
 
-        table { width: 100%; border-collapse: separate; border-spacing: 0; margin-top: 15px; border-radius: 8px; overflow: hidden; border: 1px solid var(--border-color); }
-        th { background: #f1f5f9; color: var(--navy); font-weight: 700; text-transform: uppercase; font-size: 10px; letter-spacing: 0.5px; padding: 10px 6px; text-align: center; border-bottom: 1px solid var(--border-color); }
-        td { padding: 4px; border-bottom: 1px solid #e2e8f0; background: white; }
-        tr:last-child td { border-bottom: none; }
+        .brand-header { text-align: center; margin-bottom: 30px; }
+        .brand-header h1 { margin: 0; font-size: 26px; font-weight: 800; text-transform: uppercase; }
 
-        .row-header { font-weight: 700; color: #334155; padding-left: 12px; font-size: 11px; width: 180px; }
-        input { width: 100%; padding: 6px; border: 1px solid transparent; border-radius: 4px; text-align: right; font-family: 'Inter', sans-serif; font-size: 11px; font-weight: 500; box-sizing: border-box; outline: none; transition: all 0.15s; }
-        input:focus { background: #f8fafc; border-color: var(--blue-accent); box-shadow: 0 0 0 2px rgba(37,99,235,0.1); }
-        
-        .calc-field { font-weight: 700; pointer-events: none; background: #f8fafc; }
-        
-        .bg-rev-gross { background: #fef9c3; }
-        .bg-rev-net { background: #ffedd5; }
-        .bg-exp-total { background: #ffe4e6; }
-        .bg-ebitda { background: #dcfce7; color: #166534; font-weight: 800; }
-        .bg-fy-col { background: var(--fy-col-color); font-weight: 700; }
+        .header-flex { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 20px; background: #f1f5f9; padding: 20px; border-radius: 12px; }
+        .controls { 
+    display: flex; 
+    gap: 15px; 
+    align-items: center; 
+    flex-wrap: nowrap; /* Forces them to stay in one line */
+}
 
-        .action-bar { display: flex; justify-content: flex-end; gap: 12px; margin-top: 20px; }
-        .btn { padding: 10px 20px; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer; border: none; transition: all 0.2s; display: inline-flex; align-items: center; gap: 8px; }
-        .btn-primary { background: var(--blue-accent); color: white; box-shadow: 0 4px 6px -1px rgba(37,99,235,0.2); }
-        .btn-primary:hover { background: #1d4ed8; }
-        .btn-secondary { background: #e2e8f0; color: #334155; }
-        .btn-secondary:hover { background: #cbd5e1; }
+/* Ensure the Fiscal Year container matches the others */
+.controls > div {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+        .control-item { display: flex; flex-direction: column; gap: 6px; }
+        label { font-weight: 800; font-size: 10px; text-transform: uppercase; color: #475569; }
 
-        .sidebar-card { background: white; padding: 25px; border-radius: 16px; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02); height: fit-content; }
-        .sidebar-title { font-size: 14px; font-weight: 800; color: var(--navy); margin: 0 0 15px 0; display: flex; align-items: center; gap: 8px; }
-        .breakdown-list { display: flex; flex-direction: column; gap: 10px; }
-        .breakdown-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 12px; background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0; }
-        .breakdown-name { font-weight: 600; color: #475569; text-transform: capitalize; }
-        .breakdown-val { font-weight: 700; color: var(--navy); }
+        select { 
+            padding: 10px 14px; border-radius: 8px; border: 2px solid #0f172a;
+            min-width: 180px; background-color: #ffffff !important; color: #0f172a !important;            
+            font-weight: 800; cursor: pointer;
+        }
+
+        .btn-group { display: flex; gap: 12px; }
+        .btn { padding: 12px 24px; border-radius: 8px; border: none; font-weight: 700; cursor: pointer; font-size: 12px; text-transform: uppercase; transition: 0.2s; }
+        .btn-save { background: #059669; color: white; }
+        .btn-export { background: var(--blue-accent); color: white; }
+
+        .sidebar-card { background: var(--navy); color: white; padding: 25px; border-radius: 16px; height: fit-content; position: sticky; top: 20px; }
+        .sidebar-card h3 { margin-top: 0; color: var(--rev-gross); font-size: 16px; text-transform: uppercase; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px; }
+        .comp-select { background-color: #ffffff !important; color: #0f172a !important; border: 1px solid #0f172a !important; margin-bottom: 12px; width: 100%; padding: 10px; border-radius: 6px; font-weight: 700; }
+        .comp-btn { background: var(--blue-accent); width: 100%; margin-top: 10px; color: white; border: none; padding: 12px; border-radius: 8px; font-weight: 700; cursor: pointer; }
+        .comp-result { margin-top: 20px; background: rgba(255,255,255,0.05); padding: 15px; border-radius: 10px; border-left: 4px solid var(--ebitda); }
+
+        .table-wrap { overflow: auto; max-height: 60vh; border: 1px solid #e2e8f0; border-radius: 12px; position: relative; }
+        table { border-collapse: separate; border-spacing: 0; width: 100%; min-width: 2400px; }
+        th { background: var(--navy); color: white; padding: 14px 8px; font-weight: 700; text-transform: uppercase; position: sticky; top: 0; z-index: 30; border-bottom: 1px solid #1e293b; border-right: 1px solid #1e293b; }
+        td { border-bottom: 1px solid #e2e8f0; border-right: 1px solid #e2e8f0; padding: 6px 8px; text-align: right; }
+        .sticky-col { position: sticky; left: 0; background: white !important; text-align: left; font-weight: 700; width: 340px; min-width: 340px; z-index: 20; border-right: 3px solid var(--navy) !important; color: var(--navy); }
+        .year-col { background: #e0f2fe !important; color: #0f172a !important; font-weight: 900 !important; border-left: 2px solid #0f172a; }
+        input { width: 100%; border: none; text-align: right; background: transparent; font-family: 'Inter', sans-serif; font-size: 11px; outline: none; color: #1e293b !important; font-weight: 700; }
+
+        .h-rev-gross { background: var(--rev-gross) !important; }
+        .h-rev-net { background: var(--rev-net) !important; }
+        .h-exp { background: var(--exp-total) !important; }
+        .h-ebitda { background: var(--ebitda) !important; font-size: 12px; }
+        .calc-field { background: #f1f5f9; pointer-events: none; color: #475569; }
+        .group-header { background: var(--group-yellow) !important; font-weight: 800; text-align: left; color: #000; cursor: pointer; }
+        .spacer-row { height: 15px; background: #f8fafc; border: none; }
+        .hidden-row { display: none !important; }
+        .toggle-icon { margin-right: 8px; font-size: 10px; transition: 0.3s; }
+        .collapsed .toggle-icon { transform: rotate(-90deg); }
     </style>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
 </head>
 <body>
 
 <div class="dashboard-wrapper">
     <div class="main-card">
-        <div class="header-container">
-            <div class="brand-section">
-                <h1>Roongta Cinemas</h1>
-                <p>Corporate Cloud Infrastructure &bull; Live Ledger Matrix</p>
-            </div>
-            <div class="controls-row">
-                <select id="prop" onchange="refreshData()">
-                    <option value="surat">Surat (9 Screens)</option>
-                    <option value="ghaziabad">Ghaziabad (10 Screens)</option>
-                    <option value="muzaffarnagar">Muzaffarnagar (5 Screens)</option>
-                    <option value="adipur">Adipur (3 Screens)</option>
-                    <option value="hyderabad">Hyderabad (6 Screens)</option>
-                </select>
-                <select id="scen" onchange="refreshData()">
-                    <option value="actual">Actual (Monthly Data)</option>
-                    <option value="realistic">Realistic (Base Target)</option>
-                    <option value="pessimistic">Pessimistic (-8% of Realistic)</option>
-                    <option value="optimistic">Optimistic (+4% of Realistic)</option>
-                </select>
-                <select id="fySelect" onchange="refreshData()">
+        <div class="exec-header" style="display: flex; justify-content: space-between; align-items: center; padding: 20px; background: #0f172a; border-radius: 12px; color: white;">
+    
+    <div class="summary-group" style="display: flex; gap: 30px; flex-shrink: 0;">
+        <div class="summary-item">
+            <span class="summary-label" style="font-size: 10px; color: #94a3b8; font-weight: 700;">GROUP EBITDA (LIVE)</span>
+            <span class="summary-value" id="global-total" style="font-size: 24px; font-weight: 800; color: #92d050; display: block;">₹ 0.00 L</span>
+            <span style="font-size: 9px; color: #64748b;">Cloud Synchronized</span>
+        </div>
+        <div class="summary-item" style="border-left: 1px solid #334155; padding-left: 20px;">
+            <span class="summary-label" style="font-size: 10px; color: #94a3b8; font-weight: 700;">FY 2025-26</span>
+            <span class="summary-value" id="total-2025" style="font-size: 18px; font-weight: 700; color: white; display: block;">₹ 0.00 L</span>
+        </div>
+        <div class="summary-item" style="border-left: 1px solid #334155; padding-left: 20px;">
+            <span class="summary-label" style="font-size: 10px; color: #94a3b8; font-weight: 700;">FY 2026-27</span>
+            <span class="summary-value" id="total-2026" style="font-size: 18px; font-weight: 700; color: white; display: block;">₹ 0.00 L</span>
+        </div>
+    </div>
+
+    <div style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); width: 60%;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+            <span style="font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">Location-Wise EBITDA Breakdown</span>
+            <div style="display: flex; gap: 8px;">
+                <select id="breakdownMonth" onchange="updateLocationBreakdown()" style="background: transparent; color: white; border: 1px solid #475569; font-size: 10px; border-radius: 4px; padding: 2px 5px;"></select>
+                <select id="breakdownYear" onchange="updateLocationBreakdown()" style="background: transparent; color: white; border: 1px solid #475569; font-size: 10px; border-radius: 4px; padding: 2px 5px;">
                     <option value="2025">FY 2025-26</option>
                     <option value="2026">FY 2026-27</option>
                 </select>
             </div>
         </div>
-
-        <div id="securityPanel" style="background: #f8fafc; padding: 12px 20px; border-radius: 12px; margin-bottom: 20px; border: 1px solid #e2e8f0; display: flex; align-items: center; justify-content: space-between; gap: 15px;">
-            <div style="display: flex; align-items: center; gap: 12px;">
-                <span style="font-size: 14px;">🔒</span>
-                <h3 style="margin: 0; color: var(--navy); font-size: 12px; font-weight: 700;">Data Authorization Controls</h3>
-                <span id="lockStatusText" style="font-weight: 700; font-size: 11px; padding: 4px 10px; background: white; border-radius: 6px; border: 1px solid #cbd5e1;">Checking Status...</span>
+        
+        <div style="display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px;">
+            <div style="background: white; padding: 8px; border-radius: 6px; border-left: 3px solid #2563eb;">
+                <div class="summary-label" style="color: #64748b; font-size: 9px; font-weight: 800;">SURAT</div>
+                <div id="brk-surat" style="color: #0f172a; font-size: 13px; font-weight: 700;">₹ 0.00 L</div>
             </div>
-            
-            <div style="display: flex; align-items: center; gap: 10px;">
-                <button id="btnLock2025" onclick="toggleGlobalLock()" style="background: #ef4444; color: white; padding: 6px 14px; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 11px; display: none;">
-                    Toggle Full Year Lock
-                </button>
+            <div style="background: white; padding: 8px; border-radius: 6px; border-left: 3px solid #2563eb;">
+                <div class="summary-label" style="color: #64748b; font-size: 9px; font-weight: 800;">GHAZIABAD</div>
+                <div id="brk-ghaziabad" style="color: #0f172a; font-size: 13px; font-weight: 700;">₹ 0.00 L</div>
+            </div>
+            <div style="background: white; padding: 8px; border-radius: 6px; border-left: 3px solid #2563eb;">
+                <div class="summary-label" style="color: #64748b; font-size: 9px; font-weight: 800;">MUZAFFAR.</div>
+                <div id="brk-muzaffarnagar" style="color: #0f172a; font-size: 13px; font-weight: 700;">₹ 0.00 L</div>
+            </div>
+            <div style="background: white; padding: 8px; border-radius: 6px; border-left: 3px solid #2563eb;">
+                <div class="summary-label" style="color: #64748b; font-size: 9px; font-weight: 800;">ADIPUR</div>
+                <div id="brk-adipur" style="color: #0f172a; font-size: 13px; font-weight: 700;">₹ 0.00 L</div>
+            </div>
+            <div style="background: white; padding: 8px; border-radius: 6px; border-left: 3px solid #2563eb;">
+                <div class="summary-label" style="color: #64748b; font-size: 9px; font-weight: 800;">HYDERABAD</div>
+                <div id="brk-hyderabad" style="color: #0f172a; font-size: 13px; font-weight: 700;">₹ 0.00 L</div>
+            </div>
+            <div style="background: #1e293b; padding: 8px; border-radius: 6px; border-left: 3px solid #92d050;">
+                <div class="summary-label" style="color: #94a3b8; font-size: 9px; font-weight: 800;">MONTHLY TOTAL</div>
+                <div id="brk-total" style="color: #92d050; font-size: 13px; font-weight: 700;">₹ 0.00 L</div>
+            </div>
+        </div>
+    </div>
+</div>
+        <div class="brand-header">
+    <h1>Roongta Cinemas</h1>
+    <p>Master Financial Intelligence (Cloud Enabled)</p>
+    <button onclick="openHOPassword()" style="margin-top: 10px; background: #475569; color: white; border: none; padding: 6px 15px; border-radius: 20px; cursor: pointer; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;">
+        🔐 HO Admin Access
+    </button>
+</div>
 
-                <div id="monthlyLockControls" style="display: none; gap: 8px; align-items: center;">
-                    <select id="monthLockSelect" style="padding: 5px 10px; border-radius: 6px; border: 1px solid #cbd5e1; font-size: 11px; height: auto; width: auto; font-weight: 600;">
-                        <option value="0">April</option> <option value="1">May</option> <option value="2">June</option>
-                        <option value="3">July</option> <option value="4">August</option> <option value="5">September</option>
-                        <option value="6">October</option> <option value="7">November</option> <option value="8">December</option>
-                        <option value="9">January</option> <option value="10">February</option> <option value="11">March</option>
+        <div class="header-flex">
+            <div class="controls">
+                <div class="">
+                    <label>Fiscal Year</label>
+                    <select id="fySelect" onchange="refreshData()">
+                        <option value="2025" selected>FY 2025-26</option>
+                        <option value="2026">FY 2026-27</option>
                     </select>
-                    <button onclick="toggleMonthLock()" style="background: #f59e0b; color: white; padding: 6px 14px; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 11px;">
-                        Toggle Selected Month Lock
-                    </button>
+                </div>
+                <div class="control-item">
+                    <label>Property Location</label>
+                    <select id="prop" onchange="refreshData()">
+                        <option value="surat" data-seats="315">Surat</option>
+                        <option value="ghaziabad" data-seats="556">Ghaziabad</option>
+                        <option value="muzaffarnagar" data-seats="757">Muzaffarnagar</option>
+                        <option value="adipur" data-seats="777">Adipur</option>
+                        <option value="hyderabad" data-seats="291">Hyderabad</option>
+                    </select>
+                </div>
+                <div class="control-item">
+                    <label>Projection Logic</label>
+                    <select id="scen" onchange="refreshData()">
+    <option value="actual">Actual (Monthly Data)</option>
+    <option value="realistic" selected>Realistic (Base Target)</option>
+    <option value="pessimistic">Pessimistic (-8% of Realistic)</option>
+    <option value="optimistic">Optimistic (+4% of Realistic)</option>
+</select>
                 </div>
             </div>
-        </div>
-
-        <div class="kpi-grid">
-            <div class="kpi-card global">
-                <span class="kpi-label">Cumulative Global Group EBITDA (FY 25 + FY 26)</span>
-                <div class="kpi-value" id="global-total">₹ 0.00 L</div>
-            </div>
-            <div class="kpi-card fy25">
-                <span class="kpi-label">Total Group EBITDA (FY 2025-26)</span>
-                <div class="kpi-value" id="total-2025">₹ 0.00 L</div>
-            </div>
-            <div class="kpi-card fy26">
-                <span class="kpi-label">Total Group EBITDA (FY 2026-27)</span>
-                <div class="kpi-value" id="total-2026">₹ 0.00 L</div>
+            <div class="btn-group">
+                <button class="btn btn-save" onclick="saveToCloud()">Push to Cloud</button>
+                <button class="btn btn-export" onclick="exportFullFile()">Export HTML</button>
             </div>
         </div>
 
-        <table id="financialTable">
-            <thead>
-                <tr>
-                    <th>Line Item Segment (Figures in Lakhs)</th>
-                    <th>Apr</th><th>May</th><th>Jun</th><th>Jul</th><th>Aug</th><th>Sep</th>
-                    <th>Oct</th><th>Nov</th><th>Dec</th><th>Jan</th><th>Feb</th><th>Mar</th>
-                    <th class="bg-fy-col">FY Total</th>
-                </tr>
-            </thead>
-            <tbody id="tableBody"></tbody>
-        </table>
-
-        <div class="action-bar">
-            <button class="btn btn-secondary" onclick="refreshData()">Revert Changes</button>
-            <button id="cloudSaveBtn" class="btn btn-primary" onclick="saveToCloud()">Push Data to Secure Cloud</button>
-            <button class="btn btn-secondary" style="background:#0f172a; color:white;" onclick="triggerHOView()">View HO Dashboard</button>
+        <div class="table-wrap">
+            <table id="targetTable">
+                <thead><tr id="hRow"><th class="sticky-col">FINANCIAL PARTICULARS</th></tr></thead>
+                <tbody id="tBody"></tbody>
+            </table>
         </div>
     </div>
 
     <div class="sidebar-card">
-        <h3 class="sidebar-title"><span>📊</span> Location Breakdown</h3>
-        <div class="breakdown-list" id="breakdownContainer"></div>
+    <h3>Advanced Comparison</h3>
+    
+    <label>Base Period (Reference)</label>
+    <div style="display:flex; gap:5px; margin-bottom: 8px;">
+        <select id="compYear1" class="comp-select" style="flex:1;" onchange="refreshData()">
+            <option value="2025">2025-26</option>
+            <option value="2026">2026-27</option>
+        </select>
+        <select id="compMonth1" class="comp-select" style="flex:1;"></select>
+    </div>
+    <select id="compScen1" class="comp-select">
+        <option value="actual">Actual</option>
+        <option value="pessimistic">Pessimistic</option>
+    </select>
+
+    <label>Compare To (Target/Result)</label>
+    <div style="display:flex; gap:5px; margin-bottom: 8px;">
+        <select id="compYear2" class="comp-select" style="flex:1;" onchange="refreshData()">
+            <option value="2025">2025-26</option>
+            <option value="2026">2026-27</option>
+        </select>
+        <select id="compMonth2" class="comp-select" style="flex:1;"></select>
+    </div>
+    <select id="compScen2" class="comp-select">
+        <option value="actual">Actual</option>
+        <option value="pessimistic">Pessimistic</option>
+    </select>
+
+    <button class="comp-btn" onclick="runComparison()">Analyze Variance</button>
+    <div id="compResult" class="comp-result">
+        <p style="text-align:center; opacity:0.5; margin:0; font-size:10px;">Compare Scenarios side-by-side</p>
     </div>
 </div>
 
-<div id="hoPassOverlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.98); z-index: 9999; align-items: center; justify-content: center; font-family: 'Inter', sans-serif;">
-    <div style="background: white; padding: 40px; border-radius: 16px; text-align: center; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); width: 320px;">
-        <h2 style="color:#0f172a; margin:0; font-size: 20px;">HO ADMIN ACCESS</h2>
-        <p style="color:#64748b; font-size:11px; margin-top:5px;">Enter Master Password to Proceed</p>
-        <input type="password" id="hoPassInput" placeholder="••••" style="width: 100%; padding: 12px; margin: 20px 0; border: 2px solid #e2e8f0; border-radius: 8px; text-align: center; font-size: 20px; letter-spacing: 4px; outline: none; color: #0f172a;" onkeydown="if(event.key==='Enter') verifyHOPass()">
-        <div style="display:flex; gap:10px; justify-content: center;">
-            <button onclick="document.getElementById('hoPassOverlay').style.display='none'" style="padding: 10px 16px; background: #e2e8f0; color: #334155; border: none; border-radius: 8px; cursor: pointer; font-size: 12px; font-weight: 600;">Cancel</button>
-            <button onclick="verifyHOPass()" style="padding: 10px 20px; background: #2563eb; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 12px; font-weight: 600;">Unlock Matrix</button>
-        </div>
-    </div>
-</div>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
 <script>
-// Firebase Matrix Connection
+// --- FIREBASE CONFIG ---
 const firebaseConfig = {
-    databaseURL: "https://roongta-cinemas-default-rtdb.firebaseio.com"
+    apiKey: "AIzaSyDWHnAFSuENqj52fy7PIVbTvJSOJ3tZ11s",
+    authDomain: "roongta-cinemas.firebaseapp.com",
+    databaseURL: "https://roongta-cinemas-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "roongta-cinemas",
+    storageBucket: "roongta-cinemas.firebasestorage.app",
+    messagingSenderId: "679104166920",
+    appId: "1:679104166920:web:044e5a7ab5cbe7c0c3e5bd",
+    measurementId: "G-SZ848VEJF1"
 };
+
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
-const MASTER_PASSWORD = "admin123";
+const months = ["Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","Jan","Feb","Mar"];
 
-const schema = [
-    { id: "adm_gross", label: "Gross Admission Revenue", class: "bg-rev-gross" },
-    { id: "adm_net", label: "Net Admission Revenue (Net of GST)", class: "bg-rev-net" },
-    { id: "fnb_gross", label: "Gross F&B Revenue", class: "bg-rev-gross" },
-    { id: "fnb_net", label: "Net F&B Revenue (Net of GST)", class: "bg-rev-net" },
-    { id: "adv_rev", label: "Advertisement Revenue", class: "bg-rev-net" },
-    { id: "other_rev", label: "Other Revenue / Parking", class: "bg-rev-net" },
-    { id: "total_net_rev", label: "TOTAL NET REVENUE", class: "calc-field bg-rev-net", formula: "sum_rev" },
-    { id: "dist_share", label: "Distributor Share (Actual Payment / Provision)", class: "bg-exp-total" },
-    { id: "fnb_cost", label: "F&B Consumption Cost", class: "bg-exp-total" },
-    { id: "rent_exp", label: "Rent & Common Area Maintenance (CAM)", class: "bg-exp-total" },
-    { id: "power_exp", label: "Power & Electricity Utility Cost", class: "bg-exp-total" },
-    { id: "staff_exp", label: "Staff Salary & Housekeeping Outflow", class: "bg-exp-total" },
-    { id: "other_exp", label: "Other Operational Expenses", class: "bg-exp-total" },
-    { id: "total_ops_exp", label: "TOTAL OPERATIONAL EXPENSES", class: "calc-field bg-exp-total", formula: "sum_exp" },
-    { id: "ebitda", label: "OPERATIONAL EBITDA VALUE", class: "calc-field bg-ebitda", formula: "ebitda_calc" }
+const revenueRows = [
+    { id: 'cap', label: 'TOTAL CAPACITY', type: 'calc', cat: 'rev-detail' },
+    { id: 'ff', label: 'FOOT FALL', type: 'in', cat: 'rev-detail' },
+    { id: 'occ', label: 'OCCUPANCY %', type: 'calc', cat: 'rev-detail' },
+    { id: 'sph_g', label: 'SPH-GROSS', type: 'in', cat: 'rev-detail' },
+    { id: 'atp_g', label: 'ATP-GROSS', type: 'in', cat: 'rev-detail' },
+    { id: 'atp_n', label: 'ATP-NET', type: 'calc', cat: 'rev-detail' },
+    { id: 'sph_n', label: 'SPH-NET', type: 'calc', cat: 'rev-detail' },
+    { id: 'rev_c_g', label: 'GROSS- REVENUE FROM CAFE', type: 'calc', cat: 'rev-detail' },
+    { id: 'rev_t_g', label: 'GROSS- REVENUE FROM TICKET', type: 'calc', cat: 'rev-detail' },
+    { id: 'rev_c_n', label: 'NET- REVENUE FROM CAFE', type: 'calc', cat: 'rev-detail' },
+    { id: 'rev_t_n', label: 'NET- REVENUE FROM TICKET', type: 'calc', cat: 'rev-detail' },
+    { id: 'service', label: 'NET SERVICE CHARGE', type: 'calc', cat: 'rev-detail' },
+    { id: 'sum_rev_other', label: 'REVENUE FROM OTHERS', type: 'link' }, // Sum of detail section
+    { id: 'total_g', label: 'TOTAL Revenue (Gross)', type: 'summary', cls: 'h-rev-gross', toggle: 'rev-detail' },
+    { id: 'total_n', label: 'TOTAL Revenue (NET)', type: 'summary', cls: 'h-rev-net' }
 ];
 
-function buildTable() {
-    const tbody = document.getElementById('tableBody');
-    tbody.innerHTML = "";
-    schema.forEach(row => {
-        let tr = document.createElement('tr');
-        let html = `<td class="row-header">${row.label}</td>`;
-        for(let i=0; i<12; i++) {
-            let isCalc = row.class.includes('calc-field') ? 'readonly class="calc-field ' + row.class + '"' : 'class="' + row.class + '"';
-            html += `<td><input type="text" id="${row.id}_${i}" ${isCalc} value="0.00" oninput="handleInput(this)" onblur="formatBlur(this)"></td>`;
+const mainSummaryRows = [
+    { id: 'sum_var_exp', label: 'TOTAL VARIABLE EXPENSES', type: 'link' },
+    { id: 'sum_ops', label: 'OPERATION EXPENSES', type: 'link' },
+    { id: 'sum_admin', label: 'ADMINISTRATIVE & OTHER EXPENSES', type: 'link' },
+    { id: 'sum_emp', label: 'EMPLOYEE BENEFIT EXPENSE', type: 'link' },
+    { id: 'sum_mkt', label: 'SALES & MARKETING EXP', type: 'link' },
+    { id: 'sum_fin', label: 'FINANCE EXPENSES', type: 'link' },
+    { id: 'sum_rent', label: 'RENT/REVENUE SHARING EXPENSES', type: 'link' },
+    { id: 'total_exp', label: 'TOTAL Expense', type: 'summary', cls: 'h-exp' },
+    { id: 'ebitda', label: 'EBITDA', type: 'summary', cls: 'h-ebitda' }
+];
+
+const detailedSections = [
+    {
+        id: 'rev_other',
+        title: 'REVENUE FROM OTHERS',
+        rows: [
+            { id: 'rev_oth', label: 'REVENUE FROM OTHERS' },
+            { id: 'rev_3d', label: 'REVENUE FORM 3D GLASS' },
+            { id: 'rev_park', label: 'REVENUE FROM PARKING' },
+            { id: 'rev_mgmt', label: 'REVENUE FROM MANAGEMENT FEES' },
+            { id: 'rev_adv', label: 'REVENUE FROM ADVERTISEMENT' }
+        ]
+    },
+    {
+        id: 'var_exp',
+        title: 'VARIABLE EXPENSES',
+        rows: [
+            { id: 'var_var_exp', label: 'VARIABLE EXPENSES' },
+            { id: 'var_gst_tkt', label: 'ENTERTAINMENT EXPENSE (GST ON TICKET)' },
+            { id: 'var_dist', label: 'DISTRIBUTORS EXPENSES' },
+            { id: 'var_banner', label: 'BANNER FITTING CHARGES' },
+            { id: 'var_inr', label: 'INR CHARGES' },
+            { id: 'var_rep', label: 'REPRESENTATIVE CHARGES' },
+            { id: 'var_prog', label: 'PROGRAMMING EXP' },
+            { id: 'var_print', label: 'PRINT & PUBLICITY' },
+            { id: 'var_tax', label: 'SHOW TAX' },
+            { id: 'var_gst_cafe', label: 'GST ON CAFE SALE' },
+            { id: 'var_cafe_con', label: 'CAFE CONSUMPTION' },
+            { id: 'var_adv_tax', label: 'TAX ON ADVERTISEMENT INCOME' },
+            { id: 'var_freight', label: 'LOADING, UNLOADING, FREIGHT CHARGES' }
+        ]
+    },
+    {
+        id: 'ops',
+        title: 'OPERATION EXPENSES',
+        rows: [
+            { id: 'ops_exp', label: 'OPERATION EXPENSES' },
+            { id: 'ops_3d_glass', label: '3D GLASS PURSHSE EXPENSES' },
+            { id: 'ops_cafe_gen', label: 'CAFE GENERAL EXPENSES' },
+            { id: 'ops_diesel', label: 'DIESEL & FUEL' },
+            { id: 'ops_elec', label: 'ELECTRICITY EXPENSES' },
+            { id: 'ops_fire', label: 'FIRE & SAFETY EXPENSES' },
+            { id: 'ops_print', label: 'PRINTING STATIONERY-TKT ROLLS' },
+            { id: 'ops_ufo', label: 'PROJECTOR RENT/UFO CHARGES' },
+            { id: 'ops_rm_cafe', label: 'R & M - CAFE' },
+            { id: 'ops_rm_elec', label: 'R & M - ELECTRICAL EQUIPMENTS' },
+            { id: 'ops_rm_hk_man', label: 'R & M - HOUSEKEEPING MANPOWER WEDGES' },
+            { id: 'ops_hk_mat', label: 'HOUSEKEEPING MATERIAL CHARGE' },
+            { id: 'ops_hk_rent', label: 'HOUSEKEEPING MACHINE RENT' },
+            { id: 'ops_pest', label: 'PEST CONTROL' },
+            { id: 'ops_rm_plant', label: 'R & M - PLANT & MACHINERY' },
+            { id: 'ops_rm_xenon', label: 'R & M - XENON LAMP' },
+            { id: 'ops_sec', label: 'SECURITY EXPENSES' }
+        ]
+    },
+    {
+        id: 'admin',
+        title: 'ADMINISTRATIVE & OTHER EXPENSES',
+        rows: [
+            { id: 'adm_admin', label: 'ADMINISTRATIVE & OTHER EXPENSES' },
+            { id: 'adm_audit', label: 'AUDITORS REMMUNERATION' },
+            { id: 'adm_books', label: 'BOOKS & PERIODICALS' },
+            { id: 'adm_cash', label: 'CASH PICK UP CHARGES' },
+            { id: 'adm_comm', label: 'COMMISSION & BROKERAGE' },
+            { id: 'adm_conv', label: 'CONVEYANCE EXPENSES' },
+            { id: 'adm_digi', label: 'DIGITIAL PRINTING' },
+            { id: 'adm_don', label: 'DONATION' },
+            { id: 'adm_filling', label: 'FILLING FEE EXPENSES' },
+            { id: 'adm_insp', label: 'INSPECTION CHARGES' },
+            { id: 'adm_insur', label: 'INSURANCE EXPENSES' },
+            { id: 'adm_net', label: 'INTERNET CHARGES' },
+            { id: 'adm_cloud', label: 'CLOUD CHARGES' },
+            { id: 'adm_lic', label: 'LICENCE FEES' },
+            { id: 'adm_memb', label: 'MEMBERSHIP & SCUBCRIPTION FEES' },
+            { id: 'adm_misc', label: 'MISCELLANEOUS EXPENSES' },
+            { id: 'adm_off', label: 'OFFICE EXPENSES' },
+            { id: 'adm_fuel_staff', label: 'PETROL & DIESEL-STAFF VEHICLES' },
+            { id: 'adm_post', label: 'POSTAGE & COURIER' },
+            { id: 'adm_print', label: 'PRINTING & STATIONERY' },
+            { id: 'adm_rm_bldg', label: 'R & M - BUILDING' },
+            { id: 'adm_rm_it', label: 'R & M - IT' },
+            { id: 'adm_rm_furn', label: 'R & M - FURNITURE & FIXTURES' },
+            { id: 'adm_rm_veh', label: 'R & M - VEHICLES' },
+            { id: 'adm_rm_oth', label: 'R & M - OTHERS' },
+            { id: 'adm_rates', label: 'RATES & TAXES' },
+            { id: 'adm_recruit', label: 'RECURTIMENT EXPENSES' },
+            { id: 'adm_tele', label: 'TELEPHONE & MOBILE EXPENSES' },
+            { id: 'adm_theatre', label: 'THEATRE EXPENSES-GENERAL' },
+            { id: 'adm_trans', label: 'TRANSPORT CHARGES' },
+            { id: 'adm_trav', label: 'TRAVELLING EXPENSES' },
+            { id: 'adm_rev', label: 'REVIEW METTING EXPENSES' },
+            { id: 'adm_rm_rep', label: 'R & M REPAIR AND RENOVATION EXPENSES' },
+            { id: 'adm_water', label: 'WATER CHARGES' }
+        ]
+    },
+    {
+        id: 'emp',
+        title: 'EMPLOYEE BENEFIT EXPENSE',
+        rows: [
+            { id: 'emp_ben_exp', label: 'EMPLOYEE BENEFIT EXPENSE' },
+            { id: 'emp_comp', label: 'COMPANSATION EXPENSE' },
+            { id: 'emp_salary', label: 'SALARY & WAGES' },
+            { id: 'emp_contract', label: 'CONTRACT WAGES' },
+            { id: 'emp_reg_sal', label: 'RIGIONAL SALARY' },
+            { id: 'emp_da', label: 'ALLOWANCE-DEARANCE' },
+            { id: 'emp_hra', label: 'ALLOWANCE-HOUSE RENT' },
+            { id: 'emp_med', label: 'ALLOWANCE-MEDICAL' },
+            { id: 'emp_allow_other', label: 'ALLOWANCE-OTHER' },
+            { id: 'emp_allow_tran', label: 'ALLOWANCE-TRANSPORT' },
+            { id: 'emp_pf', label: 'EMPLOYERS CONTR.TO PF' },
+            { id: 'emp_esic', label: 'EMPLOYERS CONTR.TO ESIC' },
+            { id: 'emp_bonus', label: 'BONUS EXPENSES' },
+            { id: 'emp_welfare', label: 'STAFF WELFARE EXPENSES' },
+            { id: 'emp_fl_rent', label: 'STAFF FLAT RENT' },
+            { id: 'emp_fl_exp', label: 'STAFF FLAT EXPENSES' },
+            { id: 'emp_elec', label: 'STAFF ELECTRICITY EXPENSES' },
+            { id: 'emp_tran', label: 'TRANSPORTATION REIMBURSEMENT EXP' },
+            { id: 'emp_unif', label: 'STAFF UNIFORM' },
+            { id: 'emp_insu', label: 'STAFF INSURANCE EXPENSE' },
+            { id: 'emp_mob', label: 'EMPLOYEE MOBILE EXPENSES' },
+            { id: 'emp_train', label: 'TRAINING AND DEVELOPMENT' }
+        ]
+    },
+    {
+        id: 'mkt',
+        title: 'SALES & MARKETING EXP',
+        rows: [
+            { id: 'mkt_sale', label: 'SALES & MARKETING EXP' },
+            { id: 'mkt_adv', label: 'ADVERTISING & PUBLICITY' },
+            { id: 'mkt_news', label: 'ADVERTISMENT-NEWS PAPERS' },
+            { id: 'mkt_exp', label: 'ANNIVERSARY EXPENSES' },
+            { id: 'mkt_exp_tct', label: 'COMPLEMENTARY EXPENSES-TICKET' },
+            { id: 'mkt_exp_caf', label: 'COMPLEMENTARY EXPENSES-CAFÉ' },
+            { id: 'mkt_eve', label: 'EVENT CHARGES/ STAR VISIT' },
+            { id: 'mkt_fest', label: 'FESTIVAL EXPENSES' },
+            { id: 'mkt_gift', label: 'GIFT & ARTICLE EXP.' },
+            { id: 'mkt_hoard', label: 'HOARDING CHARGES' },
+            { id: 'mkt_sms', label: 'MOBILE / SMS MAILER EXP' },
+            { id: 'mkt_off', label: 'OFFERS' },
+            { id: 'mkt_web', label: 'ONLINE / WEBSITE CHARGES' },
+            { id: 'mkt_slid', label: 'SLIDE CHARGES' },
+            { id: 'mkt_book', label: 'WEB BOOKING CHARGES' },
+            { id: 'mkt_voucher', label: 'VOUCHER DISCOUNT' }
+        ]
+    },
+    {
+        id: 'fin',
+        title: 'FINANCE EXPENSES',
+        rows: [
+            { id: 'fin_gate', label: 'GATEWAY CHARGES' },
+            { id: 'fin_cc', label: 'CREDIT CARD CHARGES' },
+            { id: 'fin_int', label: 'INTEREST TO OTHERS' },
+            { id: 'fin_bank', label: 'BANK CHARGES' },
+            { id: 'fin_edc', label: 'EDC MACHINE RENTAL' }
+        ]
+    },
+    {
+        id: 'rent',
+        title: 'RENT/REVENUE SHARING EXPENSES',
+        rows: [
+            { id: 'rent_main', label: 'RENT/REVENUE SHARING' },
+            { id: 'rent_cam', label: 'CAM CHARGES' },
+            { id: 'rent_ope_main', label: 'OPERATION AND MAINTANCE EXPENSES' },
+            { id: 'rent_ser_car', label: 'SERVICE CHARGE SHARING' },
+            { id: 'rent_prop_tax', label: 'PROPERTY TAX' }
+        ]
+    }
+];
+
+function toggleRows(cat, el) {
+    const rows = document.querySelectorAll(`[data-cat="${cat}"]`);
+    rows.forEach(r => r.classList.toggle('hidden-row'));
+    if(el) el.classList.toggle('collapsed');
+}
+
+function init() {
+    const h = document.getElementById('hRow');
+    const b = document.getElementById('tBody');
+    const m1 = document.getElementById('compMonth1');
+    const m2 = document.getElementById('compMonth2');
+    const brkM = document.getElementById('breakdownMonth'); // Location Breakdown ka dropdown pick kiya
+
+    // Months array ko loop karke saare dropdowns populate karein
+    months.forEach((m, i) => { 
+        h.innerHTML += `<th>${m}</th>`;
+        if(m1) m1.innerHTML += `<option value="${i}">${m}</option>`;
+        if(m2) m2.innerHTML += `<option value="${i}">${m}</option>`;
+        
+        // Location Breakdown dropdown mein months add karne ke liye:
+        if(brkM) {
+            brkM.innerHTML += `<option value="${i}">${m}</option>`;
         }
-        html += `<td><input type="text" id="${row.id}_12" readonly class="calc-field bg-fy-col" value="0.00"></td>`;
-        tr.innerHTML = html;
-        tbody.appendChild(tr);
     });
+
+    h.innerHTML += `<th class="year-col">FY TOTAL</th>`;
+    
+    // Revenue rows render karna
+    revenueRows.forEach(r => b.innerHTML += renderRow(r));
+    
+    b.innerHTML += `<tr class="spacer-row"><td colspan="14"></td></tr>`;
+    
+    // Summary Rows render karna
+    mainSummaryRows.forEach(r => b.innerHTML += renderRow(r));
+
+    // Detailed Sections (Expenses, etc.) render karna
+    detailedSections.forEach(sec => {
+        const secId = 'sec-' + sec.id;
+        b.innerHTML += `<tr class="spacer-row" data-cat="${secId}"><td colspan="14"></td></tr>`;
+        b.innerHTML += `<tr onclick="toggleRows('${secId}', this)" class="group-header"><td class="sticky-col"><span class="toggle-icon">▼</span>${sec.title}</td><td colspan="13"></td></tr>`;
+        
+        sec.rows.forEach(r => b.innerHTML += renderRow({ ...r, type: 'in', cat: secId }));
+        b.innerHTML += renderRow({ id: sec.id + '_det', label: "TOTAL " + sec.title, type: 'sub', cat: secId });
+    });
+
+    // Pehli baar data load karna
+    refreshData(); 
 }
 
-function handleInput(el) {
-    calc();
-}
-
-function formatBlur(el) {
-    let val = parseFloat(el.value) || 0;
-    el.value = val.toFixed(2);
-    calc();
+function renderRow(r) {
+    let cls = r.cls || (r.type === 'sub' ? 'group-header' : '');
+    let clickAttr = r.toggle ? `onclick="toggleRows('${r.toggle}', this)"` : "";
+    let icon = r.toggle ? `<span class="toggle-icon">▼</span>` : "";
+    let html = `<tr class="${cls} ${r.cat ? 'hidden-row' : ''}" data-cat="${r.cat || ''}" ${clickAttr}><td class="sticky-col">${icon}${r.label}</td>`;
+    for(let i=0; i <= 12; i++) {
+        let isY = i === 12;
+        let ro = (r.type !== 'in' || isY) ? 'readonly class="calc-field"' : '';
+        html += `<td class="${isY?'year-col':''}"><input type="number" id="${r.id}_${i}" value="0" ${ro} oninput=""></td>`;
+    }
+    return html + '</tr>';
 }
 
 function calc() {
-    for (let i = 0; i <= 12; i++) {
-        let netAdm = parseFloat(document.getElementById(`adm_net_${i}`).value) || 0;
-        let netFnb = parseFloat(document.getElementById(`fnb_net_${i}`).value) || 0;
-        let adv = parseFloat(document.getElementById(`adv_rev_${i}`).value) || 0;
-        let otherR = parseFloat(document.getElementById(`other_rev_${i}`).value) || 0;
+    const propElement = document.getElementById('prop');
+    const propValue = propElement.value; // Get the selected property ID (e.g., 'surat')
+    const seats = parseInt(propElement.options[propElement.selectedIndex].getAttribute('data-seats'));
+
+    for (let i = 0; i < 12; i++) {
+        let ff = parseFloat(document.getElementById(`ff_${i}`).value) || 0;
+        let atpG = parseFloat(document.getElementById(`atp_g_${i}`).value) || 0;
+        let sphG = parseFloat(document.getElementById(`sph_g_${i}`).value) || 0;
+
+        // --- PROPERTY SPECIFIC LOGIC START ---
+        let atp_n_factor = 0;
+        let service_multiplier = 0;
+
+        switch (propValue) {
+            case 'surat':
+            case 'adipur':
+                atp_n_factor = 25;
+                service_multiplier = 25;
+                break;
+            case 'muzaffarnagar':
+            case 'ghaziabad':
+                atp_n_factor = 9.32;
+                service_multiplier = 9.32;
+                break;
+            case 'hyderabad':
+                atp_n_factor = 5;
+                service_multiplier = 5;
+                break;
+            default:
+                atp_n_factor = 0;
+                service_multiplier = 0;
+        }
+
+        // Calculate the values based on the factors determined above
+        let atp_n_val = (atpG / 1.18) - atp_n_factor;
+        let nServ = (ff * service_multiplier) / 100000;
+        // --- PROPERTY SPECIFIC LOGIC END ---
+
+        // Capacity and Nets
+        let cap = seats * 5 * 30;
+        document.getElementById(`cap_${i}`).value = cap;
+        document.getElementById(`occ_${i}`).value = (cap > 0 ? (ff / cap) * 100 : 0).toFixed(0);
         
-        let totalNetRev = netAdm + netFnb + adv + otherR;
-        document.getElementById(`total_net_rev_${i}`).value = totalNetRev.toFixed(2);
+        // Use the new calculated ATP Net
+        document.getElementById(`atp_n_${i}`).value = atp_n_val.toFixed(2);
+        document.getElementById(`sph_n_${i}`).value = (sphG / 1.05).toFixed(2);
 
-        let dist = parseFloat(document.getElementById(`dist_share_${i}`).value) || 0;
-        let fnbC = parseFloat(document.getElementById(`fnb_cost_${i}`).value) || 0;
-        let rent = parseFloat(document.getElementById(`rent_exp_${i}`).value) || 0;
-        let power = parseFloat(document.getElementById(`power_exp_${i}`).value) || 0;
-        let staff = parseFloat(document.getElementById(`staff_exp_${i}`).value) || 0;
-        let otherE = parseFloat(document.getElementById(`other_exp_${i}`).value) || 0;
+        // Revenue Calculations
+        let gCafe = (ff * sphG) / 100000;
+        let gTkt = (ff * atpG) / 100000;
+        let nCafe = (ff * (sphG / 1.05)) / 100000;
+        let nTkt = (ff * atp_n_val) / 100000; // Updated to use dynamic ATP Net
 
-        let totalOpsExp = dist + fnbC + rent + power + staff + otherE;
-        document.getElementById(`total_ops_exp_${i}`).value = totalOpsExp.toFixed(2);
+        document.getElementById(`rev_c_g_${i}`).value = gCafe.toFixed(2);
+        document.getElementById(`rev_t_g_${i}`).value = gTkt.toFixed(2);
+        document.getElementById(`rev_c_n_${i}`).value = nCafe.toFixed(2);
+        document.getElementById(`rev_t_n_${i}`).value = nTkt.toFixed(2);
+        document.getElementById(`service_${i}`).value = nServ.toFixed(2); // Updated to use dynamic Service Charge
 
-        let ebitda = totalNetRev - totalOpsExp;
-        document.getElementById(`ebitda_${i}`).value = ebitda.toFixed(2);
+        // Revenue From Others
+        let otherSum = 0;
+        const revOtherRows = detailedSections.find(s => s.id === 'rev_other').rows;
+        revOtherRows.forEach(r => otherSum += parseFloat(document.getElementById(`${r.id}_${i}`).value) || 0);
+        document.getElementById(`rev_other_det_${i}`).value = otherSum.toFixed(2);
+        document.getElementById(`sum_rev_other_${i}`).value = otherSum.toFixed(2);
+
+        // TOTALS
+        let totalG = gCafe + gTkt + otherSum;
+        let totalN = nCafe + nTkt + nServ + otherSum;
+        document.getElementById(`total_g_${i}`).value = totalG.toFixed(2);
+        document.getElementById(`total_n_${i}`).value = totalN.toFixed(2);
+
+        // EXPENSES
+        let grandExp = 0;
+        detailedSections.forEach(sec => {
+            if (sec.id === 'rev_other') return;
+            let sum = sec.rows.reduce((acc, r) => acc + (parseFloat(document.getElementById(`${r.id}_${i}`).value) || 0), 0);
+            document.getElementById(`${sec.id}_det_${i}`).value = sum.toFixed(2);
+            let summaryRowId = (sec.id === 'var_exp') ? 'sum_var_exp' : 'sum_' + sec.id;
+            if (document.getElementById(`${summaryRowId}_${i}`)) {
+                document.getElementById(`${summaryRowId}_${i}`).value = sum.toFixed(2);
+            }
+            grandExp += sum;
+        });
+
+        document.getElementById(`total_exp_${i}`).value = grandExp.toFixed(2);
+        document.getElementById(`ebitda_${i}`).value = (totalG - grandExp).toFixed(2);
     }
     updateYearTotals();
 }
-
 function updateYearTotals() {
-    schema.forEach(row => {
-        let rowSum = 0;
-        for (let i = 0; i < 12; i++) {
-            rowSum += parseFloat(document.getElementById(`${row.id}_${i}`).value) || 0;
-        }
-        document.getElementById(`${row.id}_12`).value = rowSum.toFixed(2);
+    const allInputIds = [...revenueRows, ...mainSummaryRows, ...detailedSections.flatMap(s=>s.rows), ...detailedSections.map(s=>({id:s.id+'_det'}))].map(r=>r.id);
+    allInputIds.forEach(id => {
+        let sum = 0; 
+        for(let i=0; i<12; i++) sum += parseFloat(document.getElementById(`${id}_${i}`).value) || 0;
+        let el = document.getElementById(`${id}_12`);
+        if(el) el.value = ['occ','atp_n','sph_n','atp_g','sph_g'].includes(id) ? (sum/12).toFixed(2) : sum.toFixed(2);
     });
-}
-
-async function applyLocks() {
-    const fy = document.getElementById('fySelect').value;
-    const cloudSaveBtn = document.getElementById('cloudSaveBtn');
-    
-    document.querySelectorAll('input').forEach(inp => {
-        if(!inp.classList.contains('calc-field')) {
-            inp.disabled = false;
-            inp.style.backgroundColor = ""; 
-        }
-    });
-    if(cloudSaveBtn) cloudSaveBtn.style.display = 'inline-block';
-    
-    document.getElementById('btnLock2025').style.display = (fy === "2025") ? "block" : "none";
-    document.getElementById('monthlyLockControls').style.display = (fy === "2026") ? "flex" : "none";
-
-    try {
-        const snap = await db.ref(`locks/${fy}`).once('value');
-        const locks = snap.val() || {};
-
-        if (fy === "2025") {
-            if (locks.global) {
-                document.querySelectorAll('input').forEach(inp => {
-                    inp.disabled = true;
-                    inp.style.backgroundColor = "#fee2e2"; 
-                });
-                if(cloudSaveBtn) cloudSaveBtn.style.display = 'none'; 
-                document.getElementById('lockStatusText').innerHTML = "<span style='color:#ef4444;'>🔒 FULL LEDGER LOCKED</span>";
-            } else {
-                document.getElementById('lockStatusText').innerHTML = "<span style='color:#10b981;'>🔓 LEDGER OPEN FOR ENTRY</span>";
-            }
-        } 
-        else if (fy === "2026") {
-            let lockedCount = 0;
-            for (let m = 0; m < 12; m++) {
-                if (locks.months && locks.months[m]) {
-                    schema.forEach(row => {
-                        let targetInput = document.getElementById(`${row.id}_${m}`);
-                        if (targetInput) {
-                            targetInput.disabled = true;
-                            targetInput.style.backgroundColor = "#fee2e2";
-                        }
-                    });
-                    lockedCount++;
-                }
-            }
-            if (lockedCount === 12 && cloudSaveBtn) {
-                cloudSaveBtn.style.display = 'none';
-            }
-            document.getElementById('lockStatusText').innerHTML = `<span style='color: #f59e0b;'>🔒 ${lockedCount}/12 COLUMNS SECURED</span>`;
-        }
-    } catch(err) {
-        console.error("Security Execution Interrupted:", err);
-    }
-}
-
-async function toggleGlobalLock() {
-    const pass = prompt("Enter Administration Key to toggle Year Lock Status:");
-    if (pass !== MASTER_PASSWORD) return alert("Security Error: Invalid Key Access!");
-
-    const snap = await db.ref(`locks/2025/global`).once('value');
-    const currentState = snap.val() || false;
-    await db.ref(`locks/2025/global`).set(!currentState);
-    
-    alert(`FY 2025-26 shifted to: ${!currentState ? 'LOCKED' : 'UNLOCKED'}`);
-    await applyLocks();
-}
-
-async function toggleMonthLock() {
-    const monthSelect = document.getElementById('monthLockSelect');
-    const monthIndex = parseInt(monthSelect.value);
-    const monthName = monthSelect.options[monthSelect.selectedIndex].text;
-
-    const pass = prompt(`Enter Administration Key to change status for ${monthName}:`);
-    if (pass !== MASTER_PASSWORD) return alert("Security Error: Invalid Key Access!");
-
-    const snap = await db.ref(`locks/2026/months/${monthIndex}`).once('value');
-    const currentState = snap.val() || false;
-    await db.ref(`locks/2026/months/${monthIndex}`).set(!currentState);
-    
-    alert(`Column [${monthName}] entry configuration altered to: ${!currentState ? 'LOCKED' : 'UNLOCKED'}`);
-    await applyLocks();
-}
-
-async function saveToCloud() {
-    const p = document.getElementById('prop').value;
-    const s = document.getElementById('scen').value;
-    const fy = document.getElementById('fySelect').value;
-
-    if (s !== "actual") {
-        alert("Projections are calculated live. You can only save 'Actual' monthly track data.");
-        return;
-    }
-
-    const locksSnap = await db.ref(`locks/${fy}`).once('value');
-    const locks = locksSnap.val() || {};
-    if (fy === "2025" && locks.global) {
-        alert("Access Denied: This fiscal ledger has been officially locked by Corporate Admin.");
-        return;
-    }
-
-    let payload = {};
-    schema.forEach(row => {
-        payload[row.id] = [];
-        for (let i = 0; i <= 12; i++) {
-            payload[row.id].push(document.getElementById(`${row.id}_${i}`).value || "0.00");
-        }
-    });
-
-    try {
-        await db.ref(`reports/${p}/${s}/${fy}`).set(payload);
-        alert("Payload synced up to secure production architecture successfully.");
-        await updateGlobalEbitda();
-        updateLocationBreakdown();
-    } catch (err) {
-        alert("Sync Failure: " + err.message);
-    }
 }
 
 async function updateGlobalEbitda() {
@@ -392,6 +622,7 @@ async function updateGlobalEbitda() {
     let total26 = 0;
 
     try {
+        // Fetch all data points simultaneously for speed
         const fetchPromises = [];
         for (const p of props) {
             for (const year of years) {
@@ -405,40 +636,30 @@ async function updateGlobalEbitda() {
         }
 
         const results = await Promise.all(fetchPromises);
+
+        // Sum the results properly
         results.forEach(res => {
             if (res.year === "2025") total25 += res.val;
             if (res.year === "2026") total26 += res.val;
             grandTotal += res.val;
         });
 
-        document.getElementById('global-total').innerText = `₹ ${grandTotal.toFixed(2)} L`;
-        document.getElementById('total-2025').innerText = `₹ ${total25.toFixed(2)} L`;
-        document.getElementById('total-2026').innerText = `₹ ${total26.toFixed(2)} L`;
+        // UPDATE UI - Big Global Box
+        const globalEl = document.getElementById('global-total');
+        if (globalEl) globalEl.innerText = `₹ ${grandTotal.toFixed(2)} L`;
+
+        // UPDATE UI - Small Year Boxes
+        const el25 = document.getElementById('total-2025');
+        const el26 = document.getElementById('total-2026');
+        if (el25) el25.innerText = `₹ ${total25.toFixed(2)} L`;
+        if (el26) el26.innerText = `₹ ${total26.toFixed(2)} L`;
+
+        // UPDATE UI - HO Dashboard Specific
+        const hoEl = document.getElementById('ho-cinema-ebitda');
+        if (hoEl) hoEl.innerText = `₹ ${grandTotal.toFixed(2)} L`;
+
     } catch (err) {
-        console.error("Dashboard Widget Failure:", err);
-    }
-}
-
-async function updateLocationBreakdown() {
-    const props = ['surat', 'ghaziabad', 'muzaffarnagar', 'adipur', 'hyderabad'];
-    const fy = document.getElementById('fySelect').value;
-    const currentProp = document.getElementById('prop').value;
-    const container = document.getElementById('breakdownContainer');
-    container.innerHTML = "";
-
-    for (const p of props) {
-        let val = 0;
-        if (p === currentProp) {
-            val = parseFloat(document.getElementById('ebitda_12').value) || 0;
-        } else {
-            let snap = await db.ref(`reports/${p}/actual/${fy}/ebitda/12`).once('value');
-            val = parseFloat(snap.val()) || 0;
-        }
-        
-        let div = document.createElement('div');
-        div.className = "breakdown-item";
-        div.innerHTML = `<span class="breakdown-name">${p}</span><span class="breakdown-val">₹ ${val.toFixed(2)} L</span>`;
-        container.appendChild(div);
+        console.error("Global Dashboard Sync Error:", err);
     }
 }
 
@@ -447,6 +668,7 @@ async function refreshData() {
     const scenSelect = document.getElementById('scen');
     const fy = document.getElementById('fySelect').value;
 
+    // Handle FY Visibility
     if (fy === "2025") {
         scenSelect.value = "actual";
         Array.from(scenSelect.options).forEach(opt => {
@@ -459,11 +681,11 @@ async function refreshData() {
     const s = scenSelect.value;
     const fetchScen = (fy === "2026" && (s === "pessimistic" || s === "optimistic")) ? "realistic" : s;
     
-    document.querySelectorAll('input').forEach(inp => {
-        if(!inp.classList.contains('calc-field')) inp.value = "0.00";
-    });
+    // Clear old inputs to prevent ghost data
+    document.querySelectorAll('input:not(.calc-field)').forEach(inp => inp.value = "0.00");
 
     try {
+        // WAIT for the main data
         const snapshot = await db.ref(`reports/${p}/${fetchScen}/${fy}`).once('value');
         const data = snapshot.val() || {};
 
@@ -471,46 +693,193 @@ async function refreshData() {
             if (Array.isArray(data[key])) {
                 data[key].forEach((val, i) => {
                     let finalVal = parseFloat(val) || 0;
-                    
                     if (fy === "2026") {
                         if (s === "pessimistic") finalVal *= 0.92;
                         else if (s === "optimistic") finalVal *= 1.04;
                     }
-
                     const el = document.getElementById(`${key}_${i}`);
                     if (el) el.value = finalVal.toFixed(2);
                 });
             }
         });
+
+        // RECALCULATE everything in the correct order
+        calc(); 
+        updateLocationBreakdown();
+        await updateGlobalEbitda(); // Wait for the global sum to finish
+
     } catch (e) {
-        console.error("Cloud Data Pull Exception:", e);
+        console.error("Critical Load Error:", e);
     }
-
-    calc();
-    await updateGlobalEbitda();
-    await updateLocationBreakdown();
-    await applyLocks();
 }
 
-function triggerHOView() {
+async function saveToCloud() {
+    const p = document.getElementById('prop').value;
+    const s = document.getElementById('scen').value;
+    const fy = document.getElementById('fySelect').value;
+    const data = {};
+
+    // 1. Gather all manual input rows
+    const allInputRows = [
+        ...revenueRows.filter(r => r.type === 'in'),
+        ...detailedSections.flatMap(sec => sec.rows)
+    ];
+
+    allInputRows.forEach(r => {
+        data[r.id] = [];
+        for(let i = 0; i <= 12; i++) {
+            data[r.id].push(document.getElementById(`${r.id}_${i}`).value || "0");
+        }
+    });
+
+    // 2. CRITICAL FIX: Explicitly save the EBITDA row (Calculated Field)
+    // This is what the Global EBITDA Live box looks for!
+    data['ebitda'] = [];
+    for(let i = 0; i <= 12; i++) {
+        data['ebitda'].push(document.getElementById(`ebitda_${i}`).value || "0");
+    }
+
+    try {
+        await db.ref(`reports/${p}/${s}/${fy}`).set(data);
+        // Refresh the global display immediately after saving
+        updateGlobalEbitda(); 
+        alert(`Cloud Sync Successful: ${p.toUpperCase()} FY ${fy}`);
+    } catch (error) {
+        alert("Sync Failed: " + error.message);
+    }
+}
+
+async function runComparison() {
+    const p = document.getElementById('prop').value;
+    
+    // Helper function to fetch and calculate EBITDA based on Gross Revenue formula
+    const getComparisonEbitda = async (scen, yr, mIdx) => {
+        const snapshot = await db.ref(`reports/${p}/${scen}/${yr}`).once('value');
+        const d = snapshot.val() || {};
+        
+        // 1. Total Gross Revenue (Core + Others)
+        const ff = parseFloat(d.ff?.[mIdx] || 0);
+        const atpG = parseFloat(d.atp_g?.[mIdx] || 0);
+        const sphG = parseFloat(d.sph_g?.[mIdx] || 0);
+        const grossCore = (ff * (atpG + sphG)) / 100000;
+
+        let otherRev = 0;
+        const otherKeys = ['rev_oth', 'rev_3d', 'rev_park', 'rev_mgmt', 'rev_adv'];
+        otherKeys.forEach(k => otherRev += parseFloat(d[k]?.[mIdx] || 0));
+
+        const totalGrossRevenue = grossCore + otherRev;
+
+        // 2. Total Expenses
+        let totalExp = 0;
+        detailedSections.forEach(s => {
+            if(s.id !== 'rev_other') {
+                s.rows.forEach(r => totalExp += parseFloat(d[r.id]?.[mIdx] || 0));
+            }
+        });
+
+        return totalGrossRevenue - totalExp;
+    };
+
+    // Donon periods ka data fetch karein
+    const eb1 = await getComparisonEbitda(
+        document.getElementById('compScen1').value, 
+        document.getElementById('compYear1').value, 
+        document.getElementById('compMonth1').value
+    );
+    const eb2 = await getComparisonEbitda(
+        document.getElementById('compScen2').value, 
+        document.getElementById('compYear2').value, 
+        document.getElementById('compMonth2').value
+    );
+    
+    const diff = eb1 - eb2;
+    const color = diff >= 0 ? '#92d050' : '#f19eb5';
+
+    // UI Update
+    document.getElementById('compResult').innerHTML = `
+        <div style="display:flex;justify-content:space-between"><span>Base EBITDA:</span><span>₹ ${eb1.toFixed(2)} L</span></div>
+        <div style="display:flex;justify-content:space-between"><span>Comp EBITDA:</span><span>₹ ${eb2.toFixed(2)} L</span></div>
+        <hr style="opacity:0.1;margin:8px 0">
+        <div style="display:flex;justify-content:space-between;font-weight:800;color:${color}">
+            <span>Variance:</span><span>₹ ${diff.toFixed(2)} L</span>
+        </div>
+    `;
+}
+
+async function updateLocationBreakdown() {
+    const year = document.getElementById('breakdownYear').value;
+    const monthIdx = parseInt(document.getElementById('breakdownMonth').value);
+    const locations = ['surat', 'ghaziabad', 'muzaffarnagar', 'adipur', 'hyderabad'];
+    let monthlySumTotal = 0;
+
+    const snapshot = await db.ref('reports').once('value');
+    const allData = snapshot.val() || {};
+
+    locations.forEach(loc => {
+        const data = allData[loc]?.['actual']?.[year];
+        let locEbitda = 0;
+
+        if (data) {
+            const ff = parseFloat(data.ff?.[monthIdx] || 0);
+            const atpG = parseFloat(data.atp_g?.[monthIdx] || 0);
+            const sphG = parseFloat(data.sph_g?.[monthIdx] || 0);
+            
+            let otherRev = 0;
+            ['rev_oth', 'rev_3d', 'rev_park', 'rev_mgmt', 'rev_adv'].forEach(k => otherRev += parseFloat(data[k]?.[monthIdx] || 0));
+
+            let totalExp = 0;
+            detailedSections.forEach(s => {
+                if(s.id !== 'rev_other') s.rows.forEach(r => totalExp += parseFloat(data[r.id]?.[monthIdx] || 0));
+            });
+
+            // EBITDA = (FF * (ATP_G + SPH_G) / 1L) + Others - Expenses
+            locEbitda = ((ff * (atpG + sphG)) / 100000 + otherRev) - totalExp;
+        }
+
+        const el = document.getElementById(`brk-${loc}`);
+        if(el) {
+            el.innerText = `₹ ${locEbitda.toFixed(2)} L`;
+            el.style.color = locEbitda >= 0 ? "#92d050" : "#f19eb5";
+        }
+        monthlySumTotal += locEbitda;
+    });
+    document.getElementById('brk-total').innerText = `₹ ${monthlySumTotal.toFixed(2)} L`;
+}
+// Function to show the private password overlay
+function openHOPassword() {
     document.getElementById('hoPassOverlay').style.display = 'flex';
+    document.getElementById('hoPassInput').value = ""; // Clear previous entry
+    document.getElementById('hoPassInput').focus();   // Auto-focus the box
 }
 
+// Function to verify the masked password
 function verifyHOPass() {
-    const p = document.getElementById('hoPassInput').value;
-    if(p === "roongtaho") {
-        window.location.href = "ho_dashboard.html";
+    const pass = document.getElementById('hoPassInput').value;
+    const masterPass = "roongtaHO"; // Your existing password
+
+    if (pass === masterPass) {
+        window.location.href = 'ho_dashboard.html';
     } else {
-        alert("Unauthorized Access Profile Key Entry.");
+        alert("Access Denied: Incorrect Password");
+        document.getElementById('hoPassInput').value = "";
     }
 }
-
-async function init() {
-    buildTable();
-    await refreshData();
-}
-
 window.onload = init;
 </script>
+<div id="hoPassOverlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.98); z-index: 9999; align-items: center; justify-content: center; font-family: 'Inter', sans-serif;">
+    <div style="background: white; padding: 40px; border-radius: 16px; text-align: center; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); width: 320px;">
+        <h2 style="color:#0f172a; margin:0; font-size: 20px;">HO ADMIN ACCESS</h2>
+        <p style="color:#64748b; font-size:11px; margin-top:5px;">Enter Master Password to Proceed</p>
+        
+        <input type="password" id="hoPassInput" placeholder="••••" 
+               style="width: 100%; padding: 12px; margin: 20px 0; border: 2px solid #e2e8f0; border-radius: 8px; text-align: center; font-size: 20px; letter-spacing: 4px; outline: none; color: #0f172a;"
+               onkeydown="if(event.key==='Enter') verifyHOPass()">
+        
+        <div style="display: flex; gap: 10px;">
+            <button onclick="document.getElementById('hoPassOverlay').style.display='none'" style="flex: 1; background:#94a3b8; color:white; padding:12px; border-radius:8px; border:none; cursor:pointer; font-weight:700;">CANCEL</button>
+            <button onclick="verifyHOPass()" style="flex: 2; background:#0f172a; color:white; padding:12px; border-radius:8px; border:none; cursor:pointer; font-weight:700;">UNLOCK</button>
+        </div>
+    </div>
+</div>
 </body>
 </html>
