@@ -531,15 +531,16 @@ function renderRow(r) {
 
 function calc() {
     const propElement = document.getElementById('prop');
-    const propValue = propElement.value; // Get the selected property ID (e.g., 'surat')
-    const seats = parseInt(propElement.options[propElement.selectedIndex].getAttribute('data-seats'));
+    if (!propElement) return;
+    const propValue = propElement.value; 
+    const seats = parseInt(propElement.options[propElement.selectedIndex].getAttribute('data-seats')) || 0;
 
     for (let i = 0; i < 12; i++) {
         let ff = parseFloat(document.getElementById(`ff_${i}`).value) || 0;
         let atpG = parseFloat(document.getElementById(`atp_g_${i}`).value) || 0;
         let sphG = parseFloat(document.getElementById(`sph_g_${i}`).value) || 0;
 
-        // --- PROPERTY SPECIFIC LOGIC START ---
+        // --- PROPERTY SPECIFIC FACTORS ---
         let atp_n_factor = 0;
         let service_multiplier = 0;
 
@@ -563,51 +564,58 @@ function calc() {
                 service_multiplier = 0;
         }
 
-        // Calculate the values based on the factors determined above
         let atp_n_val = (atpG / 1.18) - atp_n_factor;
         let nServ = (ff * service_multiplier) / 100000;
-        // --- PROPERTY SPECIFIC LOGIC END ---
 
-        // Capacity and Nets
+        // Capacity and Occupancy
         let cap = seats * 5 * 30;
-        document.getElementById(`cap_${i}`).value = cap;
-        document.getElementById(`occ_${i}`).value = (cap > 0 ? (ff / cap) * 100 : 0).toFixed(0);
+        if(document.getElementById(`cap_${i}`)) document.getElementById(`cap_${i}`).value = cap;
+        if(document.getElementById(`occ_${i}`)) document.getElementById(`occ_${i}`).value = (cap > 0 ? (ff / cap) * 100 : 0).toFixed(0);
         
-        // Use the new calculated ATP Net
-        document.getElementById(`atp_n_${i}`).value = atp_n_val.toFixed(2);
-        document.getElementById(`sph_n_${i}`).value = (sphG / 1.05).toFixed(2);
+        // Nets
+        if(document.getElementById(`atp_n_${i}`)) document.getElementById(`atp_n_${i}`).value = atp_n_val.toFixed(2);
+        if(document.getElementById(`sph_n_${i}`)) document.getElementById(`sph_n_${i}`).value = (sphG / 1.05).toFixed(2);
 
-        // Revenue Calculations
+        // Revenue Splits
         let gCafe = (ff * sphG) / 100000;
         let gTkt = (ff * atpG) / 100000;
         let nCafe = (ff * (sphG / 1.05)) / 100000;
-        let nTkt = (ff * atp_n_val) / 100000; // Updated to use dynamic ATP Net
+        let nTkt = (ff * atp_n_val) / 100000; 
 
-        document.getElementById(`rev_c_g_${i}`).value = gCafe.toFixed(2);
-        document.getElementById(`rev_t_g_${i}`).value = gTkt.toFixed(2);
-        document.getElementById(`rev_c_n_${i}`).value = nCafe.toFixed(2);
-        document.getElementById(`rev_t_n_${i}`).value = nTkt.toFixed(2);
-        document.getElementById(`service_${i}`).value = nServ.toFixed(2); // Updated to use dynamic Service Charge
+        if(document.getElementById(`rev_c_g_${i}`)) document.getElementById(`rev_c_g_${i}`).value = gCafe.toFixed(2);
+        if(document.getElementById(`rev_t_g_${i}`)) document.getElementById(`rev_t_g_${i}`).value = gTkt.toFixed(2);
+        if(document.getElementById(`rev_c_n_${i}`)) document.getElementById(`rev_c_n_${i}`).value = nCafe.toFixed(2);
+        if(document.getElementById(`rev_t_n_${i}`)) document.getElementById(`rev_t_n_${i}`).value = nTkt.toFixed(2);
+        if(document.getElementById(`service_${i}`)) document.getElementById(`service_${i}`).value = nServ.toFixed(2);
 
         // Revenue From Others
         let otherSum = 0;
-        const revOtherRows = detailedSections.find(s => s.id === 'rev_other').rows;
-        revOtherRows.forEach(r => otherSum += parseFloat(document.getElementById(`${r.id}_${i}`).value) || 0);
-        document.getElementById(`rev_other_det_${i}`).value = otherSum.toFixed(2);
-        document.getElementById(`sum_rev_other_${i}`).value = otherSum.toFixed(2);
+        const revOtherTarget = detailedSections.find(s => s.id === 'rev_other');
+        if (revOtherTarget) {
+            revOtherTarget.rows.forEach(r => {
+                let rEl = document.getElementById(`${r.id}_${i}`);
+                otherSum += rEl ? (parseFloat(rEl.value) || 0) : 0;
+            });
+        }
+        if(document.getElementById(`rev_other_det_${i}`)) document.getElementById(`rev_other_det_${i}`).value = otherSum.toFixed(2);
+        if(document.getElementById(`sum_rev_other_${i}`)) document.getElementById(`sum_rev_other_${i}`).value = otherSum.toFixed(2);
 
-        // TOTALS
+        // Totals
         let totalG = gCafe + gTkt + otherSum;
         let totalN = nCafe + nTkt + nServ + otherSum;
-        document.getElementById(`total_g_${i}`).value = totalG.toFixed(2);
-        document.getElementById(`total_n_${i}`).value = totalN.toFixed(2);
+        if(document.getElementById(`total_g_${i}`)) document.getElementById(`total_g_${i}`).value = totalG.toFixed(2);
+        if(document.getElementById(`total_n_${i}`)) document.getElementById(`total_n_${i}`).value = totalN.toFixed(2);
 
-        // EXPENSES
+        // Expenses Processing Loop
         let grandExp = 0;
         detailedSections.forEach(sec => {
             if (sec.id === 'rev_other') return;
-            let sum = sec.rows.reduce((acc, r) => acc + (parseFloat(document.getElementById(`${r.id}_${i}`).value) || 0), 0);
-            document.getElementById(`${sec.id}_det_${i}`).value = sum.toFixed(2);
+            let sum = sec.rows.reduce((acc, r) => {
+                let rEl = document.getElementById(`${r.id}_${i}`);
+                return acc + (rEl ? (parseFloat(rEl.value) || 0) : 0);
+            }, 0);
+            
+            if(document.getElementById(`${sec.id}_det_${i}`)) document.getElementById(`${sec.id}_det_${i}`).value = sum.toFixed(2);
             let summaryRowId = (sec.id === 'var_exp') ? 'sum_var_exp' : 'sum_' + sec.id;
             if (document.getElementById(`${summaryRowId}_${i}`)) {
                 document.getElementById(`${summaryRowId}_${i}`).value = sum.toFixed(2);
@@ -615,18 +623,23 @@ function calc() {
             grandExp += sum;
         });
 
-        document.getElementById(`total_exp_${i}`).value = grandExp.toFixed(2);
-        document.getElementById(`ebitda_${i}`).value = (totalG - grandExp).toFixed(2);
+        if(document.getElementById(`total_exp_${i}`)) document.getElementById(`total_exp_${i}`).value = grandExp.toFixed(2);
+        if(document.getElementById(`ebitda_${i}`)) document.getElementById(`ebitda_${i}`).value = (totalG - grandExp).toFixed(2);
     }
     updateYearTotals();
+    applyLocks(); // Force lock evaluation directly following array operations
 }
+
 function updateYearTotals() {
     const allInputIds = [...revenueRows, ...mainSummaryRows, ...detailedSections.flatMap(s=>s.rows), ...detailedSections.map(s=>({id:s.id+'_det'}))].map(r=>r.id);
     allInputIds.forEach(id => {
         let sum = 0; 
-        for(let i=0; i<12; i++) sum += parseFloat(document.getElementById(`${id}_${i}`).value) || 0;
-        let el = document.getElementById(`${id}_12`);
-        if(el) el.value = ['occ','atp_n','sph_n','atp_g','sph_g'].includes(id) ? (sum/12).toFixed(2) : sum.toFixed(2);
+        for(let i=0; i<12; i++) {
+            let el = document.getElementById(`${id}_${i}`);
+            sum += el ? (parseFloat(el.value) || 0) : 0;
+        }
+        let yEl = document.getElementById(`${id}_12`);
+        if(yEl) yEl.value = ['occ','atp_n','sph_n','atp_g','sph_g'].includes(id) ? (sum/12).toFixed(2) : sum.toFixed(2);
     });
 }
 
@@ -636,25 +649,27 @@ function applyLocks() {
     const alertBanner = document.getElementById('lockAlertBanner');
 
     if (activeYear === "2025") {
-        // Enforce Critical Hard-Lock Loop Across All Inputs Globally
         document.querySelectorAll('input').forEach(input => {
             input.disabled = true;
-            input.style.backgroundColor = "#ffe4e6"; // Red Tint lock status indicators
+            input.style.backgroundColor = "#ffe4e6"; 
         });
-        saveBtn.disabled = true;
-        saveBtn.innerText = "🔒 Data Blocked";
-        alertBanner.style.display = "flex";
+        if(saveBtn) {
+            saveBtn.disabled = true;
+            saveBtn.innerText = "🔒 Data Blocked";
+        }
+        if(alertBanner) alertBanner.style.display = "flex";
     } else {
-        // Restore permissions clean state for operational years
         document.querySelectorAll('input').forEach(input => {
             if (!input.classList.contains('calc-field')) {
                 input.disabled = false;
                 input.style.backgroundColor = "";
             }
         });
-        saveBtn.disabled = false;
-        saveBtn.innerText = "Push to Cloud";
-        alertBanner.style.display = "none";
+        if(saveBtn) {
+            saveBtn.disabled = false;
+            saveBtn.innerText = "Push to Cloud";
+        }
+        if(alertBanner) alertBanner.style.display = "none";
     }
 }
     
@@ -758,28 +773,18 @@ async function refreshData() {
 }
 
 async function saveToCloud() {
-    const p = document.getElementById('prop').value;
-    const s = document.getElementById('scen').value;
-    const fy = document.getElementById('fySelect').value;
     const activeYear = document.getElementById('fySelect').value;
     if (activeYear === "2025") {
-        alert("CRITICAL VIOLATION: FY 2025-26 tracking matrix data is sealed permanently and cannot be updated.");
+        alert("CRITICAL VIOLATION: FY 2025-26 tracking matrix data is sealed permanently.");
         return;
     }
-    alert("Data pushed successfully to the live production server nodes.");
-}
 
-function openHOPassword() { document.getElementById('hoPassOverlay').style.display = 'flex'; }
-function verifyHOPass() {
-    if(document.getElementById('hoPassInput').value === "roongtaho") {
-        alert("Authorization passed.");
-        document.getElementById('hoPassOverlay').style.display = 'none';
-    } else {
-        alert("Invalid credentials.");
-    }
+    // Capture dropdown parameters within scope
+    const p = document.getElementById('prop').value;
+    const s = document.getElementById('scen').value;
+    const fy = activeYear;
+
     const data = {};
-
-    // 1. Gather all manual input rows
     const allInputRows = [
         ...revenueRows.filter(r => r.type === 'in'),
         ...detailedSections.flatMap(sec => sec.rows)
@@ -788,27 +793,38 @@ function verifyHOPass() {
     allInputRows.forEach(r => {
         data[r.id] = [];
         for(let i = 0; i <= 12; i++) {
-            data[r.id].push(document.getElementById(`${r.id}_${i}`).value || "0");
+            let el = document.getElementById(`${r.id}_${i}`);
+            data[r.id].push(el ? el.value : "0");
         }
     });
 
-    // 2. CRITICAL FIX: Explicitly save the EBITDA row (Calculated Field)
-    // This is what the Global EBITDA Live box looks for!
     data['ebitda'] = [];
     for(let i = 0; i <= 12; i++) {
-        data['ebitda'].push(document.getElementById(`ebitda_${i}`).value || "0");
+        let ebEl = document.getElementById(`ebitda_${i}`);
+        data['ebitda'].push(ebEl ? ebEl.value : "0");
     }
 
     try {
         await db.ref(`reports/${p}/${s}/${fy}`).set(data);
-        // Refresh the global display immediately after saving
-        updateGlobalEbitda(); 
+        await updateGlobalEbitda(); 
         alert(`Cloud Sync Successful: ${p.toUpperCase()} FY ${fy}`);
     } catch (error) {
         alert("Sync Failed: " + error.message);
     }
 }
 
+function openHOPassword() { 
+    document.getElementById('hoPassOverlay').style.display = 'flex'; 
+}
+
+function verifyHOPass() {
+    if(document.getElementById('hoPassInput').value === "roongtaho") {
+        alert("Authorization passed.");
+        document.getElementById('hoPassOverlay').style.display = 'none';
+    } else {
+        alert("Invalid credentials.");
+    }
+}
 async function runComparison() {
     const p = document.getElementById('prop').value;
     
